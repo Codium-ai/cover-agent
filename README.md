@@ -30,7 +30,7 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 
 ## News and Updates
 ### 2024-05-09: 
-#### This repository hosts the implementation of Cover Agent, an open-source project inspired by the innovative techniques described in the paper [Automated Unit Test Improvement using Large Language Models](https://arxiv.org/abs/2402.09171) at Meta.
+#### This repository includes the first known implementation of TestGen-LLM, described in the paper [Automated Unit Test Improvement using Large Language Models at Meta](https://arxiv.org/abs/2402.09171).
 
 # Cover-Agent
 Welcome to Cover-Agent. This focused project utilizes Generative AI to automate and enhance the generation of unit tests, aiming to streamline development workflows. Cover Agent can be integrated into popular CI platforms or run via a terminal, making it a critical asset for any software development team.
