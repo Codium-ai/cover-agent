@@ -177,5 +177,5 @@ Below is the roadmap of planned features, with the current implementation status
   - [ ] Add a setting file
 
 ## CodiumAI
-CodiumAI mission is to enable busy dev teams to increase and maitain their code integrity.
-We offer a variety of tools, including "Pro" versions of our open-source tools, that commonly also manage with high complexity of code and is multi-repo code base aware.
+CodiumAI's mission is to enable busy dev teams to increase and maintain their code integrity.
+We offer various tools, including "Pro" versions of our open-source tools, which are meant to handle enterprise-level code complexity and are multi-repo codebase aware.
