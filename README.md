@@ -24,7 +24,8 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 ## Table of Contents
 - [News and Updates](#news-and-updates)
 - [Overview](#overview)
-- [Usage](#usage)
+- [Installation and Usage](#installation-and-usage)
+- [Development](#development)
 - [Roadmap](#roadmap)
 
 
@@ -40,11 +41,11 @@ We invite the community to collaborate and help extend the capabilities of Cover
 ## Overview
 This tool is part of a broader suite of utilities designed to automate the creation of unit tests for software projects. Utilizing advanced Generative AI models, it aims to simplify and expedite the testing process, ensuring high-quality software development. The system comprises several components:
 1. **Test Runner:** Executes the command or scripts to run the test suite and generate code coverage reports.
-2. **Coverage Parser:** Validates that code coverage is increasing as tests are added, ensuring that new tests are contributing to the overall test effectiveness.
+2. **Coverage Parser:** Validates that code coverage increases as tests are added, ensuring that new tests contribute to the overall test effectiveness.
 3. **Prompt Builder:** Gathers necessary data from the codebase and constructs the prompt to be passed to the Large Language Model (LLM).
 4. **AI Caller:** Interacts with the LLM to generate tests based on the prompt provided.
 
-## Usage
+## Installation and Usage
 ### Requirements
 Before you begin, make sure you have the following:
 - `OPENAI_API_KEY` set in your environment variables, which is required for calling the OpenAI API.
@@ -165,6 +166,8 @@ Below is the roadmap of planned features, with the current implementation status
 - [x] Automatically generates unit tests for your software projects, utilizing advanced AI models to ensure comprehensive test coverage and quality assurance. (similar to Meta)
   - [x] Being able to generate tests for different programming languages
   - [ ] Being able to deal with a large variety of testing scenarios
-- [ ] Generate new tests that are focused on the PR changeset
-- [ ] [TODO] Cover more test generation pains
-- [ ] Connectors for GitHub Actions, Jenkins, CircleCI, Travis CI, and more
+- [ ] Cover more test generation pains
+  - [ ] Generate new tests that are focused on the PR changeset
+- [ ] Improve usability
+  - [ ] Connectors for GitHub Actions, Jenkins, CircleCI, Travis CI, and more
+  - [ ] Add a setting file
