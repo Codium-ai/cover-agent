@@ -166,8 +166,16 @@ Below is the roadmap of planned features, with the current implementation status
 - [x] Automatically generates unit tests for your software projects, utilizing advanced AI models to ensure comprehensive test coverage and quality assurance. (similar to Meta)
   - [x] Being able to generate tests for different programming languages
   - [ ] Being able to deal with a large variety of testing scenarios
+  - [ ] Generate a behavior analysis for the code under test, and generate tests accordingly
+  - [ ] Check test flakiness, e.g. by running 5 times as suggested by TestGen-LLM
 - [ ] Cover more test generation pains
   - [ ] Generate new tests that are focused on the PR changeset
+  - [ ] Run over an entire repo/code-base and attempt to enhance all existing test suites
 - [ ] Improve usability
   - [ ] Connectors for GitHub Actions, Jenkins, CircleCI, Travis CI, and more
+  - [ ] Integrate into databases, APIs, OpenTelemetry and other sources of data to extract relevant i/o for the test generation
   - [ ] Add a setting file
+
+## CodiumAI
+CodiumAI's mission is to enable busy dev teams to increase and maintain their code integrity.
+We offer various tools, including "Pro" versions of our open-source tools, which are meant to handle enterprise-level code complexity and are multi-repo codebase aware.
