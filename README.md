@@ -1,3 +1,34 @@
+<div align="center">
+
+<div align="center">
+
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://codium.ai/images/pr_agent/logo-dark.png" width="330">
+  <source media="(prefers-color-scheme: light)" srcset="https://codium.ai/images/pr_agent/logo-light.png" width="330">
+  <img src="https://codium.ai/images/pr_agent/logo-light.png" alt="logo" width="330">
+
+</picture>
+<br/>
+CodiumAI Cover Agent aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites
+</div>
+
+[![GitHub license](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://github.com/Codium-ai/cover-agent/blob/main/LICENSE)
+[![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/cYsvFJJbdM)
+[![Twitter](https://img.shields.io/twitter/follow/codiumai)](https://twitter.com/codiumai)
+    <a href="https://github.com/Codium-ai/cover-agent/commits/main">
+    <img alt="GitHub" src="https://img.shields.io/github/last-commit/Codium-ai/cover-agent/main?style=for-the-badge" height="20">
+    </a>
+</div>
+
+## Table of Contents
+- [News and Updates](#news-and-updates)
+- [Overview](#overview)
+- [Usage](#usage)
+- [Roadmap](#roadmap)
+
+
+## News and Updates
 ### 2024-05-09: 
 #### This repository hosts the implementation of Cover Agent, an open-source project inspired by the innovative techniques described in the paper [Automated Unit Test Improvement using Large Language Models](https://arxiv.org/abs/2402.09171) at Meta.
 
@@ -6,16 +37,6 @@ Welcome to Cover-Agent. This focused project utilizes Generative AI to automate 
 
 We invite the open-source community to collaborate and help extend the capabilities of Cover Agent, continuing its development as a cutting-edge solution in the domain of automated unit test generation.
 
-## Roadmap
-Below is the roadmap of planned features, with the current implementation status:
-
-- [x] Automatically generates unit tests for your software projects, utilizing advanced AI models to ensure comprehensive test coverage and quality assurance. (similar to Meta)
-  - [x] Being able to generate tests for different programming languages
-  - [ ] Being able to deal with a large variety of testing scenarios
-- [ ] Generate new tests that are focused on the PR changeset
-- [ ] [TODO] Cover more test generation pains
-- [ ] Connectors for GitHub Actions, Jenkins, CircleCI, Travis CI, and more
-
 ## Overview
 This tool is part of a broader suite of utilities designed to automate the creation of unit tests for software projects. Utilizing advanced Generative AI models, it aims to simplify and expedite the testing process, ensuring high-quality software development. The system comprises several components:
 1. **Test Runner:** Executes the command or scripts to run the test suite and generate code coverage reports.
@@ -23,7 +44,8 @@ This tool is part of a broader suite of utilities designed to automate the creat
 3. **Prompt Builder:** Gathers necessary data from the codebase and constructs the prompt to be passed to the Large Language Model (LLM).
 4. **AI Caller:** Interacts with the LLM to generate tests based on the prompt provided.
 
-## Requirements
+## Usage
+### Requirements
 Before you begin, make sure you have the following:
 - `OPENAI_API_KEY` set in your environment variables, which is required for calling the OpenAI API.
 
@@ -31,25 +53,25 @@ If running directly from the repository you will also need:
 - Python installed on your system.
 - Poetry installed for managing Python package dependencies. Installation instructions for Poetry can be found at [https://python-poetry.org/docs/](https://python-poetry.org/docs/).
 
-## Standalone Runtime
+### Standalone Runtime
 The Cover Agent can be installed as a Python Pip package or run as a standalone executable.
 
-### Python Pip
+#### Python Pip
 To install the Python Pip package directly via GitHub run the following command:
 ```
 pip install git+https://github.com/Codium-ai/cover-agent.git
 ```
 
-### Binary
+#### Binary
 The binary can be run without any Python environment installed on your system (e.g. within a Docker container that does not contain Python). You can download the release for your system by navigating to the project's [release page](https://github.com/Codium-ai/cover-agent/releases).
 
-## Repository Setup
+### Repository Setup
 Run the following command to install all the dependencies and run the project from source:
 ```shell
 poetry install
 ```
 
-## Running the Code
+### Running the Code
 After downloading the executable or installing the Pip package you can run the Cover Agent to generate and validate unit tests. Execute it from the command line by using the following command:
 ```shell
 cover-agent \
@@ -136,3 +158,13 @@ After setting up your environment run the following command:
 poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent --cov-report=xml --cov-report=term --log-cli-level=INFO
 ```
 This will also generate all logs and output reports that are generated in `.github/workflows/ci_pipeline.yml`.
+
+## Roadmap
+Below is the roadmap of planned features, with the current implementation status:
+
+- [x] Automatically generates unit tests for your software projects, utilizing advanced AI models to ensure comprehensive test coverage and quality assurance. (similar to Meta)
+  - [x] Being able to generate tests for different programming languages
+  - [ ] Being able to deal with a large variety of testing scenarios
+- [ ] Generate new tests that are focused on the PR changeset
+- [ ] [TODO] Cover more test generation pains
+- [ ] Connectors for GitHub Actions, Jenkins, CircleCI, Travis CI, and more
