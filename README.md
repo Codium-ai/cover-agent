@@ -170,7 +170,12 @@ Below is the roadmap of planned features, with the current implementation status
   - [ ] Check test flakiness, e.g. by running 5 times as suggested by TestGen-LLM
 - [ ] Cover more test generation pains
   - [ ] Generate new tests that are focused on the PR changeset
+  - [ ] Run over an entire repo/code-base and attempt to enhance all existing test suites
 - [ ] Improve usability
   - [ ] Connectors for GitHub Actions, Jenkins, CircleCI, Travis CI, and more
   - [ ] Integrate into databases, APIs, OpenTelemetry and other sources of data to extract relevant i/o for the test generation
   - [ ] Add a setting file
+
+## CodiumAI
+CodiumAI mission is to enable busy dev teams to increase and maitain their code integrity.
+We offer a variety of tools, including "Pro" versions of our open-source tools, that commonly also manage with high complexity of code and is multi-repo code base aware.
