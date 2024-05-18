@@ -36,7 +36,7 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 # Cover-Agent
 Welcome to Cover-Agent. This focused project utilizes Generative AI to automate and enhance the generation of tests (currently mostly unit tests), aiming to streamline development workflows. Cover Agent can be integrated into popular CI platforms or run via a terminal, making it a critical asset for any software development team.
 
-[![Overview video](https://www.codium.ai/wp-content/uploads/2024/05/CodiumAI-CoverAgent-v240518.gif)](https://www.codium.ai/wp-content/uploads/2024/05/CodiumAI-CoverAgent-v240518.mp4)
+[![Test generation process](https://www.codium.ai/wp-content/uploads/2024/05/CodiumAI-CoverAgent-v240518-1.gif)](https://www.codium.ai/wp-content/uploads/2024/05/CodiumAI-CoverAgent-v240518.mp4)
 
 
 We invite the community to collaborate and help extend the capabilities of Cover Agent, continuing its development as a cutting-edge solution in the automated unit test generation domain. We also wish to inspire researchers to leverage this open-source tool to explore new test-generation techniques.
