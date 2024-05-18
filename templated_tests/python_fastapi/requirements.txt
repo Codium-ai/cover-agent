@@ -1,0 +1,4 @@
+fastapi
+httpx
+pytest
+pytest-cov
