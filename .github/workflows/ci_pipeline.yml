@@ -1,0 +1,149 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  # Validate that the version.txt file was incremented to ensure release process passes after merge to main
+  check_version_increment:
+    runs-on: ubuntu-latest
+    # This job will only run for pull requests, not for pushes to main
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Ensures we fetch all history for all branches
+      - name: Check if version was incremented
+        run: |
+          NEW_VERSION=$(cat cover_agent/version.txt)
+          git fetch origin main
+          git checkout origin/main -- cover_agent/version.txt
+          OLD_VERSION=$(cat cover_agent/version.txt)
+          if [[ "$OLD_VERSION" == "$NEW_VERSION" ]]; then
+            echo "ERROR: The version number in version.txt must be incremented."
+            echo "Version on origin/main: $OLD_VERSION"
+            echo "Version on ${{ github.head_ref }}: $NEW_VERSION"
+            exit 1
+          fi
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Ensures we fetch all history for all branches
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies using Poetry
+        run: poetry install
+      - name: Run tests and generate reports
+        env:
+          OPENAI_API_KEY: "This_is_a_fake_API_key"
+        run: |
+          poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent --cov-report=xml:cobertura.xml --log-cli-level=INFO
+      - name: Upload test report
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test-reports
+          path: testLog.xml
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: coverage-reports
+          path: cobertura.xml
+      - name: Cobertura Coverage Report
+        uses: 5monkeys/cobertura-action@master
+        with:
+          path: cobertura.xml
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          minimum_coverage: 60
+        env:
+          pythonLocation: /opt/hostedtoolcache/Python/3.12.2/x64
+          LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.2/x64/lib
+
+  build:
+    needs: test
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Install Dependencies
+      run: |
+        pip install poetry
+        poetry install
+    - name: Build Executable
+      run: |
+        poetry run pyinstaller --add-data "cover_agent/prompt_template.md:." --add-data "cover_agent/version.txt:." --hidden-import=tiktoken_ext.openai_public --hidden-import=tiktoken_ext --onefile --name cover-agent-${{ matrix.os }} cover_agent/main.py
+    - name: Upload Executable
+      uses: actions/upload-artifact@v2
+      with:
+        name: cover-agent-${{ matrix.os }}
+        path: dist/cover-agent-${{ matrix.os }}*
+
+  release:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download executables
+      uses: actions/download-artifact@v2
+      with:
+        path: dist
+    - name: Extract version
+      run: |
+        echo "VERSION=$(cat cover_agent/version.txt)" >> $GITHUB_ENV  
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.VERSION }}
+        release_name: Release ${{ env.VERSION }}
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset (Ubuntu)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/cover-agent-ubuntu-latest/cover-agent-ubuntu-latest
+        asset_name: cover-agent-ubuntu
+        asset_content_type: application/octet-stream
+    - name: Upload Release Asset (Windows)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/cover-agent-windows-latest/cover-agent-windows-latest.exe
+        asset_name: cover-agent-windows.exe
+        asset_content_type: application/octet-stream
+    - name: Upload Release Asset (macOS)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/cover-agent-macos-latest/cover-agent-macos-latest
+        asset_name: cover-agent-macos
+        asset_content_type: application/octet-stream
