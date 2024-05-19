@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import patch, mock_open
 from cover_agent.PromptBuilder import PromptBuilder
 
+
 class TestPromptBuilder:
     @pytest.fixture(autouse=True)
     def setup_method(self, monkeypatch):
@@ -11,7 +12,10 @@ class TestPromptBuilder:
 
     def test_initialization_reads_file_contents(self):
         builder = PromptBuilder(
-            "cover_agent/prompt_template.md", "source_path", "test_path", "dummy content"
+            "cover_agent/prompt_template.md",
+            "source_path",
+            "test_path",
+            "dummy content",
         )
         assert builder.prompt_template == "dummy content"
         assert builder.source_file == "dummy content"
@@ -27,7 +31,7 @@ class TestPromptBuilder:
             "coverage_report",
             "Included Files Content",
             "Additional Instructions Content",
-            "Failed Test Runs Content"
+            "Failed Test Runs Content",
         )
         builder.prompt_template = "Template: {source_file}, Test: {test_file}, Coverage: {code_coverage_report}, Includes: {additional_includes_section}, Instructions: {additional_instructions_text}, Failed Tests: {failed_tests_section}"
         builder.source_file = "Source Content"
@@ -48,7 +52,10 @@ class TestPromptBuilder:
         monkeypatch.setattr("builtins.open", mock_open_raise)
 
         builder = PromptBuilder(
-            "cover_agent/prompt_template.md", "source_path", "test_path", "coverage_report"
+            "cover_agent/prompt_template.md",
+            "source_path",
+            "test_path",
+            "coverage_report",
         )
         assert "Error reading cover_agent/prompt_template.md" in builder.prompt_template
         assert "Error reading source_path" in builder.source_file
@@ -62,7 +69,7 @@ class TestPromptBuilder:
             source_file_path="source_path",
             test_file_path="test_path",
             code_coverage_report="coverage_report",
-            included_files="Included Files Content"
+            included_files="Included Files Content",
         )
         # Directly read the real file content for the prompt template
         with open("cover_agent/prompt_template.md", "r") as f:
@@ -83,7 +90,7 @@ class TestPromptBuilder:
             source_file_path="source_path",
             test_file_path="test_path",
             code_coverage_report="coverage_report",
-            included_files="Included Files Content"
+            included_files="Included Files Content",
         )
 
         # Directly read the real file content for the prompt template
@@ -106,7 +113,7 @@ class TestPromptBuilder:
             source_file_path="source_path",
             test_file_path="test_path",
             code_coverage_report="coverage_report",
-            additional_instructions=""
+            additional_instructions="",
         )
         # Directly read the real file content for the prompt template
         with open("cover_agent/prompt_template.md", "r") as f:
@@ -126,7 +133,7 @@ class TestPromptBuilder:
             source_file_path="source_path",
             test_file_path="test_path",
             code_coverage_report="coverage_report",
-            failed_test_runs=""
+            failed_test_runs="",
         )
         # Directly read the real file content for the prompt template
         with open("cover_agent/prompt_template.md", "r") as f:
@@ -146,7 +153,7 @@ class TestPromptBuilder:
             source_file_path="source_path",
             test_file_path="test_path",
             code_coverage_report="coverage_report",
-            additional_instructions="Additional Instructions Content"
+            additional_instructions="Additional Instructions Content",
         )
         # Directly read the real file content for the prompt template
         with open("cover_agent/prompt_template.md", "r") as f:
@@ -167,7 +174,7 @@ class TestPromptBuilder:
             source_file_path="source_path",
             test_file_path="test_path",
             code_coverage_report="coverage_report",
-            failed_test_runs="Failed Test Runs Content"
+            failed_test_runs="Failed Test Runs Content",
         )
         # Directly read the real file content for the prompt template
         with open("cover_agent/prompt_template.md", "r") as f:

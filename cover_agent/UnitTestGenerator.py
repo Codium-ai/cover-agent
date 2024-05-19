@@ -6,6 +6,7 @@ from cover_agent.CoverageProcessor import CoverageProcessor
 from cover_agent.CustomLogger import CustomLogger
 from cover_agent.PromptBuilder import PromptBuilder
 from cover_agent.AICaller import AICaller
+from cover_agent.FilePreprocessor import FilePreprocessor
 
 
 class UnitTestGenerator:
@@ -54,6 +55,8 @@ class UnitTestGenerator:
         # Get the logger instance from CustomLogger
         self.logger = CustomLogger.get_logger(__name__)
 
+        # States to maintain within this class
+        self.preprocessor = FilePreprocessor(self.test_file_path)
         self.failed_test_runs = []
 
         # Run coverage and build the prompt
@@ -140,7 +143,9 @@ class UnitTestGenerator:
         if not self.failed_test_runs:
             failed_test_runs_value = ""
         else:
-            failed_test_runs_value = json.dumps(self.failed_test_runs).replace("\\n", "\n")
+            failed_test_runs_value = json.dumps(self.failed_test_runs).replace(
+                "\\n", "\n"
+            )
 
         # Call PromptBuilder to build the prompt
         prompt = PromptBuilder(
@@ -172,7 +177,7 @@ class UnitTestGenerator:
             # We want to remove them and split up the tests into a list of tests
             response = ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
 
-        # Split the response into a list of tests and strip off the trailing whitespaces 
+        # Split the response into a list of tests and strip off the trailing whitespaces
         # (as we sometimes anticipate indentations in the returned code from the LLM)
         tests = response.split("```")
         return [test.rstrip() for test in tests if test.rstrip()]
@@ -191,13 +196,16 @@ class UnitTestGenerator:
             dict: A dictionary containing the test result status, reason for failure (if any),
                 stdout, stderr, exit code, and the test itself.
         """
+        # Step 0: Run the test through the preprocessor rule set
+        processed_test = self.preprocessor.process_file(generated_test)
+
         # Step 1: Append the generated test to the test file and save the original content
         with open(self.test_file_path, "r+") as test_file:
             original_content = test_file.read()  # Store original content
             test_file.write(
                 "\n"
                 + ("\n" if not original_content.endswith("\n") else "")
-                + generated_test
+                + processed_test
                 + "\n"
             )  # Append the new test at the end
 
@@ -223,7 +231,9 @@ class UnitTestGenerator:
                 "stdout": stdout,
                 "test": generated_test,
             }
-            self.failed_test_runs.append(fail_details["test"])  # Append failure details to the list
+            self.failed_test_runs.append(
+                fail_details["test"]
+            )  # Append failure details to the list
             return fail_details
 
         # If test passed, check for coverage increase
@@ -253,7 +263,9 @@ class UnitTestGenerator:
                     "stdout": stdout,
                     "test": generated_test,
                 }
-                self.failed_test_runs.append(fail_details["test"])  # Append failure details to the list
+                self.failed_test_runs.append(
+                    fail_details["test"]
+                )  # Append failure details to the list
                 return fail_details
         except Exception as e:
             # Handle errors gracefully
@@ -269,7 +281,9 @@ class UnitTestGenerator:
                 "stdout": stdout,
                 "test": generated_test,
             }
-            self.failed_test_runs.append(fail_details["test"])  # Append failure details to the list
+            self.failed_test_runs.append(
+                fail_details["test"]
+            )  # Append failure details to the list
             return fail_details
 
         # If everything passed and coverage increased, update current coverage and log success
