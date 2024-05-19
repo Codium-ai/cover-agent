@@ -11,4 +11,4 @@ pip install -r requirements.txt
 ```
 pytest --cov=app --cov-report=xml --cov-report=term
 ```
-The coverage report will be generated as `coverage.xml` and the results will be printed in the shall as well.
+The coverage report will be generated as `coverage.xml` and the results will be printed in the shell as well.
