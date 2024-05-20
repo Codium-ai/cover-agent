@@ -5,6 +5,9 @@ import textwrap
 class FilePreprocessor:
     def __init__(self, path_to_file):
         self.path_to_file = path_to_file
+
+        # List of rules/action key pair.
+        # Add your new rule and how to process the text (function) here
         self.rules = [
             (self._is_python_file, self._process_if_python)
         ]
