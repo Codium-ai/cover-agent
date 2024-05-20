@@ -1,6 +1,6 @@
-import os
 import ast
 import textwrap
+
 
 class FilePreprocessor:
     def __init__(self, path_to_file):
@@ -8,9 +8,7 @@ class FilePreprocessor:
 
         # List of rules/action key pair.
         # Add your new rule and how to process the text (function) here
-        self.rules = [
-            (self._is_python_file, self._process_if_python)
-        ]
+        self.rules = [(self._is_python_file, self._process_if_python)]
 
     def process_file(self, text: str) -> str:
         """
@@ -25,14 +23,14 @@ class FilePreprocessor:
         """
         Rule to check if the file is a Python file.
         """
-        return self.path_to_file.endswith('.py')
+        return self.path_to_file.endswith(".py")
 
     def _process_if_python(self, text: str) -> str:
         """
         Action to process Python files by checking for class definitions and indenting if found.
         """
         if self._contains_class_definition():
-            return textwrap.indent(text, '    ')
+            return textwrap.indent(text, "    ")
         return text
 
     def _contains_class_definition(self) -> bool:
@@ -40,7 +38,7 @@ class FilePreprocessor:
         Check if the file contains a Python class definition using the ast module.
         """
         try:
-            with open(self.path_to_file, 'r') as file:
+            with open(self.path_to_file, "r") as file:
                 content = file.read()
             parsed_ast = ast.parse(content)
             for node in ast.walk(parsed_ast):
