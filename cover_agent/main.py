@@ -36,7 +36,7 @@ def parse_args():
         "--included-files",
         default=None,
         nargs="*",
-        help="List of files to include in the coverage. For example, \"--included-files library1.c library2.c.\" Default: %(default)s.",
+        help='List of files to include in the coverage. For example, "--included-files library1.c library2.c." Default: %(default)s.',
     )
     parser.add_argument(
         "--coverage-type",
@@ -134,9 +134,11 @@ def main():
             and iteration_count < args.max_iterations
         ):
             # Provide coverage feedback to user
-            logger.info(f"Current Coverage: {round(test_gen.current_coverage * 100, 2)}%")
+            logger.info(
+                f"Current Coverage: {round(test_gen.current_coverage * 100, 2)}%"
+            )
             logger.info(f"Desired Coverage: {test_gen.desired_coverage}%")
-            
+
             # Generate tests by making a call to the LLM
             generated_tests = test_gen.generate_tests(
                 LLM_model=args.openai_model, max_tokens=4096
@@ -154,7 +156,9 @@ def main():
             iteration_count += 1
 
         if iteration_count == args.max_iterations:
-            logger.info("Reached maximum iteration limit without achieving desired coverage.")
+            logger.info(
+                "Reached maximum iteration limit without achieving desired coverage."
+            )
 
         # Dump the test results to a report
         ReportGenerator.generate_report(test_results_list, "test_results.html")

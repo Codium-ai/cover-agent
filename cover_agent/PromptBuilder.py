@@ -20,6 +20,8 @@ Below is a list of failed tests that you generated in previous iterations, if av
 {failed_test_runs}
 ```
 """
+
+
 class PromptBuilder:
 
     def __init__(
@@ -60,9 +62,23 @@ class PromptBuilder:
         self.code_coverage_report = code_coverage_report
 
         # Conditionally fill in optional sections
-        self.included_files = ADDITIONAL_INCLUDES_TEXT.format(included_files=included_files) if included_files else included_files
-        self.additional_instructions = ADDITIONAL_INSTRUCTIONS_TEXT.format(additional_instructions=additional_instructions) if additional_instructions else additional_instructions
-        self.failed_test_runs = FAILED_TESTS_TEXT.format(failed_test_runs=failed_test_runs) if failed_test_runs else failed_test_runs
+        self.included_files = (
+            ADDITIONAL_INCLUDES_TEXT.format(included_files=included_files)
+            if included_files
+            else included_files
+        )
+        self.additional_instructions = (
+            ADDITIONAL_INSTRUCTIONS_TEXT.format(
+                additional_instructions=additional_instructions
+            )
+            if additional_instructions
+            else additional_instructions
+        )
+        self.failed_test_runs = (
+            FAILED_TESTS_TEXT.format(failed_test_runs=failed_test_runs)
+            if failed_test_runs
+            else failed_test_runs
+        )
 
     def _read_file(self, file_path):
         """

@@ -127,8 +127,7 @@ poetry run cover-agent \
   --coverage-type "cobertura" \
   --desired-coverage 70 \
   --max-iterations 1 \
-  --openai-model "gpt-4o" \
-  --additional-instructions "Since I am using a test class each line of code (including the first line), In your response, will need to be prepended with 4 whitespaces. This is extremely important to check to make sure every line returned contains that 4 whitespace indent otherwise my code will not run."
+  --openai-model "gpt-4o"
 ```
 
 Note: If you are using Poetry then use the `poetry run python -m cover-agent` command instead of the `cover-agent` run command.
