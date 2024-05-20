@@ -130,7 +130,7 @@ poetry run cover-agent \
   --openai-model "gpt-4o"
 ```
 
-Note: If you are using Poetry then use the `poetry run python -m cover-agent` command instead of the `cover-agent` run command.
+Note: If you are using Poetry then use the `poetry run cover-agent` command instead of the `cover-agent` run command.
 
 ### Outputs
 A few debug files will be outputted locally within the repository (that are part of the `.gitignore`)
