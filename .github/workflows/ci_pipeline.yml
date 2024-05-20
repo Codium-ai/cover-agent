@@ -49,7 +49,7 @@ jobs:
         env:
           OPENAI_API_KEY: "This_is_a_fake_API_key"
         run: |
-          poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent --cov-report=xml:cobertura.xml --log-cli-level=INFO
+          poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent --cov-report=xml:cobertura.xml --cov-report=term --cov-fail-under=70 --log-cli-level=INFO
       - name: Upload test report
         uses: actions/upload-artifact@v2
         if: always()
@@ -62,12 +62,6 @@ jobs:
         with:
           name: coverage-reports
           path: cobertura.xml
-      - name: Cobertura Coverage Report
-        uses: 5monkeys/cobertura-action@master
-        with:
-          path: cobertura.xml
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          minimum_coverage: 60
         env:
           pythonLocation: /opt/hostedtoolcache/Python/3.12.2/x64
           LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.2/x64/lib
