@@ -9,27 +9,19 @@ on:
       - main
 
 jobs:
-  # Validate that the version.txt file was incremented to ensure release process passes after merge to main
-  check_version_increment:
+  # Checks for changes in version.txt (used for release job)
+  changes:
     runs-on: ubuntu-latest
-    # This job will only run for pull requests, not for pushes to main
-    if: github.event_name == 'pull_request'
+    outputs:
+      version_changed: ${{ steps.filter.outputs.version_changed }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
         with:
-          fetch-depth: 0  # Ensures we fetch all history for all branches
-      - name: Check if version was incremented
-        run: |
-          NEW_VERSION=$(cat cover_agent/version.txt)
-          git fetch origin main
-          git checkout origin/main -- cover_agent/version.txt
-          OLD_VERSION=$(cat cover_agent/version.txt)
-          if [[ "$OLD_VERSION" == "$NEW_VERSION" ]]; then
-            echo "ERROR: The version number in version.txt must be incremented."
-            echo "Version on origin/main: $OLD_VERSION"
-            echo "Version on ${{ github.head_ref }}: $NEW_VERSION"
-            exit 1
-          fi
+          filters: |
+            version_changed:
+              - 'cover_agent/version.txt'
 
   test:
     runs-on: ubuntu-latest
@@ -92,8 +84,8 @@ jobs:
         path: dist/cover-agent-${{ matrix.os }}*
 
   release:
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build, changes]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.version_changed == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
