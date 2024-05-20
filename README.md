@@ -4,9 +4,9 @@
 
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://www.codium.ai/wp-content/uploads/2024/05/logo-dark-cover-agent.png" width="330">
-  <source media="(prefers-color-scheme: light)" srcset="https://www.codium.ai/wp-content/uploads/2024/05/logo-light-cover-agent.png" width="330">
-  <img src="https://www.codium.ai/wp-content/uploads/2024/05/logo-light-cover-agent.png" alt="logo" width="330">
+  <source media="(prefers-color-scheme: dark)" srcset="https://www.codium.ai/images/cover-agent/cover-agent-dark.png" width="330">
+  <source media="(prefers-color-scheme: light)" srcset="https://www.codium.ai/images/cover-agent/cover-agent-light.png" width="330">
+  <img src="https://www.codium.ai/images/cover-agent/cover-agent-light.png" alt="logo" width="330">
 
 </picture>
 <br/>
