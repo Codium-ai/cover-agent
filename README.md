@@ -91,9 +91,9 @@ cover-agent \
 
 You can use the example projects within this repository to run this code as a test.
 
-Run the following command from the root of this repository to add tests to the python fastapi example:
+Run the following command from the root of this repository to add tests to the **python fastapi** example:
 ```shell
-cover-agent \
+poetry run cover-agent \
   --source-file-path "templated_tests/python_fastapi/app.py" \
   --test-file-path "templated_tests/python_fastapi/test_app.py" \
   --code-coverage-report-path "templated_tests/python_fastapi/coverage.xml" \
@@ -104,9 +104,15 @@ cover-agent \
   --max-iterations 10
 ```
 
-For an example using Go `cd` into `templated_tests/go_webservice`, set up the project following the `README.md` and then run the following command:
+For an example using **go** `cd` into `templated_tests/go_webservice`, set up the project following the `README.md`.
+To work with coverage reporting, you need to install `gocov` and `gocov-xml`. Run the following commands to install these tools:
 ```shell
-cover-agent \
+go install github.com/axw/gocov/gocov@v1.1.0
+go install github.com/AlekSi/gocov-xml@v1.1.0
+```
+and then run the following command:
+```shell
+poetry run cover-agent \
   --source-file-path "app.go" \
   --test-file-path "app_test.go" \
   --code-coverage-report-path "coverage.xml" \

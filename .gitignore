@@ -1,3 +1,9 @@
+# MacOS system files
+.DS_Store
+
+# VSCode settings directory
+.vscode
+
 # Generated reports
 .coverage
 coverage.xml
