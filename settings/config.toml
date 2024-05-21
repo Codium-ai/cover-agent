@@ -1,0 +1,10 @@
+#[config]
+#model ="gpt-4o" #
+#model="anthropic/claude-3-opus-20240229" # fill [anthropic] section with your key
+
+#[openai]
+#api_key = ...
+
+#[anthropic]
+#KEY = ....
+

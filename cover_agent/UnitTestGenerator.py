@@ -5,7 +5,7 @@ from cover_agent.Runner import Runner
 from cover_agent.CoverageProcessor import CoverageProcessor
 from cover_agent.CustomLogger import CustomLogger
 from cover_agent.PromptBuilder import PromptBuilder
-from cover_agent.AICaller import AICaller
+from cover_agent.LiteLLMAICaller import LiteLLMAICaller as AICaller
 from cover_agent.FilePreprocessor import FilePreprocessor
 
 

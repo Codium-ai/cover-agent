@@ -4,6 +4,7 @@ from cover_agent.CustomLogger import CustomLogger
 from cover_agent.ReportGenerator import ReportGenerator
 from cover_agent.UnitTestGenerator import UnitTestGenerator
 from cover_agent.version import __version__
+from settings.config_loader import get_settings
 
 
 def parse_args():
@@ -140,8 +141,12 @@ def main():
             logger.info(f"Desired Coverage: {test_gen.desired_coverage}%")
 
             # Generate tests by making a call to the LLM
+            if get_settings().get("config.model", None):
+                model = get_settings().get("config.model")
+            else:
+                model = args.openai_model
             generated_tests = test_gen.generate_tests(
-                LLM_model=args.openai_model, max_tokens=4096
+                LLM_model=model, max_tokens=4096
             )
 
             # Write test_gen.prompt to a debug markdown file
