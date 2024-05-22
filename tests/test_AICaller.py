@@ -29,7 +29,7 @@ class TestAICaller:
     def test_initialization_with_api_key_env(self, mock_openai, api_key):
         # Test successful initialization with OPENAI_API_KEY set
         AICaller(model="test-model")
-        mock_openai.assert_called_with(api_key="fake_api_key")
+        mock_openai.assert_called_with(base_url="https://api.openai.com/v1", api_key="fake_api_key")
     
     def test_initialization_with_api_key_and_base_url_env(self, mock_openai, monkeypatch, api_key):
         # Mock the base URL for this specific test

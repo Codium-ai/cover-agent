@@ -29,17 +29,19 @@ class AICaller:
         """
             Create an OpenAI client with the base URL and API key
         """
-        return OpenAI(base_url=self.base_url, api_key=self.api_key) if self.base_url else OpenAI(api_key=self.api_key)
+        return OpenAI(base_url=self.base_url or "https://api.openai.com/v1", api_key=self.api_key)
     
     def _get_encoder(self):
         """
             Initialize the encoding for the model
         """
         try:
-            # Use the appropriate encoding based on the model
-            if(self.model == "gpt-4o"):
-                return tiktoken.get_encoding("o200k_base")
-            return tiktoken.get_encoding("cl100k_base")
+            model_encoding_map = {
+               "gpt-4o": "o200k_base",
+               "default": "cl100k_base"
+            }
+            encoding = model_encoding_map.get(self.model, model_encoding_map["default"])
+            return tiktoken.get_encoding(encoding)
         except Exception as e:
             raise ValueError(f"Failed to get encoding: {e}")
 
