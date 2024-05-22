@@ -71,6 +71,11 @@ def parse_args():
         help="Which LLM model to use. Default: %(default)s.",
     )
     parser.add_argument(
+        "--api-base",
+        default="http://localhost:11434",
+        help="The API url to use for Ollama or Hugging Face. Default: %(default)s.",
+    )
+    parser.add_argument(
         "--prompt-only",
         action="store_true",
         help="Generate the prompt only (i.e. do not run the test or call to the LLM). Default: False.",

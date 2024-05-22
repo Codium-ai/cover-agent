@@ -160,9 +160,9 @@ class UnitTestGenerator:
 
         return prompt.build_prompt()
 
-    def generate_tests(self, LLM_model="gpt-4o", max_tokens=4096, dry_run=False):
+    def generate_tests(self, LLM_model="gpt-4o", API_base="http://localhost:11434", max_tokens=4096, dry_run=False):
         # Call AICaller to generate the tests
-        ai_caller = AICaller(LLM_model)
+        ai_caller = AICaller(LLM_model, API_base)
 
         self.prompt = self.build_prompt()
 

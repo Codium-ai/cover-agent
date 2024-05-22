@@ -5,14 +5,14 @@ from cover_agent.AICaller import AICaller
 class TestAICaller:
     @pytest.fixture
     def ai_caller(self):
-        return AICaller("test-model")
+        return AICaller("test-model", "test-api")
 
     @patch('cover_agent.AICaller.AICaller.call_model')
     def test_call_model_simplified(self, mock_call_model):
         # Setup the mock to return a predefined response
         mock_call_model.return_value = ("Hello world!", 2, 10)
 
-        ai_caller = AICaller("test-model")
+        ai_caller = AICaller("test-model", "test-api")
         # Explicitly provide the default value of max_tokens
         response, prompt_tokens, response_tokens = ai_caller.call_model("Hello, world!", max_tokens=4096)
 

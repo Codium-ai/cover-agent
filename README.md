@@ -165,6 +165,19 @@ cover-agent \
   --model "vertex_ai/gemini-pro"
 ```
 
+If a `ollama/x` or `huggingface/x` model is desired, the below example can be used to set custom API urls.
+```shell
+cover-agent \
+  ...
+  --model "ollama/llama3" \
+  --api-base "http://localhost:11434"
+
+cover-agent \
+  ...
+  --model "huggingface/WizardLM/WizardCoder-Python-34B-V1.0" \
+  --api-base "https://my-endpoint.huggingface.cloud"
+```
+
 
 ## Development
 This section discusses the development of this project.
