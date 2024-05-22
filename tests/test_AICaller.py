@@ -82,8 +82,7 @@ class TestAICaller:
     )
     def test_should_get_right_encoding_based_on_model(self, mock_openai, api_key, model, expected_encoding, encoding_mock):
         # Test that the correct encoding is retrieved based on the model
-        ai_caller = AICaller(model=model)
-        ai_caller._get_encoder()
+        _ai_caller = AICaller(model=model)
         encoding_mock.assert_called_with(expected_encoding)
 
     

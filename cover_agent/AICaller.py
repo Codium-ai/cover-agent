@@ -23,7 +23,7 @@ class AICaller:
 
         self.model = model
         self.openai_client = self._create_client()
-        self.encoding = self._get_encoder()
+        self.encoding = self._get_encoding()
         
     def _create_client(self):
         """
@@ -31,7 +31,7 @@ class AICaller:
         """
         return OpenAI(base_url=self.base_url or "https://api.openai.com/v1", api_key=self.api_key)
     
-    def _get_encoder(self):
+    def _get_encoding(self):
         """
             Initialize the encoding for the model
         """
