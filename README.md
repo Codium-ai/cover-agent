@@ -52,6 +52,8 @@ This tool is part of a broader suite of utilities designed to automate the creat
 Before you begin, make sure you have the following:
 - `OPENAI_API_KEY` set in your environment variables, which is required for calling the OpenAI API.
 
+Optionally, you can also  `OPENAI_API_BASE_URL` can be set in your environment variables.
+
 If running directly from the repository you will also need:
 - Python installed on your system.
 - Poetry installed for managing Python package dependencies. Installation instructions for Poetry can be found at [https://python-poetry.org/docs/](https://python-poetry.org/docs/).
