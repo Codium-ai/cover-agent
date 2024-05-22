@@ -133,7 +133,7 @@ poetry run cover-agent \
   --coverage-type "cobertura" \
   --desired-coverage 70 \
   --max-iterations 1 \
-  --openai-model "gpt-4o"
+  --model "gpt-4o"
 ```
 
 Note: If you are using Poetry then use the `poetry run cover-agent` command instead of the `cover-agent` run command.
@@ -149,6 +149,22 @@ A few debug files will be outputted locally within the repository (that are part
   * `stderr`
   * `stdout`
   * Generated test
+
+### Using other LLMs
+This project uses LiteLLM to communicate with OpenAI and other hosted LLMs (supporting 100+ LLMs to date). To use a different model other than the OpenAI default you'll need to:
+1. Export any environment variables needed by the supported LLM [following the LiteLLM instructions](https://litellm.vercel.app/docs/proxy/quick_start#supported-llms).
+2. Call the name of the model using the `--model` option when calling Cover Agent.
+
+For example (as found in the [LiteLLM Quick Start guide](https://litellm.vercel.app/docs/proxy/quick_start#supported-llms)):
+```shell
+export VERTEX_PROJECT="hardy-project"
+export VERTEX_LOCATION="us-west"
+
+cover-agent \
+  ...
+  --model "vertex_ai/gemini-pro"
+```
+
 
 ## Development
 This section discusses the development of this project.

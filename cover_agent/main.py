@@ -66,9 +66,9 @@ def parse_args():
         help="Any additional instructions you wish to append at the end of the prompt. Default: %(default)s.",
     )
     parser.add_argument(
-        "--openai-model",
+        "--model",
         default="gpt-4o",
-        help="Which OpenAI LLM model to use. Default: %(default)s.",
+        help="Which LLM model to use. Default: %(default)s.",
     )
     parser.add_argument(
         "--prompt-only",
@@ -141,7 +141,7 @@ def main():
 
             # Generate tests by making a call to the LLM
             generated_tests = test_gen.generate_tests(
-                LLM_model=args.openai_model, max_tokens=4096
+                LLM_model=args.model, max_tokens=4096
             )
 
             # Write test_gen.prompt to a debug markdown file

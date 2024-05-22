@@ -58,11 +58,33 @@ jobs:
           pythonLocation: /opt/hostedtoolcache/Python/3.12.2/x64
           LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.2/x64/lib
 
+  package-test:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies using Poetry
+        run: poetry install
+      - name: Build, Install and Test Package from Different Location
+        run: |
+          poetry build
+          pip install dist/*.whl
+          cd /tmp
+          cover-agent --help        
+
   build:
     needs: test
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+#        os: [ubuntu-latest, windows-latest, macos-latest]
+         os: [ ubuntu-latest, macos-latest ]
+
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -77,6 +99,13 @@ jobs:
     - name: Build Executable
       run: |
         poetry run pyinstaller --add-data "cover_agent/prompt_template.md:." --add-data "cover_agent/version.txt:." --hidden-import=tiktoken_ext.openai_public --hidden-import=tiktoken_ext --onefile --name cover-agent-${{ matrix.os }} cover_agent/main.py
+    - name: Test Executable
+      run: |
+        if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          ./dist/cover-agent-${{ matrix.os }}.exe --help
+        else
+          ./dist/cover-agent-${{ matrix.os }} --help
+        fi
     - name: Upload Executable
       uses: actions/upload-artifact@v2
       with:
@@ -95,7 +124,7 @@ jobs:
         path: dist
     - name: Extract version
       run: |
-        echo "VERSION=$(cat cover_agent/version.txt)" >> $GITHUB_ENV  
+        echo "VERSION=$(cat cover_agent/version.txt)" >> $GITHUB_ENV
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
