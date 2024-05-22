@@ -98,13 +98,14 @@ jobs:
     - name: Build Executable
       run: |
         poetry run pyinstaller --add-data "cover_agent/prompt_template.md:." --add-data "cover_agent/version.txt:." --hidden-import=tiktoken_ext.openai_public --hidden-import=tiktoken_ext --onefile --name cover-agent-${{ matrix.os }} cover_agent/main.py
-    - name: Test Executable
-      run: |
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          ./dist/cover-agent-${{ matrix.os }}.exe --help
-        else
-          ./dist/cover-agent-${{ matrix.os }} --help
-        fi
+    - name: Test Executable (Windows)
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: .\dist\cover-agent-${{ matrix.os }}.exe --help
+      shell: pwsh
+    - name: Test Executable (Unix)
+      if: ${{ matrix.os != 'windows-latest' }}
+      run: ./dist/cover-agent-${{ matrix.os }} --help
+      shell: bash
     - name: Upload Executable
       uses: actions/upload-artifact@v2
       with:
