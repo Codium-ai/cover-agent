@@ -166,16 +166,16 @@ class UnitTestGenerator:
 
         self.prompt = self.build_prompt()
 
-        self.logger.info(
-            f"Token count for LLM model {LLM_model}: {ai_caller.count_tokens(self.prompt)}"
-        )
         if dry_run:
             # Provide a canned response. Used for testing.
             response = "```def test_something():\n    pass```\n```def test_something_else():\n    pass```\n```def test_something_different():\n    pass```"
         else:
             # Tests should return with triple backticks in between tests.
             # We want to remove them and split up the tests into a list of tests
-            response = ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+            response, prompt_token_count, response_token_count = ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+        self.logger.info(
+            f"Total token used count for LLM model {LLM_model}: {prompt_token_count + response_token_count}"
+        )
 
         # Split the response into a list of tests and strip off the trailing whitespaces
         # (as we sometimes anticipate indentations in the returned code from the LLM)
