@@ -82,8 +82,7 @@ jobs:
     needs: test
     strategy:
       matrix:
-#        os: [ubuntu-latest, windows-latest, macos-latest]
-         os: [ ubuntu-latest, macos-latest ]
+       os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -91,7 +90,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.12'
     - name: Install Dependencies
       run: |
         pip install poetry
