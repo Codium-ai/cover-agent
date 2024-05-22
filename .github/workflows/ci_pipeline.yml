@@ -58,6 +58,26 @@ jobs:
           pythonLocation: /opt/hostedtoolcache/Python/3.12.2/x64
           LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.2/x64/lib
 
+  package-test:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install dependencies using Poetry
+        run: poetry install
+      - name: Build, Install and Test Package from Different Location
+        run: |
+          poetry build
+          pip install dist/*.whl
+          cd /tmp
+          cover-agent --help        
+
   build:
     needs: test
     strategy:
