@@ -813,26 +813,30 @@ name = "litellm"
 version = "1.37.20"
 description = "Library to easily interface with LLM API providers"
 optional = false
-python-versions = "!=2.7.*,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,!=3.7.*,>=3.8"
-files = [
-    {file = "litellm-1.37.20-py3-none-any.whl", hash = "sha256:aa1e290fbdffe3e1fe32da2bbb95dfda2076cc85af7aa6a1fff53e296d287f03"},
-    {file = "litellm-1.37.20.tar.gz", hash = "sha256:1addb206df6e824ef15d1697d36d3e9943ff5dd3db9681d8e7a526e31fb85744"},
-]
+python-versions = "*"
+files = []
+develop = false
 
 [package.dependencies]
 aiohttp = "*"
 click = "*"
 importlib-metadata = ">=6.8.0"
-jinja2 = ">=3.1.2,<4.0.0"
+jinja2 = "^3.1.2"
 openai = ">=1.27.0"
 python-dotenv = ">=0.2.0"
-requests = ">=2.31.0,<3.0.0"
+requests = "^2.31.0"
 tiktoken = ">=0.4.0"
 tokenizers = "*"
 
 [package.extras]
 extra-proxy = ["azure-identity (>=1.15.0,<2.0.0)", "azure-keyvault-secrets (>=4.8.0,<5.0.0)", "google-cloud-kms (>=2.21.3,<3.0.0)", "prisma (==0.11.0)", "resend (>=0.8.0,<0.9.0)"]
 proxy = ["PyJWT (>=2.8.0,<3.0.0)", "apscheduler (>=3.10.4,<4.0.0)", "backoff", "cryptography (>=42.0.5,<43.0.0)", "fastapi (>=0.111.0,<0.112.0)", "fastapi-sso (>=0.10.0,<0.11.0)", "gunicorn (>=22.0.0,<23.0.0)", "orjson (>=3.9.7,<4.0.0)", "python-multipart (>=0.0.9,<0.0.10)", "pyyaml (>=6.0.1,<7.0.0)", "rq", "uvicorn (>=0.22.0,<0.23.0)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/mrT23/litellm.git"
+reference = "HEAD"
+resolved_reference = "61556f0c9803674339554c8252001a67bc112768"
 
 [[package]]
 name = "macholib"
@@ -1980,4 +1984,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.13"
-content-hash = "341fbc3432d961237e6788eb79dcd4e2bb7a15ec2cc9e34be89a4319acf59953"
+content-hash = "c280b644bbb397d1bfd934f3e85de1e9033fecfac7e220b001dcf46bcaf83b7b"
