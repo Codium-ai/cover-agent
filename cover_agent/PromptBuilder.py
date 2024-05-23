@@ -31,7 +31,6 @@ class PromptBuilder:
 
     def __init__(
         self,
-        prompt_template_path: str,
         source_file_path: str,
         test_file_path: str,
         code_coverage_report: str,
@@ -65,7 +64,6 @@ class PromptBuilder:
         """
         self.source_file_name = source_file_path.split("/")[-1]
         self.test_file_name = test_file_path.split("/")[-1]
-        self.prompt_template = self._read_file(prompt_template_path)
         self.source_file = self._read_file(source_file_path)
         self.test_file = self._read_file(test_file_path)
         self.code_coverage_report = code_coverage_report
@@ -108,7 +106,7 @@ class PromptBuilder:
         except Exception as e:
             return f"Error reading {file_path}: {e}"
 
-    def build_prompt(self):
+    def build_prompt(self) -> dict:
         """
         Replaces placeholders with the actual content of files read during initialization, and returns the formatted prompt.
 

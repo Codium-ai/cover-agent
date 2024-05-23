@@ -13,14 +13,15 @@ class SingletonSettings:
         return cls._instance
 
     def __init__(self):
-        current_dir = dirname(abspath(__file__))
-        self.settings = Dynaconf(
-            envvar_prefix=False,
-            merge_enabled=True,
-            settings_files=[join(current_dir, f) for f in [
-                "test_generation_prompt.toml",
-                "language_extensions.toml", ]]
-        )
+        if not hasattr(self, "settings"):
+            current_dir = dirname(abspath(__file__))
+            self.settings = Dynaconf(
+                envvar_prefix=False,
+                merge_enabled=True,
+                settings_files=[join(current_dir, f) for f in [
+                    "test_generation_prompt.toml",
+                    "language_extensions.toml", ]]
+            )
 
 
 def get_settings():
