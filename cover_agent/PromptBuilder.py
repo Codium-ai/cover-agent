@@ -1,3 +1,5 @@
+import logging
+
 from jinja2 import Environment, StrictUndefined
 from cover_agent.settings.config_loader import get_settings
 
@@ -132,16 +134,20 @@ class PromptBuilder:
             "source_file_numbered": self.source_file_numbered,
             "source_file": self.source_file,
             "test_file": self.test_file,
-            "code_coverage_report":self.code_coverage_report,
-            "additional_includes_section":self.included_files,
-            "failed_tests_section":self.failed_test_runs,
-            "additional_instructions_text":self.additional_instructions,
+            "code_coverage_report": self.code_coverage_report,
+            "additional_includes_section": self.included_files,
+            "failed_tests_section": self.failed_test_runs,
+            "additional_instructions_text": self.additional_instructions,
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
         }
         environment = Environment(undefined=StrictUndefined)
-        system_prompt = environment.from_string(get_settings().test_generation_prompt.system).render(variables)
-        user_prompt = environment.from_string(get_settings().test_generation_prompt.user).render(variables)
+        try:
+            system_prompt = environment.from_string(get_settings().test_generation_prompt.system).render(variables)
+            user_prompt = environment.from_string(get_settings().test_generation_prompt.user).render(variables)
+        except Exception as e:
+            logging.error(f"Error rendering prompt: {e}")
+            return {"system": "", "user": ""}
 
         # print(f"#### user_prompt:\n\n{user_prompt}")
         return {"system": system_prompt, "user": user_prompt}
