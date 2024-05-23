@@ -128,7 +128,6 @@ def main():
 
     # Instantiate and configure UnitTestGenerator
     test_gen = UnitTestGenerator(
-        prompt_template_path=markdown_path,
         source_file_path=args.source_file_path,
         test_file_path=args.test_file_output_path,
         code_coverage_report_path=args.code_coverage_report_path,
