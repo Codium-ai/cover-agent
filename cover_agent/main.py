@@ -118,6 +118,7 @@ def main():
         coverage_type=args.coverage_type,
         desired_coverage=args.desired_coverage,
         additional_instructions=args.additional_instructions,
+        llm_model=args.model
     )
 
     # Write test_gen.prompt to a debug markdown file
@@ -140,9 +141,7 @@ def main():
             logger.info(f"Desired Coverage: {test_gen.desired_coverage}%")
 
             # Generate tests by making a call to the LLM
-            generated_tests = test_gen.generate_tests(
-                LLM_model=args.model, max_tokens=4096
-            )
+            generated_tests = test_gen.generate_tests(max_tokens=4096)
 
             # Write test_gen.prompt to a debug markdown file
             write_prompt_to_file(GENERATED_PROMPT_NAME, test_gen.prompt)

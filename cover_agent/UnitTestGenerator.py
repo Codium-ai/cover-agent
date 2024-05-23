@@ -17,6 +17,7 @@ class UnitTestGenerator:
         test_file_path: str,
         code_coverage_report_path: str,
         test_command: str,
+        llm_model: str,
         test_command_dir: str = os.getcwd(),
         included_files: list = None,
         coverage_type="cobertura",
@@ -51,6 +52,9 @@ class UnitTestGenerator:
         self.coverage_type = coverage_type
         self.desired_coverage = desired_coverage
         self.additional_instructions = additional_instructions
+
+        # Objects to instantiate
+        self.ai_caller = AICaller(llm_model)
 
         # Get the logger instance from CustomLogger
         self.logger = CustomLogger.get_logger(__name__)
@@ -160,10 +164,7 @@ class UnitTestGenerator:
 
         return prompt.build_prompt()
 
-    def generate_tests(self, LLM_model="gpt-4o", max_tokens=4096, dry_run=False):
-        # Call AICaller to generate the tests
-        ai_caller = AICaller(LLM_model)
-
+    def generate_tests(self, max_tokens=4096, dry_run=False):
         self.prompt = self.build_prompt()
 
         if dry_run:
@@ -172,9 +173,9 @@ class UnitTestGenerator:
         else:
             # Tests should return with triple backticks in between tests.
             # We want to remove them and split up the tests into a list of tests
-            response, prompt_token_count, response_token_count = ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+            response, prompt_token_count, response_token_count = self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
         self.logger.info(
-            f"Total token used count for LLM model {LLM_model}: {prompt_token_count + response_token_count}"
+            f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}"
         )
 
         # Split the response into a list of tests and strip off the trailing whitespaces
