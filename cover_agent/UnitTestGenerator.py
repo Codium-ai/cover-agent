@@ -7,12 +7,13 @@ from cover_agent.CustomLogger import CustomLogger
 from cover_agent.PromptBuilder import PromptBuilder
 from cover_agent.AICaller import AICaller
 from cover_agent.FilePreprocessor import FilePreprocessor
+from cover_agent.utils import load_yaml
+from cover_agent.settings.config_loader import get_settings
 
 
 class UnitTestGenerator:
     def __init__(
         self,
-        prompt_template_path: str,
         source_file_path: str,
         test_file_path: str,
         code_coverage_report_path: str,
@@ -29,7 +30,6 @@ class UnitTestGenerator:
         Initialize the UnitTestGenerator class with the provided parameters.
 
         Parameters:
-            prompt_template_path (str): The path to the prompt template file.
             source_file_path (str): The path to the source file being tested.
             test_file_path (str): The path to the test file where generated tests will be written.
             code_coverage_report_path (str): The path to the code coverage report file.
@@ -46,7 +46,6 @@ class UnitTestGenerator:
             None
         """
         # Class variables
-        self.prompt_template_path = prompt_template_path
         self.source_file_path = source_file_path
         self.test_file_path = test_file_path
         self.code_coverage_report_path = code_coverage_report_path
@@ -56,6 +55,7 @@ class UnitTestGenerator:
         self.coverage_type = coverage_type
         self.desired_coverage = desired_coverage
         self.additional_instructions = additional_instructions
+        self.language = self.get_code_language(source_file_path)
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
@@ -71,6 +71,41 @@ class UnitTestGenerator:
         self.run_coverage()
         self.prompt = self.build_prompt()
 
+    def get_code_language(self, source_file_path):
+        """
+        Get the programming language based on the file extension of the provided source file path.
+
+        Parameters:
+            source_file_path (str): The path to the source file for which the programming language needs to be determined.
+
+        Returns:
+            str: The programming language inferred from the file extension of the provided source file path. Defaults to 'unknown' if the language cannot be determined.
+        """
+        # Retrieve the mapping of languages to their file extensions from settings
+        language_extension_map_org = get_settings().language_extension_map_org
+
+        # Initialize a dictionary to map file extensions to their corresponding languages
+        extension_to_language = {}
+
+        # Populate the extension_to_language dictionary
+        for language, extensions in language_extension_map_org.items():
+            for ext in extensions:
+                extension_to_language[ext] = language
+
+        # Extract the file extension from the source file path
+        extension_s = "." + source_file_path.rsplit(".")[-1]
+
+        # Initialize the default language name as 'unknown'
+        language_name = "unknown"
+
+        # Check if the extracted file extension is in the dictionary
+        if extension_s and (extension_s in extension_to_language):
+            # Set the language name based on the file extension
+            language_name = extension_to_language[extension_s]
+
+        # Return the language name in lowercase
+        return language_name.lower()
+
     def run_coverage(self):
         """
         Perform an initial build/test command to generate coverage report and get a baseline.
@@ -83,14 +118,14 @@ class UnitTestGenerator:
         """
         # Perform an initial build/test command to generate coverage report and get a baseline
         self.logger.info(
-            f'Running initial build/test command to generate coverage report: "{self.test_command}"'
+            f'Running build/test command to generate coverage report: "{self.test_command}"'
         )
         stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
             command=self.test_command, cwd=self.test_command_dir
         )
         assert (
             exit_code == 0
-        ), f"Fatal: Error running test command. Failed with exit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}"
+        ), f'Fatal: Error running test command. Are you sure the command is correct? "{self.test_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
 
         # Instantiate CoverageProcessor and process the coverage report
         coverage_processor = CoverageProcessor(
@@ -147,45 +182,90 @@ class UnitTestGenerator:
         return ""
 
     def build_prompt(self):
+        """
+        Builds a prompt using the provided information to be used for generating tests.
+
+        This method checks for the existence of failed test runs and then calls the PromptBuilder class to construct the prompt.
+        The prompt includes details such as the source file path, test file path, code coverage report, included files,
+        additional instructions, failed test runs, and the programming language being used.
+
+        Returns:
+            str: The generated prompt to be used for test generation.
+        """
         # Check for existence of failed tests:
         if not self.failed_test_runs:
             failed_test_runs_value = ""
         else:
-            failed_test_runs_value = json.dumps(self.failed_test_runs).replace(
-                "\\n", "\n"
-            )
+            failed_test_runs_value = ""
+            for failed_test in self.failed_test_runs:
+                failed_test_runs_value += f"```\n{failed_test.rstrip()}\n```\n\n"
+        self.failed_test_runs = []  # Reset the failed test runs. we don't want a list which grows indefinitely, and will take all the prompt.
 
         # Call PromptBuilder to build the prompt
         prompt = PromptBuilder(
-            prompt_template_path=self.prompt_template_path,
             source_file_path=self.source_file_path,
             test_file_path=self.test_file_path,
             code_coverage_report=self.code_coverage_report,
             included_files=self.included_files,
             additional_instructions=self.additional_instructions,
             failed_test_runs=failed_test_runs_value,
+            language=self.language,
         )
 
         return prompt.build_prompt()
 
     def generate_tests(self, max_tokens=4096, dry_run=False):
+        """
+        Generate test cases using the AI model based on the provided prompt.
+
+        This method generates test cases by calling the AI model with the constructed prompt.
+        If 'dry_run' is set to True, placeholder test cases are returned.
+        Otherwise, the AI model is invoked with the prompt to generate actual test cases.
+        The method logs the total token count used by the language model.
+
+        Parameters:
+            max_tokens (int, optional): The maximum number of tokens to use for generating tests. Defaults to 4096.
+            dry_run (bool, optional): If True, placeholder test cases are returned without invoking the AI model. Defaults to False.
+
+        Returns:
+            list: A list of generated test cases as strings.
+            If an error occurs during test generation, an empty list is returned, and the error is recorded in the 'failed_test_runs' attribute.
+        """
         self.prompt = self.build_prompt()
 
         if dry_run:
-            # Provide a canned response. Used for testing.
             response = "```def test_something():\n    pass```\n```def test_something_else():\n    pass```\n```def test_something_different():\n    pass```"
         else:
-            # Tests should return with triple backticks in between tests.
-            # We want to remove them and split up the tests into a list of tests
-            response, prompt_token_count, response_token_count = self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+            response, prompt_token_count, response_token_count = (
+                self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+            )
         self.logger.info(
             f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}"
         )
 
-        # Split the response into a list of tests and strip off the trailing whitespaces
-        # (as we sometimes anticipate indentations in the returned code from the LLM)
-        tests = response.split("```")
-        return [test.rstrip() for test in tests if test.rstrip()]
+        try:
+            tests_dict = load_yaml(
+                response,
+                keys_fix_yaml=["test_tags", "test_code", "test_name", "test_behavior"],
+            )
+            if tests_dict is None:
+                raise ValueError("Failed to parse tests from YAML")
+            tests_list = [t["test_code"].rstrip() for t in tests_dict["tests"]]
+        except Exception as e:
+            self.logger.error(f"Error during test generation: {e}")
+            # Record the error as a failed test attempt
+            fail_details = {
+                "status": "FAIL",
+                "reason": f"Parsing error: {e}",
+                "exit_code": None,  # No exit code as it's a parsing issue
+                "stderr": str(e),
+                "stdout": "",  # No output expected from a parsing error
+                "test": response,  # Use the response that led to the error
+            }
+            self.failed_test_runs.append(fail_details)
+            tests_list = []  # Return an empty list or handle accordingly
+
+        return tests_list
 
     def validate_test(self, generated_test: str):
         """
@@ -202,7 +282,11 @@ class UnitTestGenerator:
                 stdout, stderr, exit code, and the test itself.
         """
         # Step 0: Run the test through the preprocessor rule set
-        processed_test = self.preprocessor.process_file(generated_test)
+        # processed_test = self.preprocessor.process_file(generated_test)
+
+        # Step 0: no pre-process.
+        # We asked the model that each generated test should be a self-contained independent test
+        processed_test = generated_test.strip('\n')
 
         # Step 1: Append the generated test to the test file and save the original content
         with open(self.test_file_path, "r+") as test_file:
@@ -227,7 +311,7 @@ class UnitTestGenerator:
             # Test failed, roll back the test file to its original content
             with open(self.test_file_path, "w") as test_file:
                 test_file.write(original_content)
-            self.logger.error(f"Test failed. Rolling back")
+            self.logger.info(f"Skipping a generated test that failed")
             fail_details = {
                 "status": "FAIL",
                 "reason": "Test failed",

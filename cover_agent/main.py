@@ -1,5 +1,6 @@
 import argparse
 import os
+import shutil
 from cover_agent.CustomLogger import CustomLogger
 from cover_agent.ReportGenerator import ReportGenerator
 from cover_agent.UnitTestGenerator import UnitTestGenerator
@@ -15,7 +16,14 @@ def parse_args():
         "--source-file-path", required=True, help="Path to the source file."
     )
     parser.add_argument(
-        "--test-file-path", required=True, help="Path to the output test file."
+        "--test-file-path", required=True, help="Path to the input test file."
+    )
+    parser.add_argument(
+        "--test-file-output-path",
+        required=False,
+        help="Path to the output test file.",
+        default="",
+        type=str,
     )
     parser.add_argument(
         "--code-coverage-report-path",
@@ -84,9 +92,12 @@ def parse_args():
     return parser.parse_args()
 
 
-def write_prompt_to_file(prompt_file_name, prompt):
-    with open(prompt_file_name, "w") as test_file:
-        test_file.write(prompt)
+def write_prompt_to_file(prompt_file_name, prompt: dict):
+    with open(prompt_file_name, "w") as prompt_file:
+        user_prompt = prompt["user"]
+        system_prompt = prompt["system"]
+        prompt_file.write(f"User Prompt:\n{user_prompt}\n\n")
+        prompt_file.write(f"System Prompt:\n{system_prompt}\n\n")
 
 
 def main():
@@ -97,12 +108,6 @@ def main():
     args = parse_args()
     logger = CustomLogger.get_logger(__name__)
 
-    # Calculate the absolute path where the script expects the markdown file
-    markdown_path = os.path.join(os.path.dirname(__file__), "prompt_template.md")
-    # Check if the file exists at the expected path
-    if not os.path.exists(markdown_path):
-        raise FileNotFoundError(f"Expected markdown file not found at {markdown_path}")
-
     # Validate all file paths
     # Check if the source file exists
     if not os.path.isfile(args.source_file_path):
@@ -111,11 +116,19 @@ def main():
     if not os.path.isfile(args.test_file_path):
         raise FileNotFoundError(f"Test file not found at {args.test_file_path}")
 
+    # duplicate test_file_path to test_file_output_path
+    if args.test_file_output_path != "":
+        shutil.copy(args.test_file_path, args.test_file_output_path)
+    else:
+        args.test_file_output_path = args.test_file_path
+        logger.info(
+            f"Output test file path not provided. Using input test file path as output: {args.test_file_output_path}"
+        )
+
     # Instantiate and configure UnitTestGenerator
     test_gen = UnitTestGenerator(
-        prompt_template_path=markdown_path,
         source_file_path=args.source_file_path,
-        test_file_path=args.test_file_path,
+        test_file_path=args.test_file_output_path,
         code_coverage_report_path=args.code_coverage_report_path,
         test_command=args.test_command,
         test_command_dir=args.test_command_dir,
@@ -124,7 +137,7 @@ def main():
         desired_coverage=args.desired_coverage,
         additional_instructions=args.additional_instructions,
         llm_model=args.model,
-        api_base=args.api_base
+        api_base=args.api_base,
     )
 
     # Write test_gen.prompt to a debug markdown file
@@ -159,6 +172,10 @@ def main():
 
             # Increment the iteration counter
             iteration_count += 1
+
+            # updating the coverage after each iteration (self.code_coverage_report)
+            if test_gen.current_coverage < (test_gen.desired_coverage / 100):
+                test_gen.run_coverage()
 
         if iteration_count == args.max_iterations:
             logger.info(
