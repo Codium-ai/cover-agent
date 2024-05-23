@@ -1,6 +1,7 @@
 from jinja2 import Environment, StrictUndefined
-
 from settings.config_loader import get_settings
+
+MAX_TESTS_PER_RUN = 5
 
 # Markdown text used as conditional appends
 ADDITIONAL_INCLUDES_TEXT = """
@@ -37,6 +38,7 @@ class PromptBuilder:
         included_files: str = "",
         additional_instructions: str = "",
         failed_test_runs: str = "",
+        language: str = "python",
     ):
         """
         The `PromptBuilder` class is responsible for building a formatted prompt string by replacing placeholders with the actual content of files read during initialization. It takes in various paths and settings as parameters and provides a method to generate the prompt.
@@ -49,6 +51,7 @@ class PromptBuilder:
             included_files (str): The formatted additional includes section.
             additional_instructions (str): The formatted additional instructions section.
             failed_test_runs (str): The formatted failed test runs section.
+            language (str): The programming language of the source and test files.
 
         Methods:
             __init__(self, prompt_template_path: str, source_file_path: str, test_file_path: str, code_coverage_report: str, included_files: str = "", additional_instructions: str = "", failed_test_runs: str = "")
@@ -60,10 +63,15 @@ class PromptBuilder:
             build_prompt(self)
                 Replaces placeholders with the actual content of files read during initialization and returns the formatted prompt string.
         """
+        self.source_file_name = source_file_path.split("/")[-1]
+        self.test_file_name = test_file_path.split("/")[-1]
         self.prompt_template = self._read_file(prompt_template_path)
         self.source_file = self._read_file(source_file_path)
         self.test_file = self._read_file(test_file_path)
         self.code_coverage_report = code_coverage_report
+        self.language = language
+        # add line numbers to each line in 'source_file'. start from 1
+        self.source_file_numbered = "\n".join([f"{i+1} {line}" for i, line in enumerate(self.source_file.split("\n"))])
 
         # Conditionally fill in optional sections
         self.included_files = (
@@ -121,15 +129,22 @@ class PromptBuilder:
         # )
 
         variables = {
+            "source_file_name": self.source_file_name,
+            "test_file_name": self.test_file_name,
+            "source_file_numbered": self.source_file_numbered,
             "source_file": self.source_file,
             "test_file": self.test_file,
             "code_coverage_report":self.code_coverage_report,
             "additional_includes_section":self.included_files,
             "failed_tests_section":self.failed_test_runs,
             "additional_instructions_text":self.additional_instructions,
+            "language": self.language,
+            "max_tests": MAX_TESTS_PER_RUN,
         }
         environment = Environment(undefined=StrictUndefined)
         system_prompt = environment.from_string(get_settings().test_generation_prompt.system).render(variables)
         user_prompt = environment.from_string(get_settings().test_generation_prompt.user).render(variables)
 
+        # print(f"#### user_prompt:\n\n{user_prompt}")
         return {"system": system_prompt, "user": user_prompt}
+

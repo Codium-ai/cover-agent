@@ -3,7 +3,8 @@ from dynaconf import Dynaconf
 global_settings = Dynaconf(
     envvar_prefix=False,
     merge_enabled=True,
-settings_files=["settings/test_generation_prompt.toml"]
+settings_files=["settings/test_generation_prompt.toml",
+                "language_extensions.toml",]
 )
 
 def get_settings():

@@ -7,6 +7,8 @@ from cover_agent.CustomLogger import CustomLogger
 from cover_agent.PromptBuilder import PromptBuilder
 from cover_agent.AICaller import AICaller
 from cover_agent.FilePreprocessor import FilePreprocessor
+from cover_agent.utils import load_yaml
+from settings.config_loader import get_settings
 
 
 class UnitTestGenerator:
@@ -56,6 +58,7 @@ class UnitTestGenerator:
         self.coverage_type = coverage_type
         self.desired_coverage = desired_coverage
         self.additional_instructions = additional_instructions
+        self.language = self.get_code_language(source_file_path)
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
@@ -70,6 +73,21 @@ class UnitTestGenerator:
         # Run coverage and build the prompt
         self.run_coverage()
         self.prompt = self.build_prompt()
+
+    def get_code_language(self, source_file_path):
+        language_extension_map_org = get_settings().language_extension_map_org
+        extension_to_language = {}
+        for language, extensions in language_extension_map_org.items():
+            for ext in extensions:
+                extension_to_language[ext] = language
+        for language, extensions in language_extension_map_org.items():
+            for ext in extensions:
+                extension_to_language[ext] = language
+        extension_s = '.' + source_file_path.rsplit('.')[-1]
+        language_name = "unknown"
+        if extension_s and (extension_s in extension_to_language):
+            language_name = extension_to_language[extension_s]
+        return language_name.lower()
 
     def run_coverage(self):
         """
@@ -164,6 +182,7 @@ class UnitTestGenerator:
             included_files=self.included_files,
             additional_instructions=self.additional_instructions,
             failed_test_runs=failed_test_runs_value,
+            language=self.language,
         )
 
         return prompt.build_prompt()
@@ -184,8 +203,14 @@ class UnitTestGenerator:
 
         # Split the response into a list of tests and strip off the trailing whitespaces
         # (as we sometimes anticipate indentations in the returned code from the LLM)
-        tests = response.split("```")
-        return [test.rstrip() for test in tests if test.rstrip()]
+        tests_dict =load_yaml(response)
+        tests_list = []
+        for t in tests_dict["tests"]:
+            tests_list.append(t['test_code'].rstrip())
+        return tests_list
+
+        # tests = response.split("```")
+        # return [test.rstrip() for test in tests if test.rstrip()]
 
     def validate_test(self, generated_test: str):
         """
