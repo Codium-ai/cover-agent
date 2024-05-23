@@ -51,6 +51,9 @@ This tool is part of a broader suite of utilities designed to automate the creat
 ### Requirements
 Before you begin, make sure you have the following:
 - `OPENAI_API_KEY` set in your environment variables, which is required for calling the OpenAI API.
+- Code Coverage tool: A Cobertura XML code coverage report is required for the tool to function correctly.
+  - For example, in Python one could use `pytest-cov`. Add the `--cov-report=xml` option when running Pytest.
+  - Note: We are actively working on adding more coverage types but please feel free to open a PR and contribute to `cover_agent/CoverageProcessor.py`
 
 If running directly from the repository you will also need:
 - Python installed on your system.
