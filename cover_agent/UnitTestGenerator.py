@@ -14,7 +14,6 @@ from settings.config_loader import get_settings
 class UnitTestGenerator:
     def __init__(
         self,
-        prompt_template_path: str,
         source_file_path: str,
         test_file_path: str,
         code_coverage_report_path: str,
@@ -31,7 +30,6 @@ class UnitTestGenerator:
         Initialize the UnitTestGenerator class with the provided parameters.
 
         Parameters:
-            prompt_template_path (str): The path to the prompt template file.
             source_file_path (str): The path to the source file being tested.
             test_file_path (str): The path to the test file where generated tests will be written.
             code_coverage_report_path (str): The path to the code coverage report file.
@@ -48,7 +46,6 @@ class UnitTestGenerator:
             None
         """
         # Class variables
-        self.prompt_template_path = prompt_template_path
         self.source_file_path = source_file_path
         self.test_file_path = test_file_path
         self.code_coverage_report_path = code_coverage_report_path
@@ -175,7 +172,6 @@ class UnitTestGenerator:
 
         # Call PromptBuilder to build the prompt
         prompt = PromptBuilder(
-            prompt_template_path=self.prompt_template_path,
             source_file_path=self.source_file_path,
             test_file_path=self.test_file_path,
             code_coverage_report=self.code_coverage_report,

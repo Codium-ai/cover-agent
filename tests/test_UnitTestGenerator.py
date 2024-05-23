@@ -33,7 +33,6 @@ class TestUnitTestGenerator:
 
         # Instantiate a UnitTestGenerator with the test parameters
         test_gen = UnitTestGenerator(
-            prompt_template_path=f"{REPO_ROOT}/cover_agent/prompt_template.md",
             source_file_path=f"{REPO_ROOT}/templated_tests/python_fastapi/app.py",
             test_file_path=TEST_FILE,
             code_coverage_report_path=f"{REPO_ROOT}/templated_tests/python_fastapi/coverage.xml",
