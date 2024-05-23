@@ -17,6 +17,8 @@ class UnitTestGenerator:
         test_file_path: str,
         code_coverage_report_path: str,
         test_command: str,
+        llm_model: str,
+        api_base: str = "",
         test_command_dir: str = os.getcwd(),
         included_files: list = None,
         coverage_type="cobertura",
@@ -24,18 +26,21 @@ class UnitTestGenerator:
         additional_instructions: str = "",
     ):
         """
-        Initialize the object with the provided paths and settings.
+        Initialize the UnitTestGenerator class with the provided parameters.
 
         Parameters:
             prompt_template_path (str): The path to the prompt template file.
-            source_file_path (str): The path to the source file.
-            test_file_path (str): The path to the test file.
-            code_coverage_report_path (str): The path to the code coverage report.
-            test_command (str): The command to run the tests.
-            test_command_dir (str): The directory to run the test command in. Defaults to the current working directory.
-            included_files (list, optional): List of included file paths. Defaults to None.
-            coverage_type (str): Type of coverage report. Defaults to "cobertura".
-            desired_coverage (int): The desired coverage percentage.
+            source_file_path (str): The path to the source file being tested.
+            test_file_path (str): The path to the test file where generated tests will be written.
+            code_coverage_report_path (str): The path to the code coverage report file.
+            test_command (str): The command to run tests.
+            llm_model (str): The language model to be used for test generation.
+            api_base (str, optional): The base API url to use in case model is set to Ollama or Hugging Face. Defaults to an empty string.
+            test_command_dir (str, optional): The directory where the test command should be executed. Defaults to the current working directory.
+            included_files (list, optional): A list of paths to included files. Defaults to None.
+            coverage_type (str, optional): The type of coverage report. Defaults to "cobertura".
+            desired_coverage (int, optional): The desired coverage percentage. Defaults to 90.
+            additional_instructions (str, optional): Additional instructions for test generation. Defaults to an empty string.
 
         Returns:
             None
@@ -51,6 +56,9 @@ class UnitTestGenerator:
         self.coverage_type = coverage_type
         self.desired_coverage = desired_coverage
         self.additional_instructions = additional_instructions
+
+        # Objects to instantiate
+        self.ai_caller = AICaller(model=llm_model, api_base=api_base)
 
         # Get the logger instance from CustomLogger
         self.logger = CustomLogger.get_logger(__name__)
@@ -160,10 +168,7 @@ class UnitTestGenerator:
 
         return prompt.build_prompt()
 
-    def generate_tests(self, LLM_model="gpt-4o", API_base="http://localhost:11434", max_tokens=4096, dry_run=False):
-        # Call AICaller to generate the tests
-        ai_caller = AICaller(LLM_model, API_base)
-
+    def generate_tests(self, max_tokens=4096, dry_run=False):
         self.prompt = self.build_prompt()
 
         if dry_run:
@@ -172,9 +177,9 @@ class UnitTestGenerator:
         else:
             # Tests should return with triple backticks in between tests.
             # We want to remove them and split up the tests into a list of tests
-            response, prompt_token_count, response_token_count = ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+            response, prompt_token_count, response_token_count = self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
         self.logger.info(
-            f"Total token used count for LLM model {LLM_model}: {prompt_token_count + response_token_count}"
+            f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}"
         )
 
         # Split the response into a list of tests and strip off the trailing whitespaces
