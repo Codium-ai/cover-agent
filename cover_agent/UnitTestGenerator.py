@@ -197,7 +197,7 @@ class UnitTestGenerator:
             f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}"
         )
 
-        tests_dict = load_yaml(response)
+        tests_dict = load_yaml(response, keys_fix_yaml=["test_tags", "test_code", "test_name", "test_behavior"])
         tests_list = []
         for t in tests_dict["tests"]:
             tests_list.append(t['test_code'].rstrip())

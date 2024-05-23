@@ -9,23 +9,24 @@ MAX_TESTS_PER_RUN = 5
 ADDITIONAL_INCLUDES_TEXT = """
 ## Additional Includes
 The following is a set of included files used as context for the source code above. This is usually included libraries needed as context to write better tests:
-```
+======
 {included_files}
-```
+======
 """
 
 ADDITIONAL_INSTRUCTIONS_TEXT = """
 ## Additional Instructions
-__Remember, DO NOT REPEAT__ previously failed tests.
+======
 {additional_instructions}
+======
 """
 
 FAILED_TESTS_TEXT = """
 ## Previous Iterations Failed Tests
 Below is a list of failed tests that you generated in previous iterations, if available. Very important - __Do not generate these same tests again__:
-```
+======
 {failed_test_runs}
-```
+======
 """
 
 
@@ -77,19 +78,19 @@ class PromptBuilder:
         self.included_files = (
             ADDITIONAL_INCLUDES_TEXT.format(included_files=included_files)
             if included_files
-            else included_files
+            else ""
         )
         self.additional_instructions = (
             ADDITIONAL_INSTRUCTIONS_TEXT.format(
                 additional_instructions=additional_instructions
             )
             if additional_instructions
-            else additional_instructions
+            else ""
         )
         self.failed_test_runs = (
             FAILED_TESTS_TEXT.format(failed_test_runs=failed_test_runs)
             if failed_test_runs
-            else failed_test_runs
+            else ""
         )
 
     def _read_file(self, file_path):

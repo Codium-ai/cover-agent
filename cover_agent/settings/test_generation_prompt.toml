@@ -5,7 +5,7 @@ system="""\
 user="""\
 ## Overview
 You are a code assistant that accepts a {{ language }} source file, and a {{ language }} test file.
-Your goal is to generate additional unit tests, to complement the existing test suite, in order to achieve 100% code coverage against the source file.
+Your goal is to generate additional unit tests to complement the existing test suite, in order to achieve 100% code coverage against the source file.
 
 Additional guidelines:
 - Carefully analyze the provided code. Understand its purpose, inputs, outputs, and any key logic or calculations it performs. Spend significant time considering all different scenarios, including boundary values, invalid inputs, extreme conditions, and concurrency issues like race conditions and deadlocks, that need to be tested.
@@ -66,7 +66,7 @@ class SingleTest(BaseModel):
 
 class NewTests(BaseModel):
     language: str = Field(description="The programming language of the source code")
-    tests: List[SingleTest] = Field(max_items={{ max_tests }}, description="A list of new tests that increase the code coverage. don't provide any new imports in your response. each test should be a single self-contained function that tests a specific behavior")
+    tests: List[SingleTest] = Field(max_items={{ max_tests }}, description="A list of new tests that increase the code coverage. Do not include any new imports or dependencies in your response. each test should be a single self-contained function that tests a specific behavior")
 =====
 
 Example output:
