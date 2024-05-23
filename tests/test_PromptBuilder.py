@@ -139,6 +139,6 @@ class TestPromptBuilder:
         builder.test_file = "Test Content"
         builder.code_coverage_report = "Coverage Report Content"
 
-        result = builder.build_prompt()['user']
-        assert "## Previous Iterations Failed Tests" in result
-        assert "Failed Test Runs Content" in result
+        result = builder.build_prompt()
+        assert "## Previous Iterations Failed Tests" in result['user']
+        assert "Failed Test Runs Content" in result['user']
