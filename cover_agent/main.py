@@ -1,5 +1,6 @@
 import argparse
 import os
+import shutil
 from cover_agent.CustomLogger import CustomLogger
 from cover_agent.ReportGenerator import ReportGenerator
 from cover_agent.UnitTestGenerator import UnitTestGenerator
@@ -18,7 +19,7 @@ def parse_args():
         "--test-file-path", required=True, help="Path to the input test file."
     )
     parser.add_argument(
-        "--test-file-output-path", required=True, help="Path to the output test file.", default="", type=str
+        "--test-file-output-path", required=False, help="Path to the output test file.", default="", type=str
     )
     parser.add_argument(
         "--code-coverage-report-path",
@@ -117,9 +118,9 @@ def main():
     if not os.path.isfile(args.test_file_path):
         raise FileNotFoundError(f"Test file not found at {args.test_file_path}")
 
-    # copy test_file_path to test_file_output_path
+    # duplicate test_file_path to test_file_output_path
     if args.test_file_output_path != "":
-        os.system(f"cp {args.test_file_path} {args.test_file_output_path}")
+        shutil.copy(args.test_file_path, args.test_file_output_path)
     else:
         args.test_file_output_path = args.test_file_path
         logger.info(f"Output test file path not provided. Using input test file path as output: {args.test_file_output_path}")

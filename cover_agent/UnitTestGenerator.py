@@ -201,16 +201,11 @@ class UnitTestGenerator:
             f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}"
         )
 
-        # Split the response into a list of tests and strip off the trailing whitespaces
-        # (as we sometimes anticipate indentations in the returned code from the LLM)
-        tests_dict =load_yaml(response)
+        tests_dict = load_yaml(response)
         tests_list = []
         for t in tests_dict["tests"]:
             tests_list.append(t['test_code'].rstrip())
         return tests_list
-
-        # tests = response.split("```")
-        # return [test.rstrip() for test in tests if test.rstrip()]
 
     def validate_test(self, generated_test: str):
         """
