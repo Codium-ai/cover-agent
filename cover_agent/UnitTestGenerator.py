@@ -80,7 +80,7 @@ class UnitTestGenerator:
         for language, extensions in language_extension_map_org.items():
             for ext in extensions:
                 extension_to_language[ext] = language
-        extension_s = '.' + source_file_path.rsplit('.')[-1]
+        extension_s = "." + source_file_path.rsplit(".")[-1]
         language_name = "unknown"
         if extension_s and (extension_s in extension_to_language):
             language_name = extension_to_language[extension_s]
@@ -105,7 +105,7 @@ class UnitTestGenerator:
         )
         assert (
             exit_code == 0
-        ), f"Fatal: Error running test command. Are you sure the command is correct? \"{self.test_command}\"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}"
+        ), f'Fatal: Error running test command. Are you sure the command is correct? "{self.test_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
 
         # Instantiate CoverageProcessor and process the coverage report
         coverage_processor = CoverageProcessor(
@@ -165,8 +165,8 @@ class UnitTestGenerator:
         """
         Builds a prompt using the provided information to be used for generating tests.
 
-        This method checks for the existence of failed test runs and then calls the PromptBuilder class to construct the prompt. 
-        The prompt includes details such as the source file path, test file path, code coverage report, included files, 
+        This method checks for the existence of failed test runs and then calls the PromptBuilder class to construct the prompt.
+        The prompt includes details such as the source file path, test file path, code coverage report, included files,
         additional instructions, failed test runs, and the programming language being used.
 
         Returns:
@@ -197,9 +197,9 @@ class UnitTestGenerator:
         """
         Generate test cases using the AI model based on the provided prompt.
 
-        This method generates test cases by calling the AI model with the constructed prompt. 
-        If 'dry_run' is set to True, placeholder test cases are returned. 
-        Otherwise, the AI model is invoked with the prompt to generate actual test cases. 
+        This method generates test cases by calling the AI model with the constructed prompt.
+        If 'dry_run' is set to True, placeholder test cases are returned.
+        Otherwise, the AI model is invoked with the prompt to generate actual test cases.
         The method logs the total token count used by the language model.
 
         Parameters:
@@ -207,7 +207,7 @@ class UnitTestGenerator:
             dry_run (bool, optional): If True, placeholder test cases are returned without invoking the AI model. Defaults to False.
 
         Returns:
-            list: A list of generated test cases as strings. 
+            list: A list of generated test cases as strings.
             If an error occurs during test generation, an empty list is returned, and the error is recorded in the 'failed_test_runs' attribute.
         """
         self.prompt = self.build_prompt()
@@ -215,14 +215,21 @@ class UnitTestGenerator:
         if dry_run:
             response = "```def test_something():\n    pass```\n```def test_something_else():\n    pass```\n```def test_something_different():\n    pass```"
         else:
-            response, prompt_token_count, response_token_count = self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
-        self.logger.info(f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}")
+            response, prompt_token_count, response_token_count = (
+                self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+            )
+        self.logger.info(
+            f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}"
+        )
 
         try:
-            tests_dict = load_yaml(response, keys_fix_yaml=["test_tags", "test_code", "test_name", "test_behavior"])
+            tests_dict = load_yaml(
+                response,
+                keys_fix_yaml=["test_tags", "test_code", "test_name", "test_behavior"],
+            )
             if tests_dict is None:
                 raise ValueError("Failed to parse tests from YAML")
-            tests_list = [t['test_code'].rstrip() for t in tests_dict["tests"]]
+            tests_list = [t["test_code"].rstrip() for t in tests_dict["tests"]]
         except Exception as e:
             self.logger.error(f"Error during test generation: {e}")
             # Record the error as a failed test attempt
@@ -232,7 +239,7 @@ class UnitTestGenerator:
                 "exit_code": None,  # No exit code as it's a parsing issue
                 "stderr": str(e),
                 "stdout": "",  # No output expected from a parsing error
-                "test": response  # Use the response that led to the error
+                "test": response,  # Use the response that led to the error
             }
             self.failed_test_runs.append(fail_details)
             tests_list = []  # Return an empty list or handle accordingly

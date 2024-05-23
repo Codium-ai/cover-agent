@@ -10,7 +10,6 @@ class TestPromptBuilder:
         monkeypatch.setattr("builtins.open", mock_open_obj)
         self.mock_open_obj = mock_open_obj
 
-
     def test_initialization_reads_file_contents(self):
         builder = PromptBuilder(
             "source_path",
@@ -21,7 +20,6 @@ class TestPromptBuilder:
         assert builder.test_file == "dummy content"
         assert builder.code_coverage_report == "dummy content"
         assert builder.included_files == ""  # Updated expected value
-
 
     def test_initialization_handles_file_read_errors(self, monkeypatch):
         def mock_open_raise(*args, **kwargs):
@@ -53,7 +51,7 @@ class TestPromptBuilder:
         builder.included_files = ""
 
         result = builder.build_prompt()
-        assert "## Additional Includes" not in result['user']
+        assert "## Additional Includes" not in result["user"]
 
     def test_non_empty_included_files_section_in_prompt(self, monkeypatch):
         # Disable the monkeypatch for open within this test
@@ -70,8 +68,8 @@ class TestPromptBuilder:
         builder.code_coverage_report = "Coverage Report Content"
 
         result = builder.build_prompt()
-        assert "## Additional Includes" in result['user']
-        assert "Included Files Content" in result['user']
+        assert "## Additional Includes" in result["user"]
+        assert "Included Files Content" in result["user"]
 
     def test_empty_additional_instructions_section_not_in_prompt(self, monkeypatch):
         # Disable the monkeypatch for open within this test
@@ -87,7 +85,7 @@ class TestPromptBuilder:
         builder.code_coverage_report = "Coverage Report Content"
 
         result = builder.build_prompt()
-        assert "## Additional Instructions" not in result['user']
+        assert "## Additional Instructions" not in result["user"]
 
     def test_empty_failed_test_runs_section_not_in_prompt(self, monkeypatch):
         # Disable the monkeypatch for open within this test
@@ -103,7 +101,7 @@ class TestPromptBuilder:
         builder.code_coverage_report = "Coverage Report Content"
 
         result = builder.build_prompt()
-        assert "## Previous Iterations Failed Tests" not in result['user']
+        assert "## Previous Iterations Failed Tests" not in result["user"]
 
     def test_non_empty_additional_instructions_section_in_prompt(self, monkeypatch):
         # Disable the monkeypatch for open within this test
@@ -119,8 +117,8 @@ class TestPromptBuilder:
         builder.code_coverage_report = "Coverage Report Content"
 
         result = builder.build_prompt()
-        assert "## Additional Instructions" in result['user']
-        assert "Additional Instructions Content" in result['user']
+        assert "## Additional Instructions" in result["user"]
+        assert "Additional Instructions Content" in result["user"]
 
     def test_non_empty_failed_test_runs_section_in_prompt(self, monkeypatch):
         # Disable the monkeypatch for open within this test
@@ -137,5 +135,5 @@ class TestPromptBuilder:
         builder.code_coverage_report = "Coverage Report Content"
 
         result = builder.build_prompt()
-        assert "## Previous Iterations Failed Tests" in result['user']
-        assert "Failed Test Runs Content" in result['user']
+        assert "## Previous Iterations Failed Tests" in result["user"]
+        assert "Failed Test Runs Content" in result["user"]

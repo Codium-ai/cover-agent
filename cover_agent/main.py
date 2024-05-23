@@ -19,7 +19,11 @@ def parse_args():
         "--test-file-path", required=True, help="Path to the input test file."
     )
     parser.add_argument(
-        "--test-file-output-path", required=False, help="Path to the output test file.", default="", type=str
+        "--test-file-output-path",
+        required=False,
+        help="Path to the output test file.",
+        default="",
+        type=str,
     )
     parser.add_argument(
         "--code-coverage-report-path",
@@ -88,10 +92,10 @@ def parse_args():
     return parser.parse_args()
 
 
-def write_prompt_to_file(prompt_file_name, prompt:dict):
+def write_prompt_to_file(prompt_file_name, prompt: dict):
     with open(prompt_file_name, "w") as prompt_file:
-        user_prompt = prompt['user']
-        system_prompt = prompt['system']
+        user_prompt = prompt["user"]
+        system_prompt = prompt["system"]
         prompt_file.write(f"User Prompt:\n{user_prompt}\n\n")
         prompt_file.write(f"System Prompt:\n{system_prompt}\n\n")
 
@@ -117,8 +121,9 @@ def main():
         shutil.copy(args.test_file_path, args.test_file_output_path)
     else:
         args.test_file_output_path = args.test_file_path
-        logger.info(f"Output test file path not provided. Using input test file path as output: {args.test_file_output_path}")
-
+        logger.info(
+            f"Output test file path not provided. Using input test file path as output: {args.test_file_output_path}"
+        )
 
     # Instantiate and configure UnitTestGenerator
     test_gen = UnitTestGenerator(
@@ -132,7 +137,7 @@ def main():
         desired_coverage=args.desired_coverage,
         additional_instructions=args.additional_instructions,
         llm_model=args.model,
-        api_base=args.api_base
+        api_base=args.api_base,
     )
 
     # Write test_gen.prompt to a debug markdown file

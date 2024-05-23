@@ -72,7 +72,9 @@ class PromptBuilder:
         self.code_coverage_report = code_coverage_report
         self.language = language
         # add line numbers to each line in 'source_file'. start from 1
-        self.source_file_numbered = "\n".join([f"{i+1} {line}" for i, line in enumerate(self.source_file.split("\n"))])
+        self.source_file_numbered = "\n".join(
+            [f"{i+1} {line}" for i, line in enumerate(self.source_file.split("\n"))]
+        )
 
         # Conditionally fill in optional sections
         self.included_files = (
@@ -144,12 +146,15 @@ class PromptBuilder:
         }
         environment = Environment(undefined=StrictUndefined)
         try:
-            system_prompt = environment.from_string(get_settings().test_generation_prompt.system).render(variables)
-            user_prompt = environment.from_string(get_settings().test_generation_prompt.user).render(variables)
+            system_prompt = environment.from_string(
+                get_settings().test_generation_prompt.system
+            ).render(variables)
+            user_prompt = environment.from_string(
+                get_settings().test_generation_prompt.user
+            ).render(variables)
         except Exception as e:
             logging.error(f"Error rendering prompt: {e}")
             return {"system": "", "user": ""}
 
         # print(f"#### user_prompt:\n\n{user_prompt}")
         return {"system": system_prompt, "user": user_prompt}
-

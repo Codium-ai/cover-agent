@@ -46,9 +46,7 @@ class TestUnitTestGenerator:
         generated_tests = (
             CANNED_TESTS
             if DRY_RUN
-            else test_gen.generate_tests(
-                max_tokens=MAX_TOKENS, dry_run=DRY_RUN
-            )
+            else test_gen.generate_tests(max_tokens=MAX_TOKENS, dry_run=DRY_RUN)
         )
 
         # Validate the generated tests and generate a report
