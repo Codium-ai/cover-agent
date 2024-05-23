@@ -87,9 +87,12 @@ def parse_args():
     return parser.parse_args()
 
 
-def write_prompt_to_file(prompt_file_name, prompt):
-    with open(prompt_file_name, "w") as test_file:
-        test_file.write(prompt)
+def write_prompt_to_file(prompt_file_name, prompt:dict):
+    with open(prompt_file_name, "w") as prompt_file:
+        user_prompt = prompt['user']
+        system_prompt = prompt['system']
+        prompt_file.write(f"User Prompt:\n{user_prompt}\n\n")
+        prompt_file.write(f"System Prompt:\n{system_prompt}\n\n")
 
 
 def main():

@@ -21,6 +21,7 @@ pytest-mock = "^3.14.0"
 poetry-dynamic-versioning = "^1.3.0"
 litellm = { git = "https://github.com/mrT23/litellm.git"}
 boto3 = "^1.34.110"
+dynaconf = "^3.2.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"

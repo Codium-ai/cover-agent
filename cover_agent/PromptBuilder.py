@@ -1,3 +1,7 @@
+from jinja2 import Environment, StrictUndefined
+
+from settings.config_loader import get_settings
+
 # Markdown text used as conditional appends
 ADDITIONAL_INCLUDES_TEXT = """
 ## Additional Includes
@@ -106,13 +110,26 @@ class PromptBuilder:
         Returns:
             str: The formatted prompt string.
         """
-        prompt = self.prompt_template.format(
-            source_file=self.source_file,
-            test_file=self.test_file,
-            code_coverage_report=self.code_coverage_report,
-            additional_includes_section=self.included_files,
-            failed_tests_section=self.failed_test_runs,
-            additional_instructions_text=self.additional_instructions,
-        )
+        # system_prompt = ""
+        # user_prompt = self.prompt_template.format(
+        #     source_file=self.source_file,
+        #     test_file=self.test_file,
+        #     code_coverage_report=self.code_coverage_report,
+        #     additional_includes_section=self.included_files,
+        #     failed_tests_section=self.failed_test_runs,
+        #     additional_instructions_text=self.additional_instructions,
+        # )
 
-        return prompt
+        variables = {
+            "source_file": self.source_file,
+            "test_file": self.test_file,
+            "code_coverage_report":self.code_coverage_report,
+            "additional_includes_section":self.included_files,
+            "failed_tests_section":self.failed_test_runs,
+            "additional_instructions_text":self.additional_instructions,
+        }
+        environment = Environment(undefined=StrictUndefined)
+        system_prompt = environment.from_string(get_settings().test_generation_prompt.system).render(variables)
+        user_prompt = environment.from_string(get_settings().test_generation_prompt.user).render(variables)
+
+        return {"system": system_prompt, "user": user_prompt}
