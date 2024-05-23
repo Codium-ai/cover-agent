@@ -71,6 +71,11 @@ def parse_args():
         help="Which LLM model to use. Default: %(default)s.",
     )
     parser.add_argument(
+        "--api-base",
+        default="http://localhost:11434",
+        help="The API url to use for Ollama or Hugging Face. Default: %(default)s.",
+    )
+    parser.add_argument(
         "--prompt-only",
         action="store_true",
         help="Generate the prompt only (i.e. do not run the test or call to the LLM). Default: False.",
@@ -118,7 +123,8 @@ def main():
         coverage_type=args.coverage_type,
         desired_coverage=args.desired_coverage,
         additional_instructions=args.additional_instructions,
-        llm_model=args.model
+        llm_model=args.model,
+        api_base=args.api_base
     )
 
     # Write test_gen.prompt to a debug markdown file
