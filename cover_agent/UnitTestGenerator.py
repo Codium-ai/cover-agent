@@ -105,7 +105,7 @@ class UnitTestGenerator:
         )
         assert (
             exit_code == 0
-        ), f"Fatal: Error running test command. Failed with exit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}"
+        ), f"Fatal: Error running test command. Are you sure the command is correct? \"{self.test_command}\"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}"
 
         # Instantiate CoverageProcessor and process the coverage report
         coverage_processor = CoverageProcessor(
@@ -162,6 +162,16 @@ class UnitTestGenerator:
         return ""
 
     def build_prompt(self):
+        """
+        Builds a prompt using the provided information to be used for generating tests.
+
+        This method checks for the existence of failed test runs and then calls the PromptBuilder class to construct the prompt. 
+        The prompt includes details such as the source file path, test file path, code coverage report, included files, 
+        additional instructions, failed test runs, and the programming language being used.
+
+        Returns:
+            str: The generated prompt to be used for test generation.
+        """
         # Check for existence of failed tests:
         if not self.failed_test_runs:
             failed_test_runs_value = ""
@@ -184,23 +194,49 @@ class UnitTestGenerator:
         return prompt.build_prompt()
 
     def generate_tests(self, max_tokens=4096, dry_run=False):
+        """
+        Generate test cases using the AI model based on the provided prompt.
+
+        This method generates test cases by calling the AI model with the constructed prompt. 
+        If 'dry_run' is set to True, placeholder test cases are returned. 
+        Otherwise, the AI model is invoked with the prompt to generate actual test cases. 
+        The method logs the total token count used by the language model.
+
+        Parameters:
+            max_tokens (int, optional): The maximum number of tokens to use for generating tests. Defaults to 4096.
+            dry_run (bool, optional): If True, placeholder test cases are returned without invoking the AI model. Defaults to False.
+
+        Returns:
+            list: A list of generated test cases as strings. 
+            If an error occurs during test generation, an empty list is returned, and the error is recorded in the 'failed_test_runs' attribute.
+        """
         self.prompt = self.build_prompt()
 
         if dry_run:
-            # Provide a canned response. Used for testing.
             response = "```def test_something():\n    pass```\n```def test_something_else():\n    pass```\n```def test_something_different():\n    pass```"
         else:
-            # Tests should return with triple backticks in between tests.
-            # We want to remove them and split up the tests into a list of tests
             response, prompt_token_count, response_token_count = self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
-        self.logger.info(
-            f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}"
-        )
+        self.logger.info(f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}")
 
-        tests_dict = load_yaml(response, keys_fix_yaml=["test_tags", "test_code", "test_name", "test_behavior"])
-        tests_list = []
-        for t in tests_dict["tests"]:
-            tests_list.append(t['test_code'].rstrip())
+        try:
+            tests_dict = load_yaml(response, keys_fix_yaml=["test_tags", "test_code", "test_name", "test_behavior"])
+            if tests_dict is None:
+                raise ValueError("Failed to parse tests from YAML")
+            tests_list = [t['test_code'].rstrip() for t in tests_dict["tests"]]
+        except Exception as e:
+            self.logger.error(f"Error during test generation: {e}")
+            # Record the error as a failed test attempt
+            fail_details = {
+                "status": "FAIL",
+                "reason": f"Parsing error: {e}",
+                "exit_code": None,  # No exit code as it's a parsing issue
+                "stderr": str(e),
+                "stdout": "",  # No output expected from a parsing error
+                "test": response  # Use the response that led to the error
+            }
+            self.failed_test_runs.append(fail_details)
+            tests_list = []  # Return an empty list or handle accordingly
+
         return tests_list
 
     def validate_test(self, generated_test: str):
