@@ -10,6 +10,7 @@ class TestUnitTestGenerator:
         # Test model definitions
         GPT4_TURBO = "gpt-4-turbo-2024-04-09"
         GPT35_TURBO = "gpt-3.5-turbo-0125"
+        MAX_TOKENS = 4096
 
         DRY_RUN = True  # Unit tests should not be making calls to the LLM model
         CANNED_TESTS = [
@@ -36,10 +37,10 @@ class TestUnitTestGenerator:
             source_file_path=f"{REPO_ROOT}/templated_tests/python_fastapi/app.py",
             test_file_path=TEST_FILE,
             code_coverage_report_path=f"{REPO_ROOT}/templated_tests/python_fastapi/coverage.xml",
+            llm_model=GPT35_TURBO,
             test_command="pytest --cov=. --cov-report=xml",
             test_command_dir=f"{REPO_ROOT}/templated_tests/python_fastapi",
             included_files=None,
-            llm_model=GPT35_TURBO
         )
 
         # Generate the tests
@@ -47,7 +48,7 @@ class TestUnitTestGenerator:
             CANNED_TESTS
             if DRY_RUN
             else test_gen.generate_tests(
-                max_tokens=4096, dry_run=DRY_RUN
+                max_tokens=MAX_TOKENS, dry_run=DRY_RUN
             )
         )
 

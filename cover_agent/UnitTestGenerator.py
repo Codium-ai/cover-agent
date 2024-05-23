@@ -58,7 +58,7 @@ class UnitTestGenerator:
         self.additional_instructions = additional_instructions
 
         # Objects to instantiate
-        self.ai_caller = AICaller(llm_model=llm_model, api_base=api_base)
+        self.ai_caller = AICaller(model=llm_model, api_base=api_base)
 
         # Get the logger instance from CustomLogger
         self.logger = CustomLogger.get_logger(__name__)
