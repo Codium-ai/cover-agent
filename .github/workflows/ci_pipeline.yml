@@ -41,7 +41,7 @@ jobs:
         env:
           OPENAI_API_KEY: "This_is_a_fake_API_key"
         run: |
-          poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent --cov-report=xml:cobertura.xml --cov-report=term --cov-fail-under=70 --log-cli-level=INFO
+          poetry run pytest --junitxml=testLog.xml --cov=cover_agent --cov-report=xml:cobertura.xml --cov-report=term --cov-fail-under=70 --log-cli-level=INFO
       - name: Upload test report
         uses: actions/upload-artifact@v2
         if: always()
