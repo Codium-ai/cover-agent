@@ -114,9 +114,6 @@ class TestPromptBuilder:
             code_coverage_report="coverage_report",
             additional_instructions="Additional Instructions Content",
         )
-        # Directly read the real file content for the prompt template
-        # with open("cover_agent/prompt_template.md", "r") as f:
-        #     builder.prompt_template = f.read()
         builder.source_file = "Source Content"
         builder.test_file = "Test Content"
         builder.code_coverage_report = "Coverage Report Content"

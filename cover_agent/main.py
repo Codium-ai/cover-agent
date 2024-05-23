@@ -104,12 +104,6 @@ def main():
     args = parse_args()
     logger = CustomLogger.get_logger(__name__)
 
-    # Calculate the absolute path where the script expects the markdown file
-    markdown_path = os.path.join(os.path.dirname(__file__), "prompt_template.md")
-    # Check if the file exists at the expected path
-    if not os.path.exists(markdown_path):
-        raise FileNotFoundError(f"Expected markdown file not found at {markdown_path}")
-
     # Validate all file paths
     # Check if the source file exists
     if not os.path.isfile(args.source_file_path):
