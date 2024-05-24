@@ -121,16 +121,6 @@ class PromptBuilder:
         Returns:
             str: The formatted prompt string.
         """
-        # system_prompt = ""
-        # user_prompt = self.prompt_template.format(
-        #     source_file=self.source_file,
-        #     test_file=self.test_file,
-        #     code_coverage_report=self.code_coverage_report,
-        #     additional_includes_section=self.included_files,
-        #     failed_tests_section=self.failed_test_runs,
-        #     additional_instructions_text=self.additional_instructions,
-        # )
-
         variables = {
             "source_file_name": self.source_file_name,
             "test_file_name": self.test_file_name,
