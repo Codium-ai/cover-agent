@@ -11,7 +11,8 @@ Additional guidelines:
 - Carefully analyze the provided code. Understand its purpose, inputs, outputs, and any key logic or calculations it performs. Spend significant time considering all different scenarios, including boundary values, invalid inputs, extreme conditions, and concurrency issues like race conditions and deadlocks, that need to be tested.
 - Brainstorm a list of test cases you think will be necessary to fully validate the correctness of the code and achieve 100% code coverage.
 - After each individual test has been added, review all tests to ensure they cover the full range of scenarios, including how to handle exceptions or errors.
-
+- Each generated test should be seen as appended to the original test file, and it should use the same testing framework and imports as the existing tests.\
+However, each new test should be a single self-contained independent function, and not rely on any other test or setup code.
 
 ## Source File
 Here is the source file that you will be writing tests against, called `{{ source_file_name }}`.
@@ -57,16 +58,16 @@ The output must be a YAML object equivalent to type $NewTests, according to the 
 class SingleTest(BaseModel):
     test_behavior: str = Field(description="Short description of the behavior the test covers. Use backticks (`) to highlight names or variables.")
 {%- if language in ["python","java"] %}
-    test_name: str = Field(description=" A short test name, in snake case, that should reflect the behaviour to test")
+    test_name: str = Field(description=" A short test name, in snake case, that reflects the behaviour to test")
 {%- else %}
     test_name: str = Field(description=" A short unique test name, that should reflect the test objective")
 {%- endif %}
-    test_code: str = Field(description="A single test function, that tests the behavior described in 'test_behavior'")
+    test_code: str = Field(description="A single self-contained test function, that tests the behavior described in 'test_behavior'. Do not add new imports or dependencies. All the generated code should be inside the function.")
     test_tags: str = Field(description="A single label that best describes the test, out of: ['happy path', 'edge case','other']")
 
 class NewTests(BaseModel):
     language: str = Field(description="The programming language of the source code")
-    tests: List[SingleTest] = Field(max_items={{ max_tests }}, description="A list of new tests that increase the code coverage. Do not include any new imports or dependencies in your response. each test should be a single self-contained function that tests a specific behavior")
+    tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new tests that increase the code coverage. ")
 =====
 
 Example output:
