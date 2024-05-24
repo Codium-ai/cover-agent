@@ -1,4 +1,6 @@
+import logging
 import os
+import re
 import time
 import json
 from cover_agent.Runner import Runner
@@ -197,9 +199,20 @@ class UnitTestGenerator:
             failed_test_runs_value = ""
         else:
             failed_test_runs_value = ""
-            for failed_test in self.failed_test_runs:
-                failed_test_runs_value += f"```\n{failed_test.rstrip()}\n```\n\n"
-        self.failed_test_runs = []  # Reset the failed test runs. we don't want a list which grows indefinitely, and will take all the prompt.
+            try:
+                for failed_test in self.failed_test_runs:
+                    code = failed_test['code'].strip()
+                    if 'error_message' in failed_test:
+                        error_message = failed_test['error_message']
+                    else:
+                        error_message = None
+                    failed_test_runs_value += f"Failed Test:\n```\n{code}\n```\n"
+                    if error_message:
+                        failed_test_runs_value += f"Error message for test above:\n{error_message}\n\n\n"
+            except Exception as e:
+                self.logger.error(f"Error processing failed test runs: {e}")
+                failed_test_runs_value = ""
+        self.failed_test_runs = []  # Reset the failed test runs. we don't want a list which grows indefinitely, and will take all the prompt tokens
 
         # Call PromptBuilder to build the prompt
         prompt = PromptBuilder(
@@ -262,7 +275,7 @@ class UnitTestGenerator:
                 "stdout": "",  # No output expected from a parsing error
                 "test": response,  # Use the response that led to the error
             }
-            self.failed_test_runs.append(fail_details)
+            # self.failed_test_runs.append(fail_details)
             tests_list = []  # Return an empty list or handle accordingly
 
         return tests_list
@@ -320,8 +333,31 @@ class UnitTestGenerator:
                 "stdout": stdout,
                 "test": generated_test,
             }
+
+            def extract_error_message(fail_message):
+                try:
+                    # Define a regular expression pattern to match the error message
+                    MAX_LINES = 15
+                    pattern = r'={3,} FAILURES ={3,}(.*?)(={3,}|$)'
+                    match = re.search(pattern, fail_message, re.DOTALL)
+                    if match:
+                        err_str = match.group(1).strip('\n')
+                        err_str_lines = err_str.split('\n')
+                        if len(err_str_lines) > MAX_LINES:
+                            # show last MAX_lines lines
+                            err_str = '...\n' + '\n'.join(err_str_lines[-MAX_LINES:])
+                        return err_str
+                    return ""
+                except Exception as e:
+                    self.logger.error(f"Error extracting error message: {e}")
+                    return ""
+
+            error_message = extract_error_message(fail_details["stdout"])
+            if error_message:
+                logging.error(f"Error message:\n{error_message}")
+
             self.failed_test_runs.append(
-                fail_details["test"]
+                {'code': generated_test, 'error_message': error_message}
             )  # Append failure details to the list
             return fail_details
 
@@ -353,7 +389,7 @@ class UnitTestGenerator:
                     "test": generated_test,
                 }
                 self.failed_test_runs.append(
-                    fail_details["test"]
+                    {'code': fail_details["test"], 'error_message': 'did not increase code coverage'}
                 )  # Append failure details to the list
                 return fail_details
         except Exception as e:
@@ -371,7 +407,7 @@ class UnitTestGenerator:
                 "test": generated_test,
             }
             self.failed_test_runs.append(
-                fail_details["test"]
+                {'code': fail_details["test"], 'error_message': 'coverage verification error'}
             )  # Append failure details to the list
             return fail_details
 

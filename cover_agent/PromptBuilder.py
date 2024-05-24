@@ -23,7 +23,7 @@ ADDITIONAL_INSTRUCTIONS_TEXT = """
 
 FAILED_TESTS_TEXT = """
 ## Previous Iterations Failed Tests
-Below is a list of failed tests that you generated in previous iterations, if available. Do not generate these same tests again, and take the failed tests into account when generating new tests.
+Below is a list of failed tests that you generated in previous iterations. Do not generate the same tests again, and take the failed tests into account when generating new tests.
 ======
 {failed_test_runs}
 ======

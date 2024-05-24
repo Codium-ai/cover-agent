@@ -177,7 +177,10 @@ def main():
             if test_gen.current_coverage < (test_gen.desired_coverage / 100):
                 test_gen.run_coverage()
 
-        if iteration_count == args.max_iterations:
+        if test_gen.current_coverage >= (test_gen.desired_coverage / 100):
+            logger.info(
+                f"Reached above target coverage of {test_gen.desired_coverage}% (Current Coverage: {round(test_gen.current_coverage * 100, 2)}%) in {iteration_count} iterations.")
+        elif iteration_count == args.max_iterations:
             logger.info(
                 "Reached maximum iteration limit without achieving desired coverage."
             )
