@@ -1,7 +1,7 @@
 import logging
 
 from jinja2 import Environment, StrictUndefined
-from cover_agent.config_loader import get_settings
+from cover_agent.settings.config_loader import get_settings
 
 MAX_TESTS_PER_RUN = 4
 
