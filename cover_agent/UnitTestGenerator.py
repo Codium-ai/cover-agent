@@ -283,7 +283,8 @@ class UnitTestGenerator:
         # Step 0: Run the test through the preprocessor rule set
         # processed_test = self.preprocessor.process_file(generated_test)
 
-        # Step 0: no pre-process. We asked the model that each generated test should be a self-contained independent test
+        # Step 0: no pre-process.
+        # We asked the model that each generated test should be a self-contained independent test
         processed_test = generated_test.strip('\n')
 
         # Step 1: Append the generated test to the test file and save the original content
