@@ -72,18 +72,38 @@ class UnitTestGenerator:
         self.prompt = self.build_prompt()
 
     def get_code_language(self, source_file_path):
+        """
+        Get the programming language based on the file extension of the provided source file path.
+
+        Parameters:
+            source_file_path (str): The path to the source file for which the programming language needs to be determined.
+
+        Returns:
+            str: The programming language inferred from the file extension of the provided source file path. Defaults to 'unknown' if the language cannot be determined.
+        """
+        # Retrieve the mapping of languages to their file extensions from settings
         language_extension_map_org = get_settings().language_extension_map_org
+
+        # Initialize a dictionary to map file extensions to their corresponding languages
         extension_to_language = {}
+
+        # Populate the extension_to_language dictionary
         for language, extensions in language_extension_map_org.items():
             for ext in extensions:
                 extension_to_language[ext] = language
-        for language, extensions in language_extension_map_org.items():
-            for ext in extensions:
-                extension_to_language[ext] = language
+
+        # Extract the file extension from the source file path
         extension_s = "." + source_file_path.rsplit(".")[-1]
+
+        # Initialize the default language name as 'unknown'
         language_name = "unknown"
+
+        # Check if the extracted file extension is in the dictionary
         if extension_s and (extension_s in extension_to_language):
+            # Set the language name based on the file extension
             language_name = extension_to_language[extension_s]
+
+        # Return the language name in lowercase
         return language_name.lower()
 
     def run_coverage(self):
