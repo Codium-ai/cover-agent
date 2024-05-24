@@ -23,7 +23,7 @@ ADDITIONAL_INSTRUCTIONS_TEXT = """
 
 FAILED_TESTS_TEXT = """
 ## Previous Iterations Failed Tests
-Below is a list of failed tests that you generated in previous iterations, if available. Very important - __Do not generate these same tests again__:
+Below is a list of failed tests that you generated in previous iterations, if available. Do not generate these same tests again, and take the failed tests into account when generating new tests.
 ======
 {failed_test_runs}
 ======
@@ -89,12 +89,11 @@ class PromptBuilder:
             if additional_instructions
             else ""
         )
-        # self.failed_test_runs = (
-        #     FAILED_TESTS_TEXT.format(failed_test_runs=failed_test_runs)
-        #     if failed_test_runs
-        #     else ""
-        # )
-        self.failed_test_runs = "" # the previous logic is too simplistic. Better to leave it out for now
+        self.failed_test_runs = (
+            FAILED_TESTS_TEXT.format(failed_test_runs=failed_test_runs)
+            if failed_test_runs
+            else ""
+        )
 
     def _read_file(self, file_path):
         """

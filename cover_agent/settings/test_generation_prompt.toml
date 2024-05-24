@@ -63,7 +63,7 @@ class SingleTest(BaseModel):
 {%- else %}
     test_name: str = Field(description=" A short unique test name, that should reflect the test objective")
 {%- endif %}
-    test_code: str = Field(description="A single self-contained test function, that tests the behavior described in 'test_behavior'. Do not add new imports or dependencies.")
+    test_code: str = Field(description="A single self-contained test function, that tests the behavior described in 'test_behavior'. Do not add new imports or dependencies. Make sure the test is correct, and that it will pass when run.")
     test_tags: str = Field(description="A single label that best describes the test, out of: ['happy path', 'edge case','other']")
 
 class NewTests(BaseModel):

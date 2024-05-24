@@ -196,9 +196,10 @@ class UnitTestGenerator:
         if not self.failed_test_runs:
             failed_test_runs_value = ""
         else:
-            failed_test_runs_value = json.dumps(self.failed_test_runs).replace(
-                "\\n", "\n"
-            )
+            failed_test_runs_value = ""
+            for failed_test in self.failed_test_runs:
+                failed_test_runs_value += f"```\n{failed_test.rstrip()}\n```\n\n"
+        self.failed_test_runs = []  # Reset the failed test runs. we don't want a list which grows indefinitely, and will take all the prompt.
 
         # Call PromptBuilder to build the prompt
         prompt = PromptBuilder(
