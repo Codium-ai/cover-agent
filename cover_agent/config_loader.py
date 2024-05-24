@@ -1,9 +1,9 @@
+import sys
 from os.path import dirname, abspath, join, exists
-
 from dynaconf import Dynaconf
 
-current_dir = dirname(abspath(__file__))
-SETTINGS_FILES = ["test_generation_prompt.toml", "language_extensions.toml", ]
+SETTINGS_FILES = ["test_generation_prompt.toml", "language_extensions.toml"]
+
 
 class SingletonSettings:
     _instance = None
@@ -32,17 +32,18 @@ class SingletonSettings:
             None
         """
         if not hasattr(self, "settings"):
-            current_dir = dirname(abspath(__file__))
-            settings_files = [join(current_dir, f) for f in SETTINGS_FILES]
+            # Determine the base directory for bundled app or normal environment
+            base_dir = getattr(sys, "_MEIPASS", dirname(abspath(__file__)))
+
+            settings_files = [join(base_dir, f) for f in SETTINGS_FILES]
+
             # Ensure all settings files exist
-            for file in settings_files:
-                if not exists(file):
-                    raise FileNotFoundError(f"Settings file not found: {file}")
-            
+            for file_path in settings_files:
+                if not exists(file_path):
+                    raise FileNotFoundError(f"Settings file not found: {file_path}")
+
             self.settings = Dynaconf(
-                envvar_prefix=False,
-                merge_enabled=True,
-                settings_files=settings_files
+                envvar_prefix=False, merge_enabled=True, settings_files=settings_files
             )
 
 
