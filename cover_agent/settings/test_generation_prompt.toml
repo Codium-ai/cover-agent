@@ -11,8 +11,9 @@ Additional guidelines:
 - Carefully analyze the provided code. Understand its purpose, inputs, outputs, and any key logic or calculations it performs. Spend significant time considering all different scenarios, including boundary values, invalid inputs, extreme conditions, and concurrency issues like race conditions and deadlocks, that need to be tested.
 - Brainstorm a list of test cases you think will be necessary to fully validate the correctness of the code and achieve 100% code coverage.
 - After each individual test has been added, review all tests to ensure they cover the full range of scenarios, including how to handle exceptions or errors.
-- Each generated test should be seen as appended to the original test file, and it should use the same testing framework and imports as the existing tests.\
-However, each new test should be a single self-contained independent function, and not rely on any other test or setup code.
+- Each new test should be a single self-contained independent function, and not rely on any other test or setup code. \
+It should be seen as appended at the end of original test file, and it should use the same testing framework, ande existing imports and dependencies.
+
 
 ## Source File
 Here is the source file that you will be writing tests against, called `{{ source_file_name }}`.
