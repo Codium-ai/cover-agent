@@ -8,7 +8,7 @@ from cover_agent.PromptBuilder import PromptBuilder
 from cover_agent.AICaller import AICaller
 from cover_agent.FilePreprocessor import FilePreprocessor
 from cover_agent.utils import load_yaml
-from cover_agent.config_loader import get_settings
+from cover_agent.settings.config_loader import get_settings
 
 
 class UnitTestGenerator:
@@ -118,7 +118,7 @@ class UnitTestGenerator:
         """
         # Perform an initial build/test command to generate coverage report and get a baseline
         self.logger.info(
-            f'Running initial build/test command to generate coverage report: "{self.test_command}"'
+            f'Running build/test command to generate coverage report: "{self.test_command}"'
         )
         stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
             command=self.test_command, cwd=self.test_command_dir
@@ -281,7 +281,11 @@ class UnitTestGenerator:
                 stdout, stderr, exit code, and the test itself.
         """
         # Step 0: Run the test through the preprocessor rule set
-        processed_test = self.preprocessor.process_file(generated_test)
+        # processed_test = self.preprocessor.process_file(generated_test)
+
+        # Step 0: no pre-process.
+        # We asked the model that each generated test should be a self-contained independent test
+        processed_test = generated_test.strip('\n')
 
         # Step 1: Append the generated test to the test file and save the original content
         with open(self.test_file_path, "r+") as test_file:
@@ -306,7 +310,7 @@ class UnitTestGenerator:
             # Test failed, roll back the test file to its original content
             with open(self.test_file_path, "w") as test_file:
                 test_file.write(original_content)
-            self.logger.error(f"Test failed. Rolling back")
+            self.logger.info(f"Skipping a generated test that failed")
             fail_details = {
                 "status": "FAIL",
                 "reason": "Test failed",

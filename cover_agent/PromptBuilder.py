@@ -1,9 +1,9 @@
 import logging
 
 from jinja2 import Environment, StrictUndefined
-from cover_agent.config_loader import get_settings
+from cover_agent.settings.config_loader import get_settings
 
-MAX_TESTS_PER_RUN = 5
+MAX_TESTS_PER_RUN = 4
 
 # Markdown text used as conditional appends
 ADDITIONAL_INCLUDES_TEXT = """
@@ -89,11 +89,12 @@ class PromptBuilder:
             if additional_instructions
             else ""
         )
-        self.failed_test_runs = (
-            FAILED_TESTS_TEXT.format(failed_test_runs=failed_test_runs)
-            if failed_test_runs
-            else ""
-        )
+        # self.failed_test_runs = (
+        #     FAILED_TESTS_TEXT.format(failed_test_runs=failed_test_runs)
+        #     if failed_test_runs
+        #     else ""
+        # )
+        self.failed_test_runs = "" # the previous logic is too simplistic. Better to leave it out for now
 
     def _read_file(self, file_path):
         """

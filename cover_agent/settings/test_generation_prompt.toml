@@ -11,6 +11,8 @@ Additional guidelines:
 - Carefully analyze the provided code. Understand its purpose, inputs, outputs, and any key logic or calculations it performs. Spend significant time considering all different scenarios, including boundary values, invalid inputs, extreme conditions, and concurrency issues like race conditions and deadlocks, that need to be tested.
 - Brainstorm a list of test cases you think will be necessary to fully validate the correctness of the code and achieve 100% code coverage.
 - After each individual test has been added, review all tests to ensure they cover the full range of scenarios, including how to handle exceptions or errors.
+- Each new test should be a single self-contained independent {{ language }} function, and not rely on any other test or setup code. \
+It should be seen as appended at the end of original test file, and it should use the same testing framework and conventions as the existing tests.
 
 
 ## Source File
@@ -57,35 +59,35 @@ The output must be a YAML object equivalent to type $NewTests, according to the 
 class SingleTest(BaseModel):
     test_behavior: str = Field(description="Short description of the behavior the test covers. Use backticks (`) to highlight names or variables.")
 {%- if language in ["python","java"] %}
-    test_name: str = Field(description=" A short test name, in snake case, that should reflect the behaviour to test")
+    test_name: str = Field(description=" A short test name, in snake case, that reflects the behaviour to test")
 {%- else %}
     test_name: str = Field(description=" A short unique test name, that should reflect the test objective")
 {%- endif %}
-    test_code: str = Field(description="A single test function, that tests the behavior described in 'test_behavior'")
+    test_code: str = Field(description="A single self-contained test function, that tests the behavior described in 'test_behavior'. Do not add new imports or dependencies.")
     test_tags: str = Field(description="A single label that best describes the test, out of: ['happy path', 'edge case','other']")
 
 class NewTests(BaseModel):
     language: str = Field(description="The programming language of the source code")
-    tests: List[SingleTest] = Field(max_items={{ max_tests }}, description="A list of new tests that increase the code coverage. Do not include any new imports or dependencies in your response. each test should be a single self-contained function that tests a specific behavior")
+    tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new test functions that increase the code coverage.")
 =====
 
 Example output:
 ```yaml
 language: {{ language }}
 tests:
-  - test_behavior: |
-    "Test that the function returns the correct output for a single element list"
+- test_behavior: |
+    Test that the function returns the correct output for a single element list
 {%- if language in ["python","java"] %}
-    test_name: |
-      test_single_element_list
+  test_name: |
+    test_single_element_list
 {%- else %}
-    test_name: |
-      ...
+  test_name: |
+    ...
 {%- endif %}
-    test_code: |
-      ...
-    test_tags: "happy path"
-...
+  test_code: |
+    ...
+  test_tags: happy path
+    ...
 ```
 
 Use block scalar('|') to format each YAML output.

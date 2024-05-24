@@ -173,6 +173,10 @@ def main():
             # Increment the iteration counter
             iteration_count += 1
 
+            # updating the coverage after each iteration (self.code_coverage_report)
+            if test_gen.current_coverage < (test_gen.desired_coverage / 100):
+                test_gen.run_coverage()
+
         if iteration_count == args.max_iterations:
             logger.info(
                 "Reached maximum iteration limit without achieving desired coverage."

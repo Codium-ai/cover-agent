@@ -76,7 +76,7 @@ PR Feedback:
         expected_output = [
             {
                 "relevant file": "src/app.py:",
-                "suggestion content": "The print statement is outside inside the if __name__ ==: ",
+                "suggestion content": "The print statement is outside inside the if __name__ ==:",
             }
         ]
         assert (
