@@ -8,7 +8,7 @@ from cover_agent.PromptBuilder import PromptBuilder
 from cover_agent.AICaller import AICaller
 from cover_agent.FilePreprocessor import FilePreprocessor
 from cover_agent.utils import load_yaml
-from cover_agent.settings.config_loader import get_settings
+from cover_agent.config_loader import get_settings
 
 
 class UnitTestGenerator:
