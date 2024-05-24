@@ -89,11 +89,12 @@ class PromptBuilder:
             if additional_instructions
             else ""
         )
-        self.failed_test_runs = (
-            FAILED_TESTS_TEXT.format(failed_test_runs=failed_test_runs)
-            if failed_test_runs
-            else ""
-        )
+        # self.failed_test_runs = (
+        #     FAILED_TESTS_TEXT.format(failed_test_runs=failed_test_runs)
+        #     if failed_test_runs
+        #     else ""
+        # )
+        self.failed_test_runs = "" # the previous logic is too simplistic. Better to leave it out for now
 
     def _read_file(self, file_path):
         """

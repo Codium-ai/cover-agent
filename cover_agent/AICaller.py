@@ -45,6 +45,7 @@ class AICaller:
                 messages=messages,
                 max_tokens=max_tokens,
                 stream=True,
+                temperature=0.2, # low, but not zero. This is a good default for most cases
             )
         else:
             response = litellm.completion(
