@@ -118,7 +118,7 @@ class UnitTestGenerator:
         """
         # Perform an initial build/test command to generate coverage report and get a baseline
         self.logger.info(
-            f'Running initial build/test command to generate coverage report: "{self.test_command}"'
+            f'Running build/test command to generate coverage report: "{self.test_command}"'
         )
         stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
             command=self.test_command, cwd=self.test_command_dir
@@ -310,7 +310,7 @@ class UnitTestGenerator:
             # Test failed, roll back the test file to its original content
             with open(self.test_file_path, "w") as test_file:
                 test_file.write(original_content)
-            self.logger.warning(f"Skipping a generated test that failed")
+            self.logger.info(f"Skipping a generated test that failed")
             fail_details = {
                 "status": "FAIL",
                 "reason": "Test failed",

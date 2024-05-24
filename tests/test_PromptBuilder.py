@@ -120,20 +120,21 @@ class TestPromptBuilder:
         assert "## Additional Instructions" in result["user"]
         assert "Additional Instructions Content" in result["user"]
 
-    def test_non_empty_failed_test_runs_section_in_prompt(self, monkeypatch):
-        # Disable the monkeypatch for open within this test
-        monkeypatch.undo()
-        builder = PromptBuilder(
-            source_file_path="source_path",
-            test_file_path="test_path",
-            code_coverage_report="coverage_report",
-            failed_test_runs="Failed Test Runs Content",
-        )
-        # Directly read the real file content for the prompt template
-        builder.source_file = "Source Content"
-        builder.test_file = "Test Content"
-        builder.code_coverage_report = "Coverage Report Content"
-
-        result = builder.build_prompt()
-        assert "## Previous Iterations Failed Tests" in result["user"]
-        assert "Failed Test Runs Content" in result["user"]
+    ## we currently disabled the logic to add failed test runs to the prompt
+    # def test_non_empty_failed_test_runs_section_in_prompt(self, monkeypatch):
+    #     # Disable the monkeypatch for open within this test
+    #     monkeypatch.undo()
+    #     builder = PromptBuilder(
+    #         source_file_path="source_path",
+    #         test_file_path="test_path",
+    #         code_coverage_report="coverage_report",
+    #         failed_test_runs="Failed Test Runs Content",
+    #     )
+    #     # Directly read the real file content for the prompt template
+    #     builder.source_file = "Source Content"
+    #     builder.test_file = "Test Content"
+    #     builder.code_coverage_report = "Coverage Report Content"
+    #
+    #     result = builder.build_prompt()
+    #     assert "## Previous Iterations Failed Tests" in result["user"]
+    #     assert "Failed Test Runs Content" in result["user"]

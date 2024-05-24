@@ -68,7 +68,7 @@ class SingleTest(BaseModel):
 
 class NewTests(BaseModel):
     language: str = Field(description="The programming language of the source code")
-    tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new test functions that increase the code coverage. ")
+    tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new test functions that increase the code coverage.")
 =====
 
 Example output:
