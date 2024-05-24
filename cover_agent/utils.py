@@ -22,7 +22,7 @@ def load_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         load_yaml(response_text, keys_fix_yaml=['key1', 'key2'])
 
     """
-    response_text = response_text.removeprefix("```yaml").rstrip("`")
+    response_text = response_text.strip().removeprefix("```yaml").rstrip("`")
     try:
         data = yaml.safe_load(response_text)
     except Exception as e:

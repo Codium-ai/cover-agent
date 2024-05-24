@@ -73,19 +73,19 @@ Example output:
 ```yaml
 language: {{ language }}
 tests:
-  - test_behavior: |
-    "Test that the function returns the correct output for a single element list"
+- test_behavior: |
+    Test that the function returns the correct output for a single element list
 {%- if language in ["python","java"] %}
-    test_name: |
-      test_single_element_list
+  test_name: |
+    test_single_element_list
 {%- else %}
-    test_name: |
-      ...
+  test_name: |
+    ...
 {%- endif %}
-    test_code: |
-      ...
-    test_tags: "happy path"
-...
+  test_code: |
+    ...
+  test_tags: happy path
+    ...
 ```
 
 Use block scalar('|') to format each YAML output.

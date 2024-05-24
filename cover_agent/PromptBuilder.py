@@ -3,7 +3,7 @@ import logging
 from jinja2 import Environment, StrictUndefined
 from cover_agent.config_loader import get_settings
 
-MAX_TESTS_PER_RUN = 5
+MAX_TESTS_PER_RUN = 4
 
 # Markdown text used as conditional appends
 ADDITIONAL_INCLUDES_TEXT = """
