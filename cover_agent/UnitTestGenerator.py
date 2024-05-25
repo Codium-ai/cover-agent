@@ -122,9 +122,18 @@ class UnitTestGenerator:
         self.logger.info(
             f'Running build/test command to generate coverage report: "{self.test_command}"'
         )
-        stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
-            command=self.test_command, cwd=self.test_command_dir
-        )
+
+        # logic to run on single file, by converting the source file path to module name
+        if '--cov=' not in self.test_command and self.source_file_path.endswith('.py'):
+            source_file_module = self.source_file_path.split('.')[0].replace('/', '.')
+            stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
+                command=self.test_command +f" --cov-report=xml:{self.code_coverage_report_path} --cov={source_file_module}  {self.test_file_path}",
+            )
+        else:
+            stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
+                command=self.test_command, cwd=self.test_command_dir
+            )
+
         assert (
             exit_code == 0
         ), f'Fatal: Error running test command. Are you sure the command is correct? "{self.test_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
@@ -315,9 +324,17 @@ class UnitTestGenerator:
         self.logger.info(
             f'Running test with the following command: "{self.test_command}"'
         )
-        stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
-            command=self.test_command, cwd=self.test_command_dir
-        )
+
+        # logic to run on single file:
+        if '--cov' not in self.test_command and self.source_file_path.endswith('.py'):
+            source_file_module = self.source_file_path.split('.')[0].replace('/', '.')
+            stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
+                command=self.test_command +f" --cov-report=xml:{self.code_coverage_report_path} --cov={source_file_module}  {self.test_file_path}",
+            )
+        else:
+            stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
+                command=self.test_command, cwd=self.test_command_dir
+            )
 
         # Step 3: Check for pass/fail from the Runner object
         if exit_code != 0:

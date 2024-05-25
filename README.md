@@ -85,7 +85,6 @@ cover-agent \
   --test-file-path "<path_to_test_file>" \
   --code-coverage-report-path "<path_to_coverage_report>" \
   --test-command "<test_command_to_run>" \
-  --test-command-dir "<directory_to_run_test_command>" \
   --coverage-type "<type_of_coverage_report>" \
   --desired-coverage <desired_coverage_between_0_and_100> \
   --max-iterations <max_number_of_llm_iterations> \
@@ -100,8 +99,7 @@ cover-agent \
   --source-file-path "templated_tests/python_fastapi/app.py" \
   --test-file-path "templated_tests/python_fastapi/test_app.py" \
   --code-coverage-report-path "templated_tests/python_fastapi/coverage.xml" \
-  --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
-  --test-command-dir "templated_tests/python_fastapi" \
+  --test-command "pytest --cov-report=term" \
   --coverage-type "cobertura" \
   --desired-coverage 70 \
   --max-iterations 10
