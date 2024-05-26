@@ -1,7 +1,6 @@
 import logging
-
-from jinja2 import Environment, StrictUndefined
-from cover_agent.settings.config_loader import get_settings
+from jinja2 import Environment, StrictUndefined, select_autoescape
+from coverage_ai.settings.config_loader import get_settings
 
 MAX_TESTS_PER_RUN = 4
 
@@ -134,7 +133,9 @@ class PromptBuilder:
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
         }
-        environment = Environment(undefined=StrictUndefined)
+        environment = Environment(
+            undefined=StrictUndefined, autoescape=select_autoescape(['html', 'xml'])
+        )
         try:
             system_prompt = environment.from_string(
                 get_settings().test_generation_prompt.system
