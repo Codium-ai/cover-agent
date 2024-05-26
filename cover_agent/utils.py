@@ -104,7 +104,32 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         response_text_lines_tmp = "\n".join(response_text_lines[:-i])
         try:
             data = yaml.safe_load(response_text_lines_tmp)
-            logging.info(f"Successfully parsed AI prediction after removing {i} lines")
+            if 'language' in data:
+                logging.info(f"Successfully parsed AI prediction after removing {i} lines")
+                return data
+        except:
+            pass
+
+    ## fifth fallback - brute force:
+    ## detect 'language:' key and use it as a starting point.
+    ## look for last '\n\n' after last 'test_code:' and extract the yaml between them
+    try:
+        # (1) find index of '\nlanguage:' string:
+        index_start = response_text.find('\nlanguage:')
+        if index_start == -1:
+            index_start = response_text.find('language:') # if response starts with 'language:'
+        # (2) find last appearance ot 'test_code:' string:
+        index_last_code = response_text.rfind('test_code:')
+        # (3) find the first place after 'test_code:' where there is a '\n\n' character:
+        index_end = response_text.find('\n\n', index_last_code)
+        if index_end == -1:
+            index_end = len(response_text) # response ends with valid yaml
+        response_text_copy = response_text[index_start:index_end].strip()
+        try:
+            data = yaml.safe_load(response_text_copy)
+            logging.info(f"Successfully parsed AI prediction when using the language: key as a starting point")
             return data
         except:
             pass
+    except:
+        pass
