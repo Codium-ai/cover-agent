@@ -1,7 +1,7 @@
 {
   "name": "js-vanilla-example",
   "version": "1.0.0",
-  "description": "A simple valina js project to find github users and their repositories.",
+  "description": "A simple vanilla js project to find github users and their repositories.",
   "main": "app.js",
   "type": "module",
   "scripts": {

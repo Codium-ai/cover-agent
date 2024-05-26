@@ -1,5 +1,3 @@
-# github-user-finder
+# js-vanilla-example
 
-A simple valina js project to find github users and their repositories. 
-
-Check the live  [here](http://sifulbd.github.io/user-finder/index.html) 
+A simple vanilla js project to find github users and their repositories.
