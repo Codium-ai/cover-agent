@@ -1,0 +1,23 @@
+{
+  "name": "github-user-finder",
+  "version": "1.0.0",
+  "description": "A simple valina js project to find github users and their repositories.",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^1.6.0",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "@testing-library/dom": "^10.1.0",
+    "@testing-library/jest-dom": "^6.4.5",
+    "@testing-library/react": "^15.0.7",
+    "jsdom": "^24.1.0"
+  }
+}

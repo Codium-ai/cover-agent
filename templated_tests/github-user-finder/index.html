@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub User Finder</title>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary mb-3">
+        <div class="container">
+            <a href="" class="navbar-brand">Github User Finder</a>
+        </div>
+    </nav>
+    <div class="container searchContainer">
+        <div class="search card card-body">
+            <h2>Search github user</h2>
+            <p class="lead">Enter username to see user profile and reps </p>
+            <input type="text" id="userName" class="form-control" placeholder="Enter Github username">
+        </div>  
+        <br>
+        <div id="profile">
+        <footer class="mt-5 p-3 text-center bg-light">
+            Github user finder &copy;
+        </footer>
+    </div> 
+
+    <script src="github.js"></script>
+    <script src="ui.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
