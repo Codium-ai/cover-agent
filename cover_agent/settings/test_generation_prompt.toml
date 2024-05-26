@@ -68,7 +68,7 @@ class SingleTest(BaseModel):
 
 class NewTests(BaseModel):
     language: str = Field(description="The programming language of the source code")
-    relevant_line_to_insert_after: int = Field(description="The line number in the test suite file, **after which** the new tests should be inserted, so they will be a part of the existing test suite.")
+    relevant_line_to_insert_after: int = Field(description="The line number in the test file, **after which** the new tests should be inserted, so they will be a part of the existing test suite. Choose the last line possible")
     needed_indent: int = Field(description="The number of spaces currently used to indent existing test suite functions (usually 0, 2, 4 etc.)")
     tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new test functions to append to the existing test suite, aiming to increase the code coverage.")
 =====

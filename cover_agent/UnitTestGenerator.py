@@ -201,7 +201,9 @@ class UnitTestGenerator:
             failed_test_runs_value = ""
             try:
                 for failed_test in self.failed_test_runs:
-                    code = failed_test['code']['test_code'].rstrip()
+                    failed_test_dict = failed_test['code']
+                    # dump dict to str
+                    code = json.dumps(failed_test_dict)
                     if 'error_message' in failed_test:
                         error_message = failed_test['error_message']
                     else:
@@ -209,6 +211,8 @@ class UnitTestGenerator:
                     failed_test_runs_value += f"Failed Test:\n```\n{code}\n```\n"
                     if error_message:
                         failed_test_runs_value += f"Error message for test above:\n{error_message}\n\n\n"
+                    else:
+                        failed_test_runs_value += "\n\n"
             except Exception as e:
                 self.logger.error(f"Error processing failed test runs: {e}")
                 failed_test_runs_value = ""
@@ -266,7 +270,10 @@ class UnitTestGenerator:
         # Step 0: no pre-process.
         # We asked the model that each generated test should be a self-contained independent test
         test_code = generated_test.get("test_code", "").rstrip()
-        additional_imports = generated_test.get('additional_imports', '')
+        additional_imports = generated_test.get('new_imports_code', '').strip()
+        # check if additional_imports only contains '"':
+        if additional_imports and additional_imports == '""':
+            additional_imports = ''
         relevant_line_to_insert_after = generated_tests_dict.get('relevant_line_to_insert_after', None)
         needed_indent = generated_tests_dict.get('needed_indent', None)
         # remove initial indent of the test code, and insert the needed indent
@@ -289,7 +296,7 @@ class UnitTestGenerator:
             processed_test_lines = original_content_lines[:relevant_line_to_insert_after] + test_code_lines + original_content_lines[relevant_line_to_insert_after:]
             processed_test = "\n".join(processed_test_lines)
             # insert the additional imports at the top of the file
-            if additional_imports:
+            if additional_imports and additional_imports.rstrip() not in processed_test:
                 processed_test = additional_imports.rstrip() + "\n\n" + processed_test
             with open(self.test_file_path, "w") as test_file:
                 test_file.write(processed_test)
