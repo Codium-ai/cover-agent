@@ -1,4 +1,5 @@
 import logging
+
 from jinja2 import Environment, StrictUndefined, select_autoescape
 from coverage_ai.settings.config_loader import get_settings
 
