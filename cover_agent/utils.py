@@ -109,7 +109,7 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         except:
             pass
 
-    ## fifth fallback - brute forece:
+    ## fifth fallback - brute force:
     ## detect 'language:' key and use it as a starting point.
     ## look for last '\n\n' after last 'test_code:' and extract the yaml between them
     try:

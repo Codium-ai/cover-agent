@@ -105,3 +105,23 @@ def test_try_fix_yaml_remove_all_lines():
     yaml_str = "name: John Smith\nage: 35\ninvalid_line"
     expected_output = {"name": "John Smith", "age": 35}
     assert try_fix_yaml(yaml_str) == expected_output
+
+
+def test_try_fix_yaml_llama3_8b():
+    from cover_agent.utils import try_fix_yaml
+    yaml_str = """\
+here is the response:
+
+language: python
+tests:
+- test_behavior: |
+    aaa
+  test_name: test_current_date
+  test_code: |
+    bbb
+  test_tags: happy path    
+  
+hope this helps!
+"""
+    expected_output = {'here is the response': None, 'language': 'python', 'tests': [{'test_behavior': 'aaa\n', 'test_name': 'test_current_date', 'test_code': 'bbb\n', 'test_tags': 'happy path'}]}
+    assert try_fix_yaml(yaml_str) == expected_output
