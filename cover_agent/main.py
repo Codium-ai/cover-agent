@@ -160,14 +160,14 @@ def main():
             logger.info(f"Desired Coverage: {test_gen.desired_coverage}%")
 
             # Generate tests by making a call to the LLM
-            generated_tests = test_gen.generate_tests(max_tokens=4096)
+            generated_tests_dict = test_gen.generate_tests(max_tokens=4096)
 
             # Write test_gen.prompt to a debug markdown file
             write_prompt_to_file(GENERATED_PROMPT_NAME, test_gen.prompt)
 
             # Validate each test and append the results to the test results list
-            for generated_test in generated_tests:
-                test_result = test_gen.validate_test(generated_test)
+            for generated_test in generated_tests_dict['tests']:
+                test_result = test_gen.validate_test(generated_test, generated_tests_dict)
                 test_results_list.append(test_result)
 
             # Increment the iteration counter

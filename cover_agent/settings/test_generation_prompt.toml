@@ -11,8 +11,7 @@ Additional guidelines:
 - Carefully analyze the provided code. Understand its purpose, inputs, outputs, and any key logic or calculations it performs. Spend significant time considering all different scenarios, including boundary values, invalid inputs, extreme conditions, and concurrency issues like race conditions and deadlocks, that need to be tested.
 - Brainstorm a list of test cases you think will be necessary to fully validate the correctness of the code and achieve 100% code coverage.
 - After each individual test has been added, review all tests to ensure they cover the full range of scenarios, including how to handle exceptions or errors.
-- Each new test should be a single self-contained independent {{ language }} function, without relying on any other tests, or setup code. \
-Each new test should be seen as appended at the end of original test file, and it should use the same testing framework and conventions as the existing tests.
+- If the original test file contained a test suite, assume that each generated test will be a part of the same suite. Ensure that the new tests are consistent with the existing test suite in terms of style, naming conventions, and structure.
 
 
 ## Source File
@@ -25,9 +24,9 @@ This numbers are not part of the original code.
 
 
 ## Test File
-Here is the file that contains the existing tests, called `{{ test_file_name }}`:
+Here is the file that contains the existing tests, called `{{ test_file_name }}`. Again, the line numbers are added manually, and are not part of the original code.
 =========
-{{ test_file|trim }}
+{{ test_file_numbered|trim }}
 =========
 
 
@@ -63,17 +62,22 @@ class SingleTest(BaseModel):
 {%- else %}
     test_name: str = Field(description=" A short unique test name, that should reflect the test objective")
 {%- endif %}
-    test_code: str = Field(description="A single self-contained test function, that tests the behavior described in 'test_behavior'. Do not add new dependencies.")
+    test_code: str = Field(description="A single test function, that tests the behavior described in 'test_behavior'. Do not add new dependencies.")
+    new_imports_code: str = Field(description="New imports that are required for the new test function, and are not already present in the test file. Give an empty string if no new imports are required.")
     test_tags: str = Field(description="A single label that best describes the test, out of: ['happy path', 'edge case','other']")
 
 class NewTests(BaseModel):
     language: str = Field(description="The programming language of the source code")
-    tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new test functions to append to the existing test file, aiming to increase the code coverage.")
+    relevant_line_to_insert_after: int = Field(description="The line number in the test suite file, **after which** the new tests should be inserted, so they will be a part of the existing test suite.")
+    needed_indent: int = Field(description="The number of spaces to indent the new test functions, so they are consistent with the existing test suite functions indent (usually 2 or 4)")
+    tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new test functions to append to the existing test suite, aiming to increase the code coverage.")
 =====
 
 Example output:
 ```yaml
 language: {{ language }}
+relevant_line_to_insert_after: 10
+needed_indent: ...
 tests:
 - test_behavior: |
     Test that the function returns the correct output for a single element list
@@ -90,6 +94,8 @@ tests:
 {%- else %}
     ...
 {%- endif %}
+  new_imports_code: |
+    ""
   test_tags: happy path
     ...
 ```

@@ -201,7 +201,7 @@ class UnitTestGenerator:
             failed_test_runs_value = ""
             try:
                 for failed_test in self.failed_test_runs:
-                    code = failed_test['code'].strip()
+                    code = failed_test['code']['test_code'].rstrip()
                     if 'error_message' in failed_test:
                         error_message = failed_test['error_message']
                     else:
@@ -228,22 +228,6 @@ class UnitTestGenerator:
         return prompt.build_prompt()
 
     def generate_tests(self, max_tokens=4096, dry_run=False):
-        """
-        Generate test cases using the AI model based on the provided prompt.
-
-        This method generates test cases by calling the AI model with the constructed prompt.
-        If 'dry_run' is set to True, placeholder test cases are returned.
-        Otherwise, the AI model is invoked with the prompt to generate actual test cases.
-        The method logs the total token count used by the language model.
-
-        Parameters:
-            max_tokens (int, optional): The maximum number of tokens to use for generating tests. Defaults to 4096.
-            dry_run (bool, optional): If True, placeholder test cases are returned without invoking the AI model. Defaults to False.
-
-        Returns:
-            list: A list of generated test cases as strings.
-            If an error occurs during test generation, an empty list is returned, and the error is recorded in the 'failed_test_runs' attribute.
-        """
         self.prompt = self.build_prompt()
 
         if dry_run:
@@ -255,15 +239,13 @@ class UnitTestGenerator:
         self.logger.info(
             f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}"
         )
-
         try:
             tests_dict = load_yaml(
                 response,
                 keys_fix_yaml=["test_tags", "test_code", "test_name", "test_behavior"],
             )
             if tests_dict is None:
-                raise ValueError("Failed to parse tests from YAML")
-            tests_list = [t["test_code"].rstrip() for t in tests_dict["tests"]]
+                return {}
         except Exception as e:
             self.logger.error(f"Error during test generation: {e}")
             # Record the error as a failed test attempt
@@ -276,151 +258,153 @@ class UnitTestGenerator:
                 "test": response,  # Use the response that led to the error
             }
             # self.failed_test_runs.append(fail_details)
-            tests_list = []  # Return an empty list or handle accordingly
+            tests_dict = []
 
-        return tests_list
+        return tests_dict
 
-    def validate_test(self, generated_test: str):
-        """
-        Validate a single generated test case by running it and checking coverage.
-
-        This function appends the generated test to the test file, runs it, and checks the output.
-        If the test fails or does not increase coverage, it rolls back changes and records the failure.
-
-        Parameters:
-            generated_test (str): The test code to validate.
-
-        Returns:
-            dict: A dictionary containing the test result status, reason for failure (if any),
-                stdout, stderr, exit code, and the test itself.
-        """
-        # Step 0: Run the test through the preprocessor rule set
-        # processed_test = self.preprocessor.process_file(generated_test)
-
+    def validate_test(self, generated_test: dict, generated_tests_dict: dict):
         # Step 0: no pre-process.
         # We asked the model that each generated test should be a self-contained independent test
-        processed_test = generated_test.strip('\n')
+        test_code = generated_test.get("test_code", "").rstrip()
+        additional_imports = generated_test.get('additional_imports', '')
+        relevant_line_to_insert_after = generated_tests_dict.get('relevant_line_to_insert_after', None)
+        needed_indent = generated_tests_dict.get('needed_indent', None)
+        # remove initial indent of the test code, and insert the needed indent
+        test_code_indented = test_code
+        if needed_indent:
+            initial_indent = len(test_code) - len(test_code.lstrip())
+            delta_indent = needed_indent - initial_indent
+            if delta_indent > 0:
+                test_code_indented = '\n'.join([delta_indent*' ' + line for line in test_code.split('\n')])
+        test_code_indented = '\n'+test_code_indented.strip('\n') + '\n'
 
-        # Step 1: Append the generated test to the test file and save the original content
-        with open(self.test_file_path, "r+") as test_file:
-            original_content = test_file.read()  # Store original content
-            test_file.write(
-                "\n"
-                + ("\n" if not original_content.endswith("\n") else "")
-                + processed_test
-                + "\n"
-            )  # Append the new test at the end
+        if test_code_indented and relevant_line_to_insert_after:
 
-        # Step 2: Run the test using the Runner class
-        self.logger.info(
-            f'Running test with the following command: "{self.test_command}"'
-        )
-        stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
-            command=self.test_command, cwd=self.test_command_dir
-        )
-
-        # Step 3: Check for pass/fail from the Runner object
-        if exit_code != 0:
-            # Test failed, roll back the test file to its original content
+            # Step 1: Append the generated test to the relevant line in the test file
+            with open(self.test_file_path, "r") as test_file:
+                original_content = test_file.read()  # Store original content
+            original_content_lines = original_content.split("\n")
+            test_code_lines = test_code_indented.split("\n")
+            # insert the test code at the relevant line
+            processed_test_lines = original_content_lines[:relevant_line_to_insert_after] + test_code_lines + original_content_lines[relevant_line_to_insert_after:]
+            processed_test = "\n".join(processed_test_lines)
+            # insert the additional imports at the top of the file
+            if additional_imports:
+                processed_test = additional_imports.rstrip() + "\n\n" + processed_test
             with open(self.test_file_path, "w") as test_file:
-                test_file.write(original_content)
-            self.logger.info(f"Skipping a generated test that failed")
-            fail_details = {
-                "status": "FAIL",
-                "reason": "Test failed",
-                "exit_code": exit_code,
-                "stderr": stderr,
-                "stdout": stdout,
-                "test": generated_test,
-            }
+                test_file.write(processed_test)
 
-            def extract_error_message(fail_message):
-                try:
-                    # Define a regular expression pattern to match the error message
-                    MAX_LINES = 15
-                    pattern = r'={3,} FAILURES ={3,}(.*?)(={3,}|$)'
-                    match = re.search(pattern, fail_message, re.DOTALL)
-                    if match:
-                        err_str = match.group(1).strip('\n')
-                        err_str_lines = err_str.split('\n')
-                        if len(err_str_lines) > MAX_LINES:
-                            # show last MAX_lines lines
-                            err_str = '...\n' + '\n'.join(err_str_lines[-MAX_LINES:])
-                        return err_str
-                    return ""
-                except Exception as e:
-                    self.logger.error(f"Error extracting error message: {e}")
-                    return ""
-
-            error_message = extract_error_message(fail_details["stdout"])
-            if error_message:
-                logging.error(f"Error message:\n{error_message}")
-
-            self.failed_test_runs.append(
-                {'code': generated_test, 'error_message': error_message}
-            )  # Append failure details to the list
-            return fail_details
-
-        # If test passed, check for coverage increase
-        try:
-            # Step 4: Check that the coverage has increased using the CoverageProcessor class
-            new_coverage_processor = CoverageProcessor(
-                file_path=self.code_coverage_report_path,
-                filename=os.path.basename(self.source_file_path),
-                coverage_type=self.coverage_type,
+            # Step 2: Run the test using the Runner class
+            self.logger.info(
+                f'Running test with the following command: "{self.test_command}"'
             )
-            _, _, new_percentage_covered = (
-                new_coverage_processor.process_coverage_report(
-                    time_of_test_command=time_of_test_command
-                )
+            stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
+                command=self.test_command, cwd=self.test_command_dir
             )
 
-            if new_percentage_covered <= self.current_coverage:
-                # Coverage has not increased, rollback the test by removing it from the test file
+            # Step 3: Check for pass/fail from the Runner object
+            if exit_code != 0:
+                # Test failed, roll back the test file to its original content
                 with open(self.test_file_path, "w") as test_file:
                     test_file.write(original_content)
-                self.logger.info("Test did not increase coverage. Rolling back.")
+                self.logger.info(f"Skipping a generated test that failed")
                 fail_details = {
                     "status": "FAIL",
-                    "reason": "Coverage did not increase",
+                    "reason": "Test failed",
+                    "exit_code": exit_code,
+                    "stderr": stderr,
+                    "stdout": stdout,
+                    "test": generated_test,
+                }
+
+                error_message = extract_error_message(fail_details["stdout"])
+                if error_message:
+                    logging.error(f"Error message:\n{error_message}")
+
+                self.failed_test_runs.append(
+                    {'code': generated_test, 'error_message': error_message}
+                )  # Append failure details to the list
+                return fail_details
+
+            # If test passed, check for coverage increase
+            try:
+                # Step 4: Check that the coverage has increased using the CoverageProcessor class
+                new_coverage_processor = CoverageProcessor(
+                    file_path=self.code_coverage_report_path,
+                    filename=os.path.basename(self.source_file_path),
+                    coverage_type=self.coverage_type,
+                )
+                _, _, new_percentage_covered = (
+                    new_coverage_processor.process_coverage_report(
+                        time_of_test_command=time_of_test_command
+                    )
+                )
+
+                if new_percentage_covered <= self.current_coverage:
+                    # Coverage has not increased, rollback the test by removing it from the test file
+                    with open(self.test_file_path, "w") as test_file:
+                        test_file.write(original_content)
+                    self.logger.info("Test did not increase coverage. Rolling back.")
+                    fail_details = {
+                        "status": "FAIL",
+                        "reason": "Coverage did not increase",
+                        "exit_code": exit_code,
+                        "stderr": stderr,
+                        "stdout": stdout,
+                        "test": generated_test,
+                    }
+                    self.failed_test_runs.append(
+                        {'code': fail_details["test"], 'error_message': 'did not increase code coverage'}
+                    )  # Append failure details to the list
+                    return fail_details
+            except Exception as e:
+                # Handle errors gracefully
+                self.logger.error(f"Error during coverage verification: {e}")
+                # Optionally, roll back even in case of error
+                with open(self.test_file_path, "w") as test_file:
+                    test_file.write(original_content)
+                fail_details = {
+                    "status": "FAIL",
+                    "reason": "Runtime error",
                     "exit_code": exit_code,
                     "stderr": stderr,
                     "stdout": stdout,
                     "test": generated_test,
                 }
                 self.failed_test_runs.append(
-                    {'code': fail_details["test"], 'error_message': 'did not increase code coverage'}
+                    {'code': fail_details["test"], 'error_message': 'coverage verification error'}
                 )  # Append failure details to the list
                 return fail_details
-        except Exception as e:
-            # Handle errors gracefully
-            self.logger.error(f"Error during coverage verification: {e}")
-            # Optionally, roll back even in case of error
-            with open(self.test_file_path, "w") as test_file:
-                test_file.write(original_content)
-            fail_details = {
-                "status": "FAIL",
-                "reason": "Runtime error",
+
+            # If everything passed and coverage increased, update current coverage and log success
+            self.current_coverage = new_percentage_covered
+            self.logger.info(
+                f"Test passed and coverage increased. Current coverage: {round(new_percentage_covered * 100, 2)}%"
+            )
+            return {
+                "status": "PASS",
+                "reason": "",
                 "exit_code": exit_code,
                 "stderr": stderr,
                 "stdout": stdout,
                 "test": generated_test,
             }
-            self.failed_test_runs.append(
-                {'code': fail_details["test"], 'error_message': 'coverage verification error'}
-            )  # Append failure details to the list
-            return fail_details
 
-        # If everything passed and coverage increased, update current coverage and log success
-        self.current_coverage = new_percentage_covered
-        self.logger.info(
-            f"Test passed and coverage increased. Current coverage: {round(new_percentage_covered * 100, 2)}%"
-        )
-        return {
-            "status": "PASS",
-            "reason": "",
-            "exit_code": exit_code,
-            "stderr": stderr,
-            "stdout": stdout,
-            "test": generated_test,
-        }
+
+def extract_error_message(fail_message):
+    try:
+        # Define a regular expression pattern to match the error message
+        MAX_LINES = 15
+        pattern = r'={3,} FAILURES ={3,}(.*?)(={3,}|$)'
+        match = re.search(pattern, fail_message, re.DOTALL)
+        if match:
+            err_str = match.group(1).strip('\n')
+            err_str_lines = err_str.split('\n')
+            if len(err_str_lines) > MAX_LINES:
+                # show last MAX_lines lines
+                err_str = '...\n' + '\n'.join(err_str_lines[-MAX_LINES:])
+            return err_str
+        return ""
+    except Exception as e:
+        self.logger.error(f"Error extracting error message: {e}")
+        return ""
