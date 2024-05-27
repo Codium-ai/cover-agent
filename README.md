@@ -174,6 +174,16 @@ cover-agent \
   --model "vertex_ai/gemini-pro"
 ```
 
+#### OpenAI Compatible Endpoint
+```shell
+export OPENAI_API_KEY="<your api key>" # If <your-api-base> requires an API KEY, set this value.
+
+cover-agent \
+  ...
+  --model "openai/<your model name>" \
+  --api-base "<your-api-base>"
+```
+
 
 ## Development
 This section discusses the development of this project.
