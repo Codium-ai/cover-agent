@@ -201,7 +201,9 @@ class UnitTestGenerator:
             failed_test_runs_value = ""
             try:
                 for failed_test in self.failed_test_runs:
-                    failed_test_dict = failed_test['code']
+                    failed_test_dict = failed_test.get('code', {})
+                    if not failed_test_dict:
+                        continue
                     # dump dict to str
                     code = json.dumps(failed_test_dict)
                     if 'error_message' in failed_test:

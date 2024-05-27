@@ -75,7 +75,7 @@ class PromptBuilder:
         self.source_file_numbered = "\n".join(
             [f"{i+1} {line}" for i, line in enumerate(self.source_file.split("\n"))]
         )
-        self.test_fule_numbered = "\n".join(
+        self.test_file_numbered = "\n".join(
             [f"{i+1} {line}" for i, line in enumerate(self.test_file.split("\n"))])
 
         # Conditionally fill in optional sections
@@ -127,7 +127,7 @@ class PromptBuilder:
             "source_file_name": self.source_file_name,
             "test_file_name": self.test_file_name,
             "source_file_numbered": self.source_file_numbered,
-            "test_file_numbered": self.test_fule_numbered,
+            "test_file_numbered": self.test_file_numbered,
             "source_file": self.source_file,
             "test_file": self.test_file,
             "code_coverage_report": self.code_coverage_report,
