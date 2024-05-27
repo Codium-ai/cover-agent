@@ -30,8 +30,14 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 
 
 ## News and Updates
+### 2024-05-26:
+Cover-Agent now supports nearly any LLM model in the world, using [LiteLLM](#using-other-llms) package.
+
+Notice that GPT-4 outperforms almost any open-source model in the world when it comes to code tasks and following complicated instructions.
+However, we updated the post-processing scripts to be more comprehensive, and were able to successfully run the [baseline script](#running-the-code) with `llama3-8B` and `llama3-70B models`, for example.
+
 ### 2024-05-09: 
-#### This repository includes the first known implementation of TestGen-LLM, described in the paper [Automated Unit Test Improvement using Large Language Models at Meta](https://arxiv.org/abs/2402.09171).
+This repository includes the first known implementation of TestGen-LLM, described in the paper [Automated Unit Test Improvement using Large Language Models at Meta](https://arxiv.org/abs/2402.09171).
 
 # Cover-Agent
 Welcome to Cover-Agent. This focused project utilizes Generative AI to automate and enhance the generation of tests (currently mostly unit tests), aiming to streamline development workflows. Cover-Agent can run via a terminal, and is planned to be integrated into popular CI platforms.
