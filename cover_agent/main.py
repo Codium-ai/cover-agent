@@ -182,7 +182,7 @@ def main():
                 f"Reached above target coverage of {test_gen.desired_coverage}% (Current Coverage: {round(test_gen.current_coverage * 100, 2)}%) in {iteration_count} iterations.")
         elif iteration_count == args.max_iterations:
             logger.info(
-                "Reached maximum iteration limit without achieving desired coverage."
+               f"Reached maximum iteration limit without achieving desired coverage. Current Coverage: {round(test_gen.current_coverage * 100, 2)}%"
             )
 
         # Dump the test results to a report
