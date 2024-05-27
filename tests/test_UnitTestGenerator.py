@@ -13,16 +13,10 @@ class TestUnitTestGenerator:
         MAX_TOKENS = 4096
 
         DRY_RUN = True  # Unit tests should not be making calls to the LLM model
-        CANNED_TESTS = [
-            'def test_current_date():\n    response = client.get("/current-date")\n    assert response.status_code == 200\n    assert "date" in response.json()',
-            'def test_add():\n    response = client.get("/add/2/3")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 5',
-            'def test_subtract():\n    response = client.get("/subtract/5/2")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 3',
-            'def test_multiply():\n    response = client.get("/multiply/2/4")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 8',
-            'def test_divide():\n    response = client.get("/divide/10/2")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 5',
-            'def test_square():\n    response = client.get("/square/4")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 16',
-            'def test_is_palindrome():\n    response = client.get("/is-palindrome/radar")\n    assert response.status_code == 200\n    assert response.json()["is_palindrome"] == True',
-            'def test_days_until_new_year():\n    response = client.get("/days-until-new-year")\n    assert response.status_code == 200\n    assert "days_until_new_year" in response.json()',
-        ]
+        CANNED_TESTS = {'tests':[
+            {'test_code': 'def test_current_date():\n    response = client.get("/current-date")\n    assert response.status_code == 200\n    assert "date" in response.json()'},
+            {'test_code':'def test_add():\n    response = client.get("/add/2/3")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 5'},
+        ]}
 
         REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         TEST_FILE = f"{REPO_ROOT}/templated_tests/python_fastapi/test_app.py"
@@ -51,7 +45,7 @@ class TestUnitTestGenerator:
 
         # Validate the generated tests and generate a report
         results_list = [
-            test_gen.validate_test(generated_test) for generated_test in generated_tests
+            test_gen.validate_test(generated_test, generated_tests) for generated_test in generated_tests['tests']
         ]
         ReportGenerator.generate_report(results_list, "test_results.html")
 
