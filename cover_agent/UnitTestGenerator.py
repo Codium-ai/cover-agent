@@ -276,7 +276,7 @@ class UnitTestGenerator:
         # check if additional_imports only contains '"':
         if additional_imports and additional_imports == '""':
             additional_imports = ''
-        relevant_line_to_insert_after = generated_tests_dict.get('relevant_line_to_insert_after', None)
+        relevant_line_number_to_insert_after = generated_tests_dict.get('relevant_line_number_to_insert_after', None)
         needed_indent = generated_tests_dict.get('needed_indent', None)
         # remove initial indent of the test code, and insert the needed indent
         test_code_indented = test_code
@@ -287,7 +287,7 @@ class UnitTestGenerator:
                 test_code_indented = '\n'.join([delta_indent*' ' + line for line in test_code.split('\n')])
         test_code_indented = '\n'+test_code_indented.strip('\n') + '\n'
 
-        if test_code_indented and relevant_line_to_insert_after:
+        if test_code_indented and relevant_line_number_to_insert_after:
 
             # Step 1: Append the generated test to the relevant line in the test file
             with open(self.test_file_path, "r") as test_file:
@@ -295,7 +295,7 @@ class UnitTestGenerator:
             original_content_lines = original_content.split("\n")
             test_code_lines = test_code_indented.split("\n")
             # insert the test code at the relevant line
-            processed_test_lines = original_content_lines[:relevant_line_to_insert_after] + test_code_lines + original_content_lines[relevant_line_to_insert_after:]
+            processed_test_lines = original_content_lines[:relevant_line_number_to_insert_after] + test_code_lines + original_content_lines[relevant_line_number_to_insert_after:]
             processed_test = "\n".join(processed_test_lines)
             # insert the additional imports at the top of the file
             if additional_imports and additional_imports.rstrip() not in processed_test:

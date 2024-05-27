@@ -61,7 +61,7 @@ class TestUnitTestGenerator:
 
         DRY_RUN = True  # Unit tests should not be making calls to the LLM model
         CANNED_TESTS = {'language': 'python',
-                        'relevant_line_to_insert_after': 10,
+                        'relevant_line_number_to_insert_after': 10,
                         'needed_indent': 4,
             'tests':[
             {'test_code': 'def test_current_date():\n    response = client.get("/current-date")\n    assert response.status_code == 200\n    assert "date" in response.json()', "new_imports_code":""},
