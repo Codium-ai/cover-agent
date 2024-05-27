@@ -40,8 +40,7 @@ jobs:
       - name: Run tests and generate reports
         env:
           OPENAI_API_KEY: "This_is_a_fake_API_key"
-        run: |
-          poetry run pytest --junitxml=testLog.xml --cov=cover_agent --cov-report=xml:cobertura.xml --cov-report=term --cov-fail-under=70 --log-cli-level=INFO
+        run: make test
       - name: Upload test report
         uses: actions/upload-artifact@v2
         if: always()
@@ -96,8 +95,7 @@ jobs:
         pip install poetry
         poetry install
     - name: Build Executable
-      run: |
-        poetry run pyinstaller --add-data "cover_agent/version.txt:." --add-data "cover_agent/settings/language_extensions.toml:." --add-data "cover_agent/settings/test_generation_prompt.toml:." --hidden-import=tiktoken_ext.openai_public --hidden-import=tiktoken_ext --onefile --name cover-agent-${{ matrix.os }} cover_agent/main.py
+      run: make installer
     - name: Test Executable (Windows)
       if: ${{ matrix.os == 'windows-latest' }}
       run: .\dist\cover-agent-${{ matrix.os }}.exe --help
