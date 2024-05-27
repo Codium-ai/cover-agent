@@ -37,20 +37,20 @@ class AICaller:
                 {"role": "user", "content": prompt["user"]},
             ]
 
-        # API base exception for Ollama and Hugging Face models
-        if "ollama" in self.model or "huggingface" in self.model  or self.model.startswith("openai/"):
-            response = litellm.completion(
-                model=self.model,
-                api_base=self.api_base,
-                messages=messages,
-                max_tokens=max_tokens,
-                stream=True,
-                temperature=0.2, # low, but not zero. This is a good default for most cases
-            )
-        else:
-            response = litellm.completion(
-                model=self.model, messages=messages, max_tokens=max_tokens, stream=True
-            )
+        # Default Completion parameters
+        completion_params = {
+            "model": self.model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "stream": True,
+            "temperature": 0.2,
+        }
+
+        # API base exception for OpenAI Compatible, Ollama and Hugging Face models
+        if "ollama" in self.model or "huggingface" in self.model or self.model.startswith("openai/"):
+            completion_params["api_base"] = self.api_base
+
+        response = litellm.completion(**completion_params)
 
         chunks = []
         print("Streaming results from LLM model...")
