@@ -370,7 +370,7 @@ class UnitTestGenerator:
                         "test": generated_test,
                     }
 
-                    error_message = extract_error_message(fail_details["stdout"])
+                    error_message = extract_error_message_python(fail_details["stdout"])
                     if error_message:
                         logging.error(f"Error message:\n{error_message}")
 
@@ -454,7 +454,7 @@ class UnitTestGenerator:
             }
 
 
-def extract_error_message(fail_message):
+def extract_error_message_python(fail_message):
     try:
         # Define a regular expression pattern to match the error message
         MAX_LINES = 15

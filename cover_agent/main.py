@@ -92,14 +92,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def write_prompt_to_file(prompt_file_name, prompt: dict):
-    with open(prompt_file_name, "w") as prompt_file:
-        user_prompt = prompt["user"]
-        system_prompt = prompt["system"]
-        prompt_file.write(f"User Prompt:\n{user_prompt}\n\n")
-        prompt_file.write(f"System Prompt:\n{system_prompt}\n\n")
-
-
 def main():
     # Constants
     GENERATED_PROMPT_NAME = "generated_prompt.md"
@@ -121,9 +113,6 @@ def main():
         shutil.copy(args.test_file_path, args.test_file_output_path)
     else:
         args.test_file_output_path = args.test_file_path
-        # logger.info(
-        #     f"Output test file path not provided. Using input test file path as output: {args.test_file_output_path}"
-        # )
 
     # Instantiate and configure UnitTestGenerator
     test_gen = UnitTestGenerator(
@@ -140,9 +129,6 @@ def main():
         api_base=args.api_base,
     )
 
-    # Write test_gen.prompt to a debug markdown file
-    write_prompt_to_file(GENERATED_PROMPT_NAME, test_gen.prompt)
-
     # Run the test and generate the report if not in prompt only mode
     if not args.prompt_only:
         iteration_count = 0
@@ -150,7 +136,6 @@ def main():
 
         # initial analysis of the test suite
         test_gen.initial_test_suite_analysis()
-
 
         # Run continuously until desired coverage has been met or we've reached the maximum iteration count
         while (
@@ -165,9 +150,6 @@ def main():
 
             # Generate tests by making a call to the LLM
             generated_tests_dict = test_gen.generate_tests(max_tokens=4096)
-
-            # Write test_gen.prompt to a debug markdown file
-            write_prompt_to_file(GENERATED_PROMPT_NAME, test_gen.prompt)
 
             # Validate each test and append the results to the test results list
             for generated_test in generated_tests_dict.get('tests', []):
