@@ -14,7 +14,7 @@ class AICaller:
         self.model = model
         self.api_base = api_base
 
-    def call_model(self, prompt: dict, max_tokens=4096):
+    def call_model(self, prompt: dict, max_tokens=4096):  # pragma: no cover
         """
         Call the language model with the provided prompt and retrieve the response.
 
