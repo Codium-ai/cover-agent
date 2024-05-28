@@ -98,17 +98,17 @@ jobs:
       run: make installer
     - name: Test Executable (Windows)
       if: ${{ matrix.os == 'windows-latest' }}
-      run: .\dist\cover-agent-${{ matrix.os }}.exe --help
+      run: .\dist\cover-agent.exe --help
       shell: pwsh
     - name: Test Executable (Unix)
       if: ${{ matrix.os != 'windows-latest' }}
-      run: ./dist/cover-agent-${{ matrix.os }} --help
+      run: ./dist/cover-agent --help
       shell: bash
     - name: Upload Executable
       uses: actions/upload-artifact@v2
       with:
         name: cover-agent-${{ matrix.os }}
-        path: dist/cover-agent-${{ matrix.os }}*
+        path: dist/cover-agent*
 
   release:
     needs: [build, changes]
@@ -116,10 +116,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Download executables
+    - name: Download executables (Ubuntu)
       uses: actions/download-artifact@v2
       with:
-        path: dist
+        name: cover-agent-ubuntu-latest
+        path: dist/ubuntu-latest
+    - uses: actions/download-artifact@v2
+      with:
+        name: cover-agent-windows-latest
+        path: dist/windows-latest
+    - uses: actions/download-artifact@v2
+      with:
+        name: cover-agent-macos-latest
+        path: dist/macos-latest
     - name: Extract version
       run: |
         echo "VERSION=$(cat cover_agent/version.txt)" >> $GITHUB_ENV
@@ -139,7 +148,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/cover-agent-ubuntu-latest/cover-agent-ubuntu-latest
+        asset_path: dist/ubuntu-latest/cover-agent
         asset_name: cover-agent-ubuntu
         asset_content_type: application/octet-stream
     - name: Upload Release Asset (Windows)
@@ -148,7 +157,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/cover-agent-windows-latest/cover-agent-windows-latest.exe
+        asset_path: dist/windows-latest/cover-agent.exe
         asset_name: cover-agent-windows.exe
         asset_content_type: application/octet-stream
     - name: Upload Release Asset (macOS)
@@ -157,6 +166,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/cover-agent-macos-latest/cover-agent-macos-latest
+        asset_path: dist/macos-latest/cover-agent
         asset_name: cover-agent-macos
         asset_content_type: application/octet-stream
