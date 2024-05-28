@@ -24,9 +24,9 @@ Those numbers are not a part of the original code.
 
 
 ## Test File
-Here is the file that contains the existing tests, called `{{ test_file_name }}`. Again, the line numbers are added manually, and are not part of the original code.
+Here is the file that contains the existing tests, called `{{ test_file_name }}`.
 =========
-{{ test_file_numbered|trim }}
+{{ test_file| trim }}
 =========
 
 
@@ -68,16 +68,12 @@ class SingleTest(BaseModel):
 
 class NewTests(BaseModel):
     language: str = Field(description="The programming language of the source code")
-    relevant_line_number_to_insert_after: int = Field(description="The line number in the test file, **after which** the new tests should be inserted, so they will be a part of the existing test suite. Place the new tests after the last test in the suite.")
-    needed_indent: int = Field(description="The number of spaces currently used to indent existing test suite functions (usually 0, 2, 4 etc.)")
     tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new test functions to append to the existing test suite, aiming to increase the code coverage.")
 =====
 
 Example output:
 ```yaml
 language: {{ language }}
-relevant_line_number_to_insert_after: 10
-needed_indent: ...
 tests:
 - test_behavior: |
     Test that the function returns the correct output for a single element list

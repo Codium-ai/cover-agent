@@ -320,8 +320,8 @@ class UnitTestGenerator:
             # check if additional_imports only contains '"':
             if additional_imports and additional_imports == '""':
                 additional_imports = ''
-            relevant_line_number_to_insert_after = generated_tests_dict.get('relevant_line_number_to_insert_after', None)
-            needed_indent = generated_tests_dict.get('needed_indent', None)
+            relevant_line_number_to_insert_after = self.relevant_line_number_to_insert_after
+            needed_indent = self.test_headers_indentation
             # remove initial indent of the test code, and insert the needed indent
             test_code_indented = test_code
             if needed_indent:
