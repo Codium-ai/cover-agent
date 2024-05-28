@@ -221,7 +221,7 @@ class UnitTestGenerator:
         self.failed_test_runs = []  # Reset the failed test runs. we don't want a list which grows indefinitely, and will take all the prompt tokens
 
         # Call PromptBuilder to build the prompt
-        prompt = PromptBuilder(
+        self.prompt_builder = PromptBuilder(
             source_file_path=self.source_file_path,
             test_file_path=self.test_file_path,
             code_coverage_report=self.code_coverage_report,
@@ -231,7 +231,50 @@ class UnitTestGenerator:
             language=self.language,
         )
 
-        return prompt.build_prompt()
+        return self.prompt_builder.build_prompt()
+
+
+    def initial_test_suite_analysis(self):
+        try:
+            test_headers_indentation = None
+            allowed_attempts = 3
+            counter_attempts = 0
+            while test_headers_indentation is None:
+                prompt_test_headers_indentation = self.prompt_builder.build_prompt_custom(file=
+                                                                                "analyze_suite_test_headers_indentation")
+                response, prompt_token_count, response_token_count = (
+                    self.ai_caller.call_model(prompt=prompt_test_headers_indentation)
+                )
+                tests_dict = load_yaml(response)
+                test_headers_indentation = tests_dict.get('test_headers_indentation', None)
+                counter_attempts += 1
+                if counter_attempts >= allowed_attempts:
+                    break
+            if test_headers_indentation is None:
+                raise Exception("Failed to analyze the test headers indentation")
+
+            relevant_line_number_to_insert_after = None
+            allowed_attempts = 3
+            counter_attempts = 0
+            while not relevant_line_number_to_insert_after:
+                prompt_test_headers_indentation = self.prompt_builder.build_prompt_custom(file=
+                                                                                "analyze_suite_test_insert_line")
+                response, prompt_token_count, response_token_count = (
+                    self.ai_caller.call_model(prompt=prompt_test_headers_indentation)
+                )
+                tests_dict = load_yaml(response)
+                relevant_line_number_to_insert_after = tests_dict.get('relevant_line_number_to_insert_after', None)
+                counter_attempts += 1
+                if counter_attempts >= allowed_attempts:
+                    break
+            if not relevant_line_number_to_insert_after:
+                raise Exception("Failed to analyze the relevant line number to insert new tests")
+
+            self.test_headers_indentation = test_headers_indentation
+            self.relevant_line_number_to_insert_after = relevant_line_number_to_insert_after
+        except Exception as e:
+            self.logger.error(f"Error during initial test suite analysis: {e}")
+            raise "Error during initial test suite analysis"
 
     def generate_tests(self, max_tokens=4096, dry_run=False):
         self.prompt = self.build_prompt()
@@ -426,5 +469,5 @@ def extract_error_message(fail_message):
             return err_str
         return ""
     except Exception as e:
-        self.logger.error(f"Error extracting error message: {e}")
+        logging.error(f"Error extracting error message: {e}")
         return ""

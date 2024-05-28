@@ -148,6 +148,10 @@ def main():
         iteration_count = 0
         test_results_list = []
 
+        # initial analysis of the test suite
+        test_gen.initial_test_suite_analysis()
+
+
         # Run continuously until desired coverage has been met or we've reached the maximum iteration count
         while (
             test_gen.current_coverage < (test_gen.desired_coverage / 100)
