@@ -1,0 +1,20 @@
+{
+  "name": "js-vanilla-example",
+  "version": "1.0.0",
+  "description": "A simple vanilla js project to find github users and their repositories.",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^1.6.0",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "jsdom": "^24.1.0"
+  }
+}
