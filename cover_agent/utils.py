@@ -26,8 +26,10 @@ def load_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
     try:
         data = yaml.safe_load(response_text)
     except Exception as e:
-        logging.error(f"Failed to parse AI prediction: {e}")
+        logging.info(f"Failed to parse AI prediction: {e}. Attempting to fix YAML formatting.")
         data = try_fix_yaml(response_text, keys_fix_yaml=keys_fix_yaml)
+        if not data:
+            logging.info(f"Failed to parse AI prediction after fixing YAML formatting.")
     return data
 
 
@@ -71,7 +73,7 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         logging.info(f"Successfully parsed AI prediction after adding |-\n")
         return data
     except:
-        logging.info(f"Failed to parse AI prediction after adding |-\n")
+        pass
 
     # second fallback - try to extract only range from first ```yaml to ````
     snippet_pattern = r"```(yaml)?[\s\S]*?```"
