@@ -121,9 +121,9 @@ def main():
         shutil.copy(args.test_file_path, args.test_file_output_path)
     else:
         args.test_file_output_path = args.test_file_path
-        logger.info(
-            f"Output test file path not provided. Using input test file path as output: {args.test_file_output_path}"
-        )
+        # logger.info(
+        #     f"Output test file path not provided. Using input test file path as output: {args.test_file_output_path}"
+        # )
 
     # Instantiate and configure UnitTestGenerator
     test_gen = UnitTestGenerator(
@@ -160,14 +160,14 @@ def main():
             logger.info(f"Desired Coverage: {test_gen.desired_coverage}%")
 
             # Generate tests by making a call to the LLM
-            generated_tests = test_gen.generate_tests(max_tokens=4096)
+            generated_tests_dict = test_gen.generate_tests(max_tokens=4096)
 
             # Write test_gen.prompt to a debug markdown file
             write_prompt_to_file(GENERATED_PROMPT_NAME, test_gen.prompt)
 
             # Validate each test and append the results to the test results list
-            for generated_test in generated_tests:
-                test_result = test_gen.validate_test(generated_test)
+            for generated_test in generated_tests_dict.get('tests', []):
+                test_result = test_gen.validate_test(generated_test, generated_tests_dict)
                 test_results_list.append(test_result)
 
             # Increment the iteration counter
@@ -182,7 +182,7 @@ def main():
                 f"Reached above target coverage of {test_gen.desired_coverage}% (Current Coverage: {round(test_gen.current_coverage * 100, 2)}%) in {iteration_count} iterations.")
         elif iteration_count == args.max_iterations:
             logger.info(
-                "Reached maximum iteration limit without achieving desired coverage."
+               f"Reached maximum iteration limit without achieving desired coverage. Current Coverage: {round(test_gen.current_coverage * 100, 2)}%"
             )
 
         # Dump the test results to a report
