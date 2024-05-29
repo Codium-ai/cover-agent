@@ -7,6 +7,7 @@
 # Generated reports
 .coverage
 coverage.xml
+cobertura.xml
 testLog.xml
 
 # Caches
