@@ -139,7 +139,7 @@ class CoverageProcessor:
         missed, covered = self.parse_missed_covered_lines(package_name, class_name)
 
         total_lines = missed + covered
-        coverage_percentage = (covered / total_lines) if total_lines > 0 else 0
+        coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0
 
         return lines_covered, lines_missed, coverage_percentage
 
@@ -149,9 +149,13 @@ class CoverageProcessor:
             missed, covered = 0, 0
             for row in reader:
                 if row['PACKAGE'] == package_name and row['CLASS'] == class_name:
-                    missed = int(row['LINE_MISSED'])
-                    covered = int(row['LINE_COVERED'])
-                    break
+                    try:
+                        missed = int(row['LINE_MISSED'])
+                        covered = int(row['LINE_COVERED'])
+                        break
+                    except KeyError as e:
+                        self.logger.error("Missing expected column in CSV: {e}")
+                        raise
 
         return missed, covered
 
