@@ -2,6 +2,20 @@
 This folder contains end-to-end integration tests for Cover Agent
 
 ## How to run
+You can run these example test suites using a locally hosted LLM or in the cloud just as you would normally with Cover Agent
+
+### Python Fast API Example
+From the root of the repository run the following command:
+```
+sh tests_integration/python_fastapi/test_openai.sh
+```
+
+You can use a different LLM by passing in the `--model` and `--api-base` parameters. For example, to use a locally hosted LLM with Ollama you can pass in:
+```
+--model "ollama/mistral" --api-base "http://host.docker.internal:11434"
+```
+
+For any other LLM that requires more environment variables to be set you will need to update the shell script and pass in the variables within the Docker command.
 
 ## When to run
 This test suite is intended to run with real LLMs (either locally hosted on online). If choosing cloud provided LLMs keep in mind that there is a cost associated with running these tests.
