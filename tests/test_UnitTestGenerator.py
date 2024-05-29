@@ -13,7 +13,7 @@ class TestUnitTestGenerator:
         MAX_TOKENS = 4096
 
         DRY_RUN = True  # Unit tests should not be making calls to the LLM model
-        CANNED_TESTS = {'tests':[
+        CANNED_TESTS = {'new_tests':[
             {'test_code': 'def test_current_date():\n    response = client.get("/current-date")\n    assert response.status_code == 200\n    assert "date" in response.json()'},
             {'test_code':'def test_add():\n    response = client.get("/add/2/3")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 5'},
         ]}
@@ -47,7 +47,7 @@ class TestUnitTestGenerator:
 
         # Validate the generated tests and generate a report
         results_list = [
-            test_gen.validate_test(generated_test, generated_tests) for generated_test in generated_tests['tests']
+            test_gen.validate_test(generated_test, generated_tests) for generated_test in generated_tests['new_tests']
         ]
         ReportGenerator.generate_report(results_list, "test_results.html")
 
@@ -63,7 +63,7 @@ class TestUnitTestGenerator:
 
         DRY_RUN = True  # Unit tests should not be making calls to the LLM model
         CANNED_TESTS = {'language': 'python',
-            'tests':[
+            'new_tests':[
             {'test_code': 'def test_current_date():\n    response = client.get("/current-date")\n    assert response.status_code == 200\n    assert "date" in response.json()', "new_imports_code":""},
             {'test_code':'def test_add():\n    response = client.get("/add/2/3")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 5'},
         ]}
@@ -97,7 +97,7 @@ class TestUnitTestGenerator:
 
         # Validate the generated tests and generate a report
         results_list = [
-            test_gen.validate_test(generated_test, generated_tests) for generated_test in generated_tests['tests']
+            test_gen.validate_test(generated_test, generated_tests) for generated_test in generated_tests['new_tests']
         ]
         ReportGenerator.generate_report(results_list, "test_results.html")
 

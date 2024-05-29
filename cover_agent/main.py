@@ -152,7 +152,7 @@ def main():
             generated_tests_dict = test_gen.generate_tests(max_tokens=4096)
 
             # Validate each test and append the results to the test results list
-            for generated_test in generated_tests_dict.get('tests', []):
+            for generated_test in generated_tests_dict.get('new_tests', []):
                 test_result = test_gen.validate_test(generated_test, generated_tests_dict)
                 test_results_list.append(test_result)
 
