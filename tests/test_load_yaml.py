@@ -113,7 +113,7 @@ def test_try_fix_yaml_llama3_8b():
 here is the response:
 
 language: python
-tests:
+new_tests:
 - test_behavior: |
     aaa
   test_name: test_current_date
@@ -123,7 +123,7 @@ tests:
   
 hope this helps!
 """
-    expected_output = {'here is the response': None, 'language': 'python', 'tests': [{'test_behavior': 'aaa\n', 'test_name': 'test_current_date', 'test_code': 'bbb\n', 'test_tags': 'happy path'}]}
+    expected_output = {'here is the response': None, 'language': 'python', 'new_tests': [{'test_behavior': 'aaa\n', 'test_name': 'test_current_date', 'test_code': 'bbb\n', 'test_tags': 'happy path'}]}
     assert try_fix_yaml(yaml_str) == expected_output
 
 def test_invalid_yaml_wont_parse():
