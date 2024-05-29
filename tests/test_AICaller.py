@@ -10,7 +10,7 @@ class TestAICaller:
 
     @patch("cover_agent.AICaller.AICaller.call_model")
     def test_call_model_simplified(self, mock_call_model):
-        # Setup the mock to return a predefined response
+        # Set up the mock to return a predefined response
         mock_call_model.return_value = ("Hello world!", 2, 10)
         prompt = {"system": "", "user": "Hello, world!"}
 
@@ -39,7 +39,6 @@ class TestAICaller:
 
         assert str(exc_info.value) == "Test exception"
 
-
     @patch("cover_agent.AICaller.litellm.completion")
     def test_call_model_error_streaming(self, mock_completion, ai_caller):
         # Set up mock to raise an exception
@@ -50,5 +49,3 @@ class TestAICaller:
             ai_caller.call_model(prompt)
 
         assert str(exc_info.value) == 'list index out of range'
-
-
