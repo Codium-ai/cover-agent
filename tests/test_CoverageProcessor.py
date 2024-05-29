@@ -82,3 +82,37 @@ class TestCoverageProcessor:
         assert lines_covered == [], "Expected lines_covered to be an empty list"
         assert lines_missed == [], "Expected lines_missed to be an empty list"
         assert coverage_percentage == 0, "Expected coverage percentage to be 0"
+
+    def test_parse_coverage_report_unsupported_type(self):
+        processor = CoverageProcessor("fake_path", "app.py", "unsupported_type")
+        with pytest.raises(ValueError, match='Unsupported coverage report type: unsupported_type'):
+            processor.parse_coverage_report()
+
+
+    def test_parse_coverage_report_not_implemented(self):
+        processor = CoverageProcessor("fake_path", "app.py", "lcov")
+        with pytest.raises(NotImplementedError, match='Parsing for lcov coverage reports is not implemented yet.'):
+            processor.parse_coverage_report()
+
+    def test_extract_package_and_class_java_file_error(self, mocker):
+        mocker.patch('builtins.open', side_effect=FileNotFoundError("File not found"))
+        processor = CoverageProcessor("fake_path", "path/to/MyClass.java", "jacoco")
+        with pytest.raises(FileNotFoundError, match='File not found'):
+            processor.extract_package_and_class_java()
+
+
+    def test_extract_package_and_class_java(self, mocker):
+        java_file_content = '''
+        package com.example;
+    
+        public class MyClass {
+            // class content
+        }
+        '''
+        mocker.patch('builtins.open', mocker.mock_open(read_data=java_file_content))
+        processor = CoverageProcessor("fake_path", "path/to/MyClass.java", "jacoco")
+        package_name, class_name = processor.extract_package_and_class_java()
+        assert package_name == 'com.example', "Expected package name to be 'com.example'"
+        assert class_name == 'MyClass', "Expected class name to be 'MyClass'"
+
+
