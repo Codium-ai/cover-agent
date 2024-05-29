@@ -133,6 +133,7 @@ class UnitTestGenerator:
         coverage_processor = CoverageProcessor(
             file_path=self.code_coverage_report_path,
             filename=os.path.basename(self.source_file_path),
+            filepath=self.source_file_path,
             coverage_type=self.coverage_type,
         )
 
@@ -385,6 +386,7 @@ class UnitTestGenerator:
                     new_coverage_processor = CoverageProcessor(
                         file_path=self.code_coverage_report_path,
                         filename=os.path.basename(self.source_file_path),
+                        filepath=self.source_file_path,
                         coverage_type=self.coverage_type,
                     )
                     _, _, new_percentage_covered = (

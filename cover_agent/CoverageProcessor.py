@@ -1,13 +1,15 @@
 from typing import Literal, Tuple
 import os
 import time
+import re
+import csv
 import xml.etree.ElementTree as ET
 from cover_agent.CustomLogger import CustomLogger
 
 
 class CoverageProcessor:
     def __init__(
-        self, file_path: str, filename: str, coverage_type: Literal["cobertura", "lcov"]
+        self, file_path: str, filename: str, filepath: str, coverage_type: Literal["cobertura", "lcov", "jacoco"]
     ):
         """
         Initializes a CoverageProcessor object.
@@ -28,6 +30,7 @@ class CoverageProcessor:
         """
         self.file_path = file_path
         self.filename = filename
+        self.filepath = filepath
         self.coverage_type = coverage_type
         self.logger = CustomLogger.get_logger(__name__)
 
@@ -83,6 +86,8 @@ class CoverageProcessor:
             raise NotImplementedError(
                 f"Parsing for {self.coverage_type} coverage reports is not implemented yet."
             )
+        elif self.coverage_type == "jacoco":
+            return self.parse_coverage_report_jacoco()
         else:
             raise ValueError(f"Unsupported coverage report type: {self.coverage_type}")
 
@@ -116,3 +121,63 @@ class CoverageProcessor:
         )
 
         return lines_covered, lines_missed, coverage_percentage
+
+    def parse_coverage_report_jacoco(self) -> Tuple[list, list, float]:
+        """
+        Parses a JaCoCo XML code coverage report to extract covered and missed line numbers for a specific file,
+        and calculates the coverage percentage.
+
+        Returns: Tuple[list, list, float]: A tuple containing empty lists of covered and missed line numbers,
+        and the coverage percentage. The reason being the format of the report for jacoco gives the totals we do not
+        sum them up. to stick with the current contract of the code and to do little change returning empty arrays.
+        I expect this should bring up a discussion on introduce a factory for different CoverageProcessors. Where the
+        total coverage percentage is returned to be evaluated only.
+        """
+        lines_covered, lines_missed = [], []
+
+        package_name, class_name = self.extract_package_and_class()
+        missed, covered = self.parse_missed_covered_lines(package_name, class_name)
+
+        total_lines = missed + covered
+        coverage_percentage = (covered / total_lines) if total_lines > 0 else 0
+
+        return lines_covered, lines_missed, coverage_percentage
+
+    def parse_missed_covered_lines(self, package_name: str, class_name: str) -> tuple[int, int]:
+        with open(self.file_path, 'r') as file:
+            reader = csv.DictReader(file)
+            missed, covered = 0, 0
+            for row in reader:
+                if row['PACKAGE'] == package_name and row['CLASS'] == class_name:
+                    missed = int(row['LINE_MISSED'])
+                    covered = int(row['LINE_COVERED'])
+                    break
+
+        return missed, covered
+
+    def extract_package_and_class(self):
+        package_pattern = re.compile(r'^\s*package\s+([\w\.]+)\s*;.*$')
+        class_pattern = re.compile(r'^\s*public\s+class\s+(\w+).*')
+
+        package_name = ""
+        class_name = ""
+        try:
+            with open(self.filepath, 'r') as file:
+                for line in file:
+                    if not package_name:  # Only match package if not already found
+                        package_match = package_pattern.match(line)
+                        if package_match:
+                            package_name = package_match.group(1)
+
+                    if not class_name:  # Only match class if not already found
+                        class_match = class_pattern.match(line)
+                        if class_match:
+                            class_name = class_match.group(1)
+
+                    if package_name and class_name:  # Exit loop if both are found
+                        break
+        except (FileNotFoundError, IOError) as e:
+            self.logger.error(f"Error reading file {self.filepath}: {e}")
+            raise
+
+        return package_name, class_name
