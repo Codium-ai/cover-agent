@@ -113,7 +113,7 @@ def test_try_fix_yaml_llama3_8b():
 here is the response:
 
 language: python
-tests:
+new_tests:
 - test_behavior: |
     aaa
   test_name: test_current_date
