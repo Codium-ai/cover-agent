@@ -9,19 +9,19 @@ from cover_agent.CustomLogger import CustomLogger
 
 class CoverageProcessor:
     def __init__(
-        self, file_path: str, filename: str, filepath: str, coverage_type: Literal["cobertura", "lcov", "jacoco"]
+        self, file_path: str, src_file_path: str, coverage_type: Literal["cobertura", "lcov", "jacoco"]
     ):
         """
         Initializes a CoverageProcessor object.
 
         Args:
             file_path (str): The path to the coverage report file.
-            filename (str): The name of the file for which coverage data is being processed.
+            src_file_path (str): The fully qualified path of the file for which coverage data is being processed.
             coverage_type (Literal["cobertura", "lcov"]): The type of coverage report being processed.
 
         Attributes:
             file_path (str): The path to the coverage report file.
-            filename (str): The name of the file for which coverage data is being processed.
+            src_file_path (str): The fully qualified path of the file for which coverage data is being processed.
             coverage_type (Literal["cobertura", "lcov"]): The type of coverage report being processed.
             logger (CustomLogger): The logger object for logging messages.
 
@@ -29,8 +29,7 @@ class CoverageProcessor:
             None
         """
         self.file_path = file_path
-        self.filename = filename
-        self.filepath = filepath
+        self.src_file_path = src_file_path
         self.coverage_type = coverage_type
         self.logger = CustomLogger.get_logger(__name__)
 
@@ -102,10 +101,11 @@ class CoverageProcessor:
         tree = ET.parse(self.file_path)
         root = tree.getroot()
         lines_covered, lines_missed = [], []
+        filename = os.path.basename(self.src_file_path)
 
         for cls in root.findall(".//class"):
             name_attr = cls.get("filename")
-            if name_attr and name_attr.endswith(self.filename):
+            if name_attr and name_attr.endswith(filename):
                 for line in cls.findall(".//line"):
                     line_number = int(line.get("number"))
                     hits = int(line.get("hits"))
@@ -166,7 +166,7 @@ class CoverageProcessor:
         package_name = ""
         class_name = ""
         try:
-            with open(self.filepath, 'r') as file:
+            with open(self.src_file_path, 'r') as file:
                 for line in file:
                     if not package_name:  # Only match package if not already found
                         package_match = package_pattern.match(line)
@@ -181,7 +181,7 @@ class CoverageProcessor:
                     if package_name and class_name:  # Exit loop if both are found
                         break
         except (FileNotFoundError, IOError) as e:
-            self.logger.error(f"Error reading file {self.filepath}: {e}")
+            self.logger.error(f"Error reading file {self.src_file_path}: {e}")
             raise
 
         return package_name, class_name

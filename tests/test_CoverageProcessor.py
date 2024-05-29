@@ -35,7 +35,7 @@ class TestCoverageProcessor:
     @pytest.fixture
     def processor(self):
         # Initializes CoverageProcessor with cobertura coverage type for each test
-        return CoverageProcessor("fake_path", "app.py", "fakepath", "cobertura")
+        return CoverageProcessor("fake_path", "app.py", "cobertura")
 
     def test_parse_coverage_report_cobertura(self, mock_xml_tree, processor):
         """
@@ -53,7 +53,7 @@ class TestCoverageProcessor:
             read_data='PACKAGE,CLASS,LINE_MISSED,LINE_COVERED\ncom.example,MyClass,5,10'))
         mocker.patch('csv.DictReader', return_value=[
             {'PACKAGE': 'com.example', 'CLASS': 'MyClass', 'LINE_MISSED': '5', 'LINE_COVERED': '10'}])
-        processor = CoverageProcessor("path/to/coverage_report.csv", "MyClass", "path/to/MyClass.java", "jacoco")
+        processor = CoverageProcessor("path/to/coverage_report.csv", "path/to/MyClass.java", "jacoco")
 
         # Action
         missed, covered = processor.parse_missed_covered_lines("com.example", "MyClass")
@@ -71,8 +71,7 @@ class TestCoverageProcessor:
         # Initialize the CoverageProcessor object
         coverage_processor = CoverageProcessor(
             file_path="path/to/coverage.xml",
-            filename="example.java",
-            filepath="path/to/example.java",
+            src_file_path="path/to/example.java",
             coverage_type="jacoco"
         )
 
