@@ -26,7 +26,7 @@ class SimpleMathOperationsSpec extends Specification {
         assert result == 5
     }
 
-    def "should return correct value for fibonacci sequence"() {
+    def "should return correct Fibonacci number for a given positive integer"() {
         given:
         SimpleMathOperations operations = new SimpleMathOperations()
     
@@ -72,6 +72,8 @@ class SimpleMathOperationsSpec extends Specification {
         then:
         assert result == 20
     }
+
+
 
 
 }

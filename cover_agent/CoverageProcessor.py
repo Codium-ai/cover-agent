@@ -135,15 +135,15 @@ class CoverageProcessor:
         """
         lines_covered, lines_missed = [], []
 
-        package_name, class_name = self.extract_package_and_class()
-        missed, covered = self.parse_missed_covered_lines(package_name, class_name)
+        package_name, class_name = self.extract_package_and_class_java()
+        missed, covered = self.parse_missed_covered_lines_jacoco(package_name, class_name)
 
         total_lines = missed + covered
         coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0
 
         return lines_covered, lines_missed, coverage_percentage
 
-    def parse_missed_covered_lines(self, package_name: str, class_name: str) -> tuple[int, int]:
+    def parse_missed_covered_lines_jacoco(self, package_name: str, class_name: str) -> tuple[int, int]:
         with open(self.file_path, 'r') as file:
             reader = csv.DictReader(file)
             missed, covered = 0, 0
@@ -159,7 +159,7 @@ class CoverageProcessor:
 
         return missed, covered
 
-    def extract_package_and_class(self):
+    def extract_package_and_class_java(self):
         package_pattern = re.compile(r'^\s*package\s+([\w\.]+)\s*;.*$')
         class_pattern = re.compile(r'^\s*public\s+class\s+(\w+).*')
 

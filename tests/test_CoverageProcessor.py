@@ -56,7 +56,7 @@ class TestCoverageProcessor:
         processor = CoverageProcessor("path/to/coverage_report.csv", "path/to/MyClass.java", "jacoco")
 
         # Action
-        missed, covered = processor.parse_missed_covered_lines("com.example", "MyClass")
+        missed, covered = processor.parse_missed_covered_lines_jacoco("com.example", "MyClass")
 
         # Assert
         assert missed == 5
@@ -64,9 +64,9 @@ class TestCoverageProcessor:
 
     def test_returns_empty_lists_and_float(self, mocker):
         # Mocking the necessary methods
-        mocker.patch('cover_agent.CoverageProcessor.CoverageProcessor.extract_package_and_class',
+        mocker.patch('cover_agent.CoverageProcessor.CoverageProcessor.extract_package_and_class_java',
                      return_value=('com.example', 'Example'))
-        mocker.patch('cover_agent.CoverageProcessor.CoverageProcessor.parse_missed_covered_lines', return_value=(0, 0))
+        mocker.patch('cover_agent.CoverageProcessor.CoverageProcessor.parse_missed_covered_lines_jacoco', return_value=(0, 0))
 
         # Initialize the CoverageProcessor object
         coverage_processor = CoverageProcessor(
