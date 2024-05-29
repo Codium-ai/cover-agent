@@ -19,6 +19,8 @@ class TestMain:
                 "coverage_report.xml",
                 "--test-command",
                 "pytest",
+                "--max-iterations",
+                "10",
             ],
         ):
             args = parse_args()

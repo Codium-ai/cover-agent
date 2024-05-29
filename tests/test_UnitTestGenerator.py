@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch
-from cover_agent.UnitTestGenerator import UnitTestGenerator
+from cover_agent.UnitTestGenerator import UnitTestGenerator, extract_error_message_python
 from cover_agent.ReportGenerator import ReportGenerator
 import os
 
@@ -35,6 +35,8 @@ class TestUnitTestGenerator:
             test_command_dir=f"{REPO_ROOT}/templated_tests/python_fastapi",
             included_files=None,
         )
+        test_gen.relevant_line_number_to_insert_after = 10
+        test_gen.test_headers_indentation = 4
 
         # Generate the tests
         generated_tests = (
@@ -61,8 +63,6 @@ class TestUnitTestGenerator:
 
         DRY_RUN = True  # Unit tests should not be making calls to the LLM model
         CANNED_TESTS = {'language': 'python',
-                        'relevant_line_number_to_insert_after': 10,
-                        'needed_indent': 4,
             'tests':[
             {'test_code': 'def test_current_date():\n    response = client.get("/current-date")\n    assert response.status_code == 200\n    assert "date" in response.json()', "new_imports_code":""},
             {'test_code':'def test_add():\n    response = client.get("/add/2/3")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 5'},
@@ -85,6 +85,8 @@ class TestUnitTestGenerator:
             test_command_dir=f"{REPO_ROOT}/templated_tests/python_fastapi",
             included_files=None,
         )
+        test_gen.relevant_line_number_to_insert_after = 10
+        test_gen.test_headers_indentation = 4
 
         # Generate the tests
         generated_tests = (
@@ -102,3 +104,18 @@ class TestUnitTestGenerator:
         # Write back sample test file contents
         with open(TEST_FILE, "w") as f:
             f.write(original_file_contents)
+
+
+class TestExtractErrorMessage:
+    def test_extract_single_match(self):
+        fail_message = "=== FAILURES ===\\nError occurred here\\n=== END ==="
+        expected = '\\nError occurred here\\n'
+        result = extract_error_message_python(fail_message)
+        assert result == expected, f"Expected '{expected}', got '{result}'"
+
+
+    def test_extract_bad_match(self):
+        fail_message = 33
+        expected = ''
+        result = extract_error_message_python(fail_message)
+        assert result == expected, f"Expected '{expected}', got '{result}'"

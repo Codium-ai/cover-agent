@@ -11,7 +11,7 @@ Additional guidelines:
 - Carefully analyze the provided code. Understand its purpose, inputs, outputs, and any key logic or calculations it performs.
 - Brainstorm a list of test cases you think will be necessary to fully validate the correctness of the code and achieve 100% code coverage.
 - After each individual test has been added, review all tests to ensure they cover the full range of scenarios, including how to handle exceptions or errors.
-- If the original test file contained a test suite, assume that each generated test will be a part of the same אקדא suite. Ensure that the new tests are consistent with the existing test suite in terms of style, naming conventions, and structure.
+- If the original test file contains a test suite, assume that each generated test will be a part of the same suite. Ensure that the new tests are consistent with the existing test suite in terms of style, naming conventions, and structure.
 
 
 ## Source File
@@ -24,9 +24,9 @@ Those numbers are not a part of the original code.
 
 
 ## Test File
-Here is the file that contains the existing tests, called `{{ test_file_name }}`. Again, the line numbers are added manually, and are not part of the original code.
+Here is the file that contains the existing tests, called `{{ test_file_name }}`.
 =========
-{{ test_file_numbered|trim }}
+{{ test_file| trim }}
 =========
 
 
@@ -62,22 +62,21 @@ class SingleTest(BaseModel):
 {%- else %}
     test_name: str = Field(description=" A short unique test name, that should reflect the test objective")
 {%- endif %}
-    test_code: str = Field(description="A single test function, that tests the behavior described in 'test_behavior'.")
+    test_code: str = Field(description="A single test function, that tests the behavior described in 'test_behavior'. The test should be a written like its a part of the existing test suite, if there is one, and it can use existing helper functions, setup, or teardown code.")
     new_imports_code: str = Field(description="Code for new imports that are required for the new test function, and are not already present in the test file. Give an empty string if no new imports are required.")
     test_tags: str = Field(description="A single label that best describes the test, out of: ['happy path', 'edge case','other']")
 
 class NewTests(BaseModel):
     language: str = Field(description="The programming language of the source code")
-    relevant_line_number_to_insert_after: int = Field(description="The line number in the test file, **after which** the new tests should be inserted, so they will be a part of the existing test suite. Place the new tests after the last test in the suite.")
-    needed_indent: int = Field(description="The number of spaces currently used to indent existing test suite functions (usually 0, 2, 4 etc.)")
-    tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new test functions to append to the existing test suite, aiming to increase the code coverage.")
+    existing_test_function_signature: str = Field(description="A signature header of one of the existing test functions")
+    tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new test functions to append to the existing test suite, aiming to increase the code coverage. Each test should run as-is, without requiring any additional inputs or setup code. Don't introduce new dependencies")
 =====
 
 Example output:
 ```yaml
 language: {{ language }}
-relevant_line_number_to_insert_after: 10
-needed_indent: ...
+existing_test_function_signature: |
+  ...
 tests:
 - test_behavior: |
     Test that the function returns the correct output for a single element list
