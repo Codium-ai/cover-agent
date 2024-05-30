@@ -39,7 +39,6 @@ class TestAICaller:
 
         assert str(exc_info.value) == "Test exception"
 
-
     @patch("cover_agent.AICaller.litellm.completion")
     def test_call_model_error_streaming(self, mock_completion, ai_caller):
         # Set up mock to raise an exception
@@ -49,6 +48,4 @@ class TestAICaller:
         with pytest.raises(Exception) as exc_info:
             ai_caller.call_model(prompt)
 
-        assert str(exc_info.value) == 'list index out of range'
-
-
+        assert str(exc_info.value) == "list index out of range"

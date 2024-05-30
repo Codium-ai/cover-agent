@@ -2,8 +2,12 @@ import sys
 from os.path import dirname, abspath, join, exists
 from dynaconf import Dynaconf
 
-SETTINGS_FILES = ["test_generation_prompt.toml", "language_extensions.toml",
-                  "analyze_suite_test_headers_indentation.toml","analyze_suite_test_insert_line.toml"]
+SETTINGS_FILES = [
+    "test_generation_prompt.toml",
+    "language_extensions.toml",
+    "analyze_suite_test_headers_indentation.toml",
+    "analyze_suite_test_insert_line.toml",
+]
 
 
 class SingletonSettings:

@@ -47,7 +47,11 @@ class AICaller:
         }
 
         # API base exception for OpenAI Compatible, Ollama and Hugging Face models
-        if "ollama" in self.model or "huggingface" in self.model or self.model.startswith("openai/"):
+        if (
+            "ollama" in self.model
+            or "huggingface" in self.model
+            or self.model.startswith("openai/")
+        ):
             completion_params["api_base"] = self.api_base
 
         response = litellm.completion(**completion_params)
