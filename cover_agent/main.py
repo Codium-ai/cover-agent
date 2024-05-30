@@ -3,6 +3,7 @@ import os
 from cover_agent.CoverAgent import CoverAgent
 from cover_agent.version import __version__
 
+
 def parse_args():
     """
     Parse command line arguments.
@@ -87,10 +88,12 @@ def parse_args():
 
     return parser.parse_args()
 
+
 def main():
     args = parse_args()
     agent = CoverAgent(args)
     agent.run()
+
 
 if __name__ == "__main__":
     main()

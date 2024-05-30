@@ -4,6 +4,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 from cover_agent.main import parse_args, main
 
+
 class TestMain:
     def test_parse_args(self):
         with patch(

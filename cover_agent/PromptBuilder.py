@@ -76,7 +76,8 @@ class PromptBuilder:
             [f"{i+1} {line}" for i, line in enumerate(self.source_file.split("\n"))]
         )
         self.test_file_numbered = "\n".join(
-            [f"{i+1} {line}" for i, line in enumerate(self.test_file.split("\n"))])
+            [f"{i+1} {line}" for i, line in enumerate(self.test_file.split("\n"))]
+        )
 
         # Conditionally fill in optional sections
         self.included_files = (
@@ -152,8 +153,7 @@ class PromptBuilder:
         # print(f"#### user_prompt:\n\n{user_prompt}")
         return {"system": system_prompt, "user": user_prompt}
 
-
-    def build_prompt_custom(self,file) -> dict:
+    def build_prompt_custom(self, file) -> dict:
         variables = {
             "source_file_name": self.source_file_name,
             "test_file_name": self.test_file_name,
@@ -173,9 +173,9 @@ class PromptBuilder:
             system_prompt = environment.from_string(
                 get_settings().get(file).system
             ).render(variables)
-            user_prompt = environment.from_string(
-                get_settings().get(file).user
-            ).render(variables)
+            user_prompt = environment.from_string(get_settings().get(file).user).render(
+                variables
+            )
         except Exception as e:
             logging.error(f"Error rendering prompt: {e}")
             return {"system": "", "user": ""}
