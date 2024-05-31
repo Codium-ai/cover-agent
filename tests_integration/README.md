@@ -14,12 +14,19 @@ Note: These scripts were written for Linux but they have been tested on a Window
 ## How to run
 You can run these example test suites using a locally hosted LLM or in the cloud just as you would normally with Cover Agent
 
-### Python Fast API Example
-From the root of the repository run the following command:
+### Running the Tests
+To run the full test suite simply run the following command from the root of the repository:
 ```
-sh tests_integration/python_fastapi/test_openai.sh
+sh tests_integration/test_all.sh
 ```
 
+Or run each test individually:
+| Templated Project         | Run Command                                                   |
+| ------------------------- | ------------------------------------------------------------- |
+| Python Fast API Example   | `sh tests_integration/python_fastapi/test_with_docker.sh`     |
+| Go Webservice Example     | `sh tests_integration/go_webservice/test_with_docker.sh`      |
+
+### Using Different LLMs
 You can use a different LLM by passing in the `--model` and `--api-base` parameters. For example, to use a locally hosted LLM with Ollama you can pass in:
 ```
 --model "ollama/mistral" --api-base "http://host.docker.internal:11434"
