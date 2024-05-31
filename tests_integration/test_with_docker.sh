@@ -47,7 +47,7 @@ fi
 
 # Build the Docker image
 echo "Building the Docker image..."
-docker build -t cover-agent-image -f "$DOCKERFILE" .
+docker build -t cover-agent-image -f "$DOCKERFILE" "$(dirname "$DOCKERFILE")"
 
 # Start the container in detached mode with the environment variable if set
 echo "Starting the container..."
@@ -76,7 +76,7 @@ COMMAND="/usr/local/bin/cover-agent \
   --test-command \"$TEST_COMMAND\" \
   --coverage-type \"cobertura\" \
   --desired-coverage 70 \
-  --max-iterations 2"
+  --max-iterations 1"
 
 if [ -n "$MODEL" ]; then
   COMMAND="$COMMAND --model \"$MODEL\""

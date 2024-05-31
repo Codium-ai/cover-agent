@@ -5,7 +5,7 @@ FROM golang:1.22
 WORKDIR /app
 
 # Copy the source code into the container
-COPY templated_tests/go_webservice/ .
+COPY . .
 
 # Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go build -buildvcs=false
