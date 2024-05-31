@@ -8,7 +8,7 @@ WORKDIR /app
 COPY templated_tests/go_webservice/ .
 
 # Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
-RUN go build
+RUN go build -buildvcs=false
 
 # Install necessary packages for testing and coverage report generation
 RUN go install github.com/stretchr/testify/assert \

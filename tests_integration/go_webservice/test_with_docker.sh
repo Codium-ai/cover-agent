@@ -60,7 +60,6 @@ COMMAND="/usr/local/bin/cover-agent \
   --test-file-path \"app_test.go\" \
   --code-coverage-report-path \"coverage.xml\" \
   --test-command \"go test -coverprofile=coverage.out && gocov convert coverage.out | gocov-xml > coverage.xml\" \
-  --test-command-dir $(pwd) \
   --coverage-type \"cobertura\" \
   --desired-coverage 70 \
   --max-iterations 2"
