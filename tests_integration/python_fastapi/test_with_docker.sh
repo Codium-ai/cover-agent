@@ -8,6 +8,18 @@ MODEL=""
 API_BASE=""
 OPENAI_API_KEY="${OPENAI_API_KEY:-}"
 
+# Function to clean up Docker container
+cleanup() {
+  if [ -n "$CONTAINER_ID" ]; then
+    echo "Cleaning up..."
+    docker stop "$CONTAINER_ID" || true
+    docker rm "$CONTAINER_ID" || true
+  fi
+}
+
+# Trap any errors or exits and run cleanup
+trap cleanup EXIT
+
 # Parse arguments
 while [ "$#" -gt 0 ]; do
   case $1 in
@@ -50,7 +62,7 @@ COMMAND="/usr/local/bin/cover-agent \
   --test-command \"pytest --cov=. --cov-report=xml --cov-report=term\" \
   --coverage-type \"cobertura\" \
   --desired-coverage 70 \
-  --max-iterations 10"
+  --max-iterations 2"
 
 if [ -n "$MODEL" ]; then
   COMMAND="$COMMAND --model \"$MODEL\""
@@ -65,10 +77,5 @@ if [ -n "$OPENAI_API_KEY" ]; then
 else
   docker exec $CONTAINER_ID bash -c "$COMMAND"
 fi
-
-# Clean up by stopping and removing the container
-echo "Cleaning up..."
-docker stop $CONTAINER_ID
-docker rm $CONTAINER_ID
 
 echo "Done."

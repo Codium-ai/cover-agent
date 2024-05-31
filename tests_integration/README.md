@@ -1,6 +1,16 @@
 # Integration tests for Cover Agent
 This folder contains end-to-end integration tests for Cover Agent
 
+## Prerequisites
+Before running any of these tests you will need to build the installer package by running the following command from the root of the repository:
+```
+make installer
+```
+
+You will also need [Docker](https://www.docker.com/) installed.
+
+Note: These scripts were written for Linux but they have been tested on a Windows system using WSL 2 and Docker for Desktop.
+
 ## How to run
 You can run these example test suites using a locally hosted LLM or in the cloud just as you would normally with Cover Agent
 
