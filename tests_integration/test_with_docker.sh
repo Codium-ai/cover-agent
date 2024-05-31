@@ -7,6 +7,10 @@ set -x
 MODEL=""
 API_BASE=""
 OPENAI_API_KEY="${OPENAI_API_KEY:-}"
+DOCKERFILE=""
+SOURCE_FILE_PATH=""
+TEST_FILE_PATH=""
+TEST_COMMAND=""
 
 # Function to clean up Docker container
 cleanup() {
@@ -26,21 +30,31 @@ while [ "$#" -gt 0 ]; do
     --model) MODEL="$2"; shift ;;
     --api-base) API_BASE="$2"; shift ;;
     --openai-api-key) OPENAI_API_KEY="$2"; shift ;;
+    --dockerfile) DOCKERFILE="$2"; shift ;;
+    --source-file-path) SOURCE_FILE_PATH="$2"; shift ;;
+    --test-file-path) TEST_FILE_PATH="$2"; shift ;;
+    --test-command) TEST_COMMAND="$2"; shift ;;
     *) echo "Unknown parameter passed: $1"; exit 1 ;;
   esac
   shift
 done
 
+# Ensure mandatory arguments are provided
+if [ -z "$DOCKERFILE" ] || [ -z "$SOURCE_FILE_PATH" ] || [ -z "$TEST_FILE_PATH" ] || [ -z "$TEST_COMMAND" ]; then
+  echo "Missing required parameters: --dockerfile, --source-file-path, --test-file-path, or --test-command"
+  exit 1
+fi
+
 # Build the Docker image
 echo "Building the Docker image..."
-docker build -t cover-agent-image -f tests_integration/python_fastapi/Dockerfile .
+docker build -t cover-agent-image -f "$DOCKERFILE" .
 
 # Start the container in detached mode with the environment variable if set
 echo "Starting the container..."
 if [ -z "$OPENAI_API_KEY" ]; then
   CONTAINER_ID=$(docker run -d cover-agent-image tail -f /dev/null)
 else
-  CONTAINER_ID=$(docker run -d -e OPENAI_API_KEY=$OPENAI_API_KEY cover-agent-image tail -f /dev/null)
+  CONTAINER_ID=$(docker run -d -e OPENAI_API_KEY="$OPENAI_API_KEY" cover-agent-image tail -f /dev/null)
 fi
 
 # Ensure the container started successfully
@@ -51,15 +65,15 @@ fi
 
 # Copy the cover-agent binary into the running container
 echo "Copying cover-agent binary into the container..."
-docker cp dist/cover-agent $CONTAINER_ID:/usr/local/bin/cover-agent
+docker cp dist/cover-agent "$CONTAINER_ID":/usr/local/bin/cover-agent
 
 # Run the cover-agent command inside the running container
 echo "Running the cover-agent command..."
 COMMAND="/usr/local/bin/cover-agent \
-  --source-file-path \"app.py\" \
-  --test-file-path \"test_app.py\" \
+  --source-file-path \"$SOURCE_FILE_PATH\" \
+  --test-file-path \"$TEST_FILE_PATH\" \
   --code-coverage-report-path \"coverage.xml\" \
-  --test-command \"pytest --cov=. --cov-report=xml --cov-report=term\" \
+  --test-command \"$TEST_COMMAND\" \
   --coverage-type \"cobertura\" \
   --desired-coverage 70 \
   --max-iterations 2"
@@ -73,9 +87,9 @@ if [ -n "$API_BASE" ]; then
 fi
 
 if [ -n "$OPENAI_API_KEY" ]; then
-  docker exec -e OPENAI_API_KEY=$OPENAI_API_KEY $CONTAINER_ID bash -c "$COMMAND"
+  docker exec -e OPENAI_API_KEY="$OPENAI_API_KEY" "$CONTAINER_ID" bash -c "$COMMAND"
 else
-  docker exec $CONTAINER_ID bash -c "$COMMAND"
+  docker exec "$CONTAINER_ID" bash -c "$COMMAND"
 fi
 
 echo "Done."

@@ -21,10 +21,24 @@ sh tests_integration/test_all.sh
 ```
 
 Or run each test individually:
-| Templated Project         | Run Command                                                   |
-| ------------------------- | ------------------------------------------------------------- |
-| Python Fast API Example   | `sh tests_integration/python_fastapi/test_with_docker.sh`     |
-| Go Webservice Example     | `sh tests_integration/go_webservice/test_with_docker.sh`      |
+#### Python Fast API Example
+````
+sh tests_integration/test_with_docker.sh \
+  --dockerfile "tests_integration/python_fastapi/Dockerfile" \
+  --source-file-path "app.py" \
+  --test-file-path "test_app.py" \
+  --test-command "pytest --cov=. --cov-report=xml --cov-report=term"
+````
+
+#### Go Webservice Example
+````
+sh tests_integration/test_with_docker.sh \
+  --dockerfile "tests_integration/go_webservice/Dockerfile" \
+  --source-file-path "app.go" \
+  --test-file-path "app_test.go" \
+  --test-command "go test -coverprofile=coverage.out && gocov convert coverage.out | gocov-xml > coverage.xml" \
+  --model "gpt-4o"
+````
 
 ### Using Different LLMs
 You can use a different LLM by passing in the `--model` and `--api-base` parameters. For example, to use a locally hosted LLM with Ollama you can pass in:
