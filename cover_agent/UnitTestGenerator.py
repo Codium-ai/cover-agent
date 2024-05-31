@@ -132,7 +132,7 @@ class UnitTestGenerator:
         # Instantiate CoverageProcessor and process the coverage report
         coverage_processor = CoverageProcessor(
             file_path=self.code_coverage_report_path,
-            filename=os.path.basename(self.source_file_path),
+            src_file_path=self.source_file_path,
             coverage_type=self.coverage_type,
         )
 
@@ -201,24 +201,28 @@ class UnitTestGenerator:
             failed_test_runs_value = ""
             try:
                 for failed_test in self.failed_test_runs:
-                    failed_test_dict = failed_test.get('code', {})
+                    failed_test_dict = failed_test.get("code", {})
                     if not failed_test_dict:
                         continue
                     # dump dict to str
                     code = json.dumps(failed_test_dict)
-                    if 'error_message' in failed_test:
-                        error_message = failed_test['error_message']
+                    if "error_message" in failed_test:
+                        error_message = failed_test["error_message"]
                     else:
                         error_message = None
                     failed_test_runs_value += f"Failed Test:\n```\n{code}\n```\n"
                     if error_message:
-                        failed_test_runs_value += f"Error message for test above:\n{error_message}\n\n\n"
+                        failed_test_runs_value += (
+                            f"Error message for test above:\n{error_message}\n\n\n"
+                        )
                     else:
                         failed_test_runs_value += "\n\n"
             except Exception as e:
                 self.logger.error(f"Error processing failed test runs: {e}")
                 failed_test_runs_value = ""
-        self.failed_test_runs = []  # Reset the failed test runs. we don't want a list which grows indefinitely, and will take all the prompt tokens
+        self.failed_test_runs = (
+            []
+        )  # Reset the failed test runs. we don't want a list which grows indefinitely, and will take all the prompt tokens
 
         # Call PromptBuilder to build the prompt
         self.prompt_builder = PromptBuilder(
@@ -233,20 +237,24 @@ class UnitTestGenerator:
 
         return self.prompt_builder.build_prompt()
 
-
     def initial_test_suite_analysis(self):
         try:
             test_headers_indentation = None
             allowed_attempts = 3
             counter_attempts = 0
             while test_headers_indentation is None:
-                prompt_test_headers_indentation = self.prompt_builder.build_prompt_custom(file=
-                                                                                "analyze_suite_test_headers_indentation")
+                prompt_test_headers_indentation = (
+                    self.prompt_builder.build_prompt_custom(
+                        file="analyze_suite_test_headers_indentation"
+                    )
+                )
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_test_headers_indentation)
                 )
                 tests_dict = load_yaml(response)
-                test_headers_indentation = tests_dict.get('test_headers_indentation', None)
+                test_headers_indentation = tests_dict.get(
+                    "test_headers_indentation", None
+                )
                 counter_attempts += 1
                 if counter_attempts >= allowed_attempts:
                     break
@@ -257,21 +265,30 @@ class UnitTestGenerator:
             allowed_attempts = 3
             counter_attempts = 0
             while not relevant_line_number_to_insert_after:
-                prompt_test_headers_indentation = self.prompt_builder.build_prompt_custom(file=
-                                                                                "analyze_suite_test_insert_line")
+                prompt_test_headers_indentation = (
+                    self.prompt_builder.build_prompt_custom(
+                        file="analyze_suite_test_insert_line"
+                    )
+                )
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_test_headers_indentation)
                 )
                 tests_dict = load_yaml(response)
-                relevant_line_number_to_insert_after = tests_dict.get('relevant_line_number_to_insert_after', None)
+                relevant_line_number_to_insert_after = tests_dict.get(
+                    "relevant_line_number_to_insert_after", None
+                )
                 counter_attempts += 1
                 if counter_attempts >= allowed_attempts:
                     break
             if not relevant_line_number_to_insert_after:
-                raise Exception("Failed to analyze the relevant line number to insert new tests")
+                raise Exception(
+                    "Failed to analyze the relevant line number to insert new tests"
+                )
 
             self.test_headers_indentation = test_headers_indentation
-            self.relevant_line_number_to_insert_after = relevant_line_number_to_insert_after
+            self.relevant_line_number_to_insert_after = (
+                relevant_line_number_to_insert_after
+            )
         except Exception as e:
             self.logger.error(f"Error during initial test suite analysis: {e}")
             raise "Error during initial test suite analysis"
@@ -316,11 +333,15 @@ class UnitTestGenerator:
             # Step 0: no pre-process.
             # We asked the model that each generated test should be a self-contained independent test
             test_code = generated_test.get("test_code", "").rstrip()
-            additional_imports = generated_test.get('new_imports_code', '').strip().strip('"')
+            additional_imports = (
+                generated_test.get("new_imports_code", "").strip().strip('"')
+            )
             # check if additional_imports only contains '"':
             if additional_imports and additional_imports == '""':
-                additional_imports = ''
-            relevant_line_number_to_insert_after = self.relevant_line_number_to_insert_after
+                additional_imports = ""
+            relevant_line_number_to_insert_after = (
+                self.relevant_line_number_to_insert_after
+            )
             needed_indent = self.test_headers_indentation
             # remove initial indent of the test code, and insert the needed indent
             test_code_indented = test_code
@@ -328,8 +349,10 @@ class UnitTestGenerator:
                 initial_indent = len(test_code) - len(test_code.lstrip())
                 delta_indent = int(needed_indent) - initial_indent
                 if delta_indent > 0:
-                    test_code_indented = '\n'.join([delta_indent*' ' + line for line in test_code.split('\n')])
-            test_code_indented = '\n'+test_code_indented.strip('\n') + '\n'
+                    test_code_indented = "\n".join(
+                        [delta_indent * " " + line for line in test_code.split("\n")]
+                    )
+            test_code_indented = "\n" + test_code_indented.strip("\n") + "\n"
 
             if test_code_indented and relevant_line_number_to_insert_after:
 
@@ -339,7 +362,11 @@ class UnitTestGenerator:
                 original_content_lines = original_content.split("\n")
                 test_code_lines = test_code_indented.split("\n")
                 # insert the test code at the relevant line
-                processed_test_lines = original_content_lines[:relevant_line_number_to_insert_after] + test_code_lines + original_content_lines[relevant_line_number_to_insert_after:]
+                processed_test_lines = (
+                    original_content_lines[:relevant_line_number_to_insert_after]
+                    + test_code_lines
+                    + original_content_lines[relevant_line_number_to_insert_after:]
+                )
                 processed_test = "\n".join(processed_test_lines)
                 # insert the additional imports at the top of the file
                 if additional_imports and additional_imports not in processed_test:
@@ -375,7 +402,7 @@ class UnitTestGenerator:
                         logging.error(f"Error message:\n{error_message}")
 
                     self.failed_test_runs.append(
-                        {'code': generated_test, 'error_message': error_message}
+                        {"code": generated_test, "error_message": error_message}
                     )  # Append failure details to the list
                     return fail_details
 
@@ -384,7 +411,7 @@ class UnitTestGenerator:
                     # Step 4: Check that the coverage has increased using the CoverageProcessor class
                     new_coverage_processor = CoverageProcessor(
                         file_path=self.code_coverage_report_path,
-                        filename=os.path.basename(self.source_file_path),
+                        src_file_path=self.source_file_path,
                         coverage_type=self.coverage_type,
                     )
                     _, _, new_percentage_covered = (
@@ -397,7 +424,9 @@ class UnitTestGenerator:
                         # Coverage has not increased, rollback the test by removing it from the test file
                         with open(self.test_file_path, "w") as test_file:
                             test_file.write(original_content)
-                        self.logger.info("Test did not increase coverage. Rolling back.")
+                        self.logger.info(
+                            "Test did not increase coverage. Rolling back."
+                        )
                         fail_details = {
                             "status": "FAIL",
                             "reason": "Coverage did not increase",
@@ -407,7 +436,10 @@ class UnitTestGenerator:
                             "test": generated_test,
                         }
                         self.failed_test_runs.append(
-                            {'code': fail_details["test"], 'error_message': 'did not increase code coverage'}
+                            {
+                                "code": fail_details["test"],
+                                "error_message": "did not increase code coverage",
+                            }
                         )  # Append failure details to the list
                         return fail_details
                 except Exception as e:
@@ -425,7 +457,10 @@ class UnitTestGenerator:
                         "test": generated_test,
                     }
                     self.failed_test_runs.append(
-                        {'code': fail_details["test"], 'error_message': 'coverage verification error'}
+                        {
+                            "code": fail_details["test"],
+                            "error_message": "coverage verification error",
+                        }
                     )  # Append failure details to the list
                     return fail_details
 
@@ -458,14 +493,14 @@ def extract_error_message_python(fail_message):
     try:
         # Define a regular expression pattern to match the error message
         MAX_LINES = 15
-        pattern = r'={3,} FAILURES ={3,}(.*?)(={3,}|$)'
+        pattern = r"={3,} FAILURES ={3,}(.*?)(={3,}|$)"
         match = re.search(pattern, fail_message, re.DOTALL)
         if match:
-            err_str = match.group(1).strip('\n')
-            err_str_lines = err_str.split('\n')
+            err_str = match.group(1).strip("\n")
+            err_str_lines = err_str.split("\n")
             if len(err_str_lines) > MAX_LINES:
                 # show last MAX_lines lines
-                err_str = '...\n' + '\n'.join(err_str_lines[-MAX_LINES:])
+                err_str = "...\n" + "\n".join(err_str_lines[-MAX_LINES:])
             return err_str
         return ""
     except Exception as e:

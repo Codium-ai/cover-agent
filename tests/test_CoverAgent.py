@@ -2,10 +2,11 @@ import os
 import argparse
 from unittest.mock import patch, MagicMock
 import pytest
-from cover_agent.main import parse_args, main
+from cover_agent.CoverAgent import CoverAgent
+from cover_agent.main import parse_args
 
 
-class TestMain:
+class TestCoverAgent:
     def test_parse_args(self):
         with patch(
             "sys.argv",
@@ -38,7 +39,7 @@ class TestMain:
     @patch("cover_agent.CoverAgent.UnitTestGenerator")
     @patch("cover_agent.CoverAgent.ReportGenerator")
     @patch("cover_agent.CoverAgent.os.path.isfile")
-    def test_main_source_file_not_found(
+    def test_agent_source_file_not_found(
         self, mock_isfile, mock_report_generator, mock_unit_cover_agent
     ):
         args = argparse.Namespace(
@@ -53,23 +54,24 @@ class TestMain:
             desired_coverage=90,
             max_iterations=10,
         )
-        parse_args = lambda: args  # Mocking parse_args function
-        mock_isfile.return_value = False  # Simulate source file not found
+        parse_args = lambda: args
+        mock_isfile.return_value = False
 
         with patch("cover_agent.main.parse_args", parse_args):
             with pytest.raises(FileNotFoundError) as exc_info:
-                main()
+                agent = CoverAgent(args)
 
         assert (
             str(exc_info.value) == f"Source file not found at {args.source_file_path}"
         )
+
         mock_unit_cover_agent.assert_not_called()
         mock_report_generator.generate_report.assert_not_called()
 
     @patch("cover_agent.CoverAgent.os.path.exists")
     @patch("cover_agent.CoverAgent.os.path.isfile")
     @patch("cover_agent.CoverAgent.UnitTestGenerator")
-    def test_main_test_file_not_found(
+    def test_agent_test_file_not_found(
         self, mock_unit_cover_agent, mock_isfile, mock_exists
     ):
         args = argparse.Namespace(
@@ -85,12 +87,12 @@ class TestMain:
             max_iterations=10,
             prompt_only=False,
         )
-        parse_args = lambda: args  # Mocking parse_args function
+        parse_args = lambda: args
         mock_isfile.side_effect = [True, False]
         mock_exists.return_value = True
 
         with patch("cover_agent.main.parse_args", parse_args):
             with pytest.raises(FileNotFoundError) as exc_info:
-                main()
+                agent = CoverAgent(args)
 
         assert str(exc_info.value) == f"Test file not found at {args.test_file_path}"
