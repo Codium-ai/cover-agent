@@ -132,7 +132,7 @@ class UnitTestGenerator:
         # Instantiate CoverageProcessor and process the coverage report
         coverage_processor = CoverageProcessor(
             file_path=self.code_coverage_report_path,
-            filename=os.path.basename(self.source_file_path),
+            src_file_path=self.source_file_path,
             coverage_type=self.coverage_type,
         )
 
@@ -411,7 +411,7 @@ class UnitTestGenerator:
                     # Step 4: Check that the coverage has increased using the CoverageProcessor class
                     new_coverage_processor = CoverageProcessor(
                         file_path=self.code_coverage_report_path,
-                        filename=os.path.basename(self.source_file_path),
+                        src_file_path=self.source_file_path,
                         coverage_type=self.coverage_type,
                     )
                     _, _, new_percentage_covered = (
