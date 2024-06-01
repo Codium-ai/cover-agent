@@ -1,5 +1,8 @@
+import datetime
 import os
 import shutil
+import wandb
+
 from cover_agent.CustomLogger import CustomLogger
 from cover_agent.ReportGenerator import ReportGenerator
 from cover_agent.UnitTestGenerator import UnitTestGenerator
@@ -44,6 +47,13 @@ class CoverAgent:
             self.args.test_file_output_path = self.args.test_file_path
 
     def run(self):
+
+        if 'WANDB_API_KEY' in os.environ:
+            wandb.login(key=os.environ['WANDB_API_KEY'])
+            time_and_date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            run_name = f"{self.args.model}_" + time_and_date
+            wandb.init(project="cover-agent", name=run_name)
+
         if not self.args.prompt_only:
             iteration_count = 0
             test_results_list = []
@@ -90,3 +100,6 @@ class CoverAgent:
             self.logger.info(
                 f"Prompt only option requested. Skipping call to LLM. Prompt can be found at: {self.args.prompt_only}"
             )
+
+        if 'WANDB_API_KEY' in os.environ:
+            wandb.finish()
