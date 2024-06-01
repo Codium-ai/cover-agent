@@ -406,6 +406,16 @@ class UnitTestGenerator:
                     self.failed_test_runs.append(
                         {"code": generated_test, "error_message": error_message}
                     )  # Append failure details to the list
+
+                    if 'WANDB_API_KEY' in os.environ:
+                        fail_details["error_message"] = error_message
+                        root_span = Trace(
+                            name="fail_details_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                            kind="llm",  # kind can be "llm", "chain", "agent" or "tool
+                            inputs={"test_code": fail_details["test"]},
+                            outputs=fail_details)
+                        root_span.log(name='inference')
+
                     return fail_details
 
                 # If test passed, check for coverage increase
