@@ -30,6 +30,10 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 
 
 ## News and Updates
+
+### 2024-06-01:
+Added support for comprehensive logging to [Weights and Biases](https://wandb.ai/). Set the `WANDB_API_KEY` environment variable to enable this feature.
+
 ### 2024-05-26:
 Cover-Agent now supports nearly any LLM model in the world, using [LiteLLM](#using-other-llms) package.
 
@@ -163,7 +167,6 @@ Note: If you are using Poetry then use the `poetry run cover-agent` command inst
 
 ### Outputs
 A few debug files will be outputted locally within the repository (that are part of the `.gitignore`)
-* `generated_prompt.md`: The full prompt that is sent to the LLM
 * `run.log`: A copy of the logger that gets dumped to your `stdout`
 * `test_results.html`: A results table that contains the following for each generated test:
   * Test status
@@ -172,6 +175,9 @@ A few debug files will be outputted locally within the repository (that are part
   * `stderr`
   * `stdout`
   * Generated test
+
+### Additional logging
+If you set an environment variable `WANDB_API_KEY`, the prompts, responses, and additional information will be logged to [Weights and Biases](https://wandb.ai/).
 
 ### Using other LLMs
 This project uses LiteLLM to communicate with OpenAI and other hosted LLMs (supporting 100+ LLMs to date). To use a different model other than the OpenAI default you'll need to:
