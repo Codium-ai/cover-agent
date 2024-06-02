@@ -172,7 +172,6 @@ cover-agent \
   --max-iterations=1
 ```
 
-
 [//]: # (Try and add more tests to this project by running this command at the root of this repository:)
 
 [//]: # ()
