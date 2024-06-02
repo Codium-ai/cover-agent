@@ -102,8 +102,6 @@ cover-agent \
   --included-files "<optional_list_of_files_to_include>"
 ```
 
-#### Python
-
 You can use the example projects within this repository to run this code as a test.
 
 Follow the steps in the README.md file located in the `templated_tests/python_fastapi/` directory, then return to the root of the repository and run the following command to add tests to the **python fastapi** example:
@@ -118,23 +116,6 @@ cover-agent \
   --desired-coverage 70 \
   --max-iterations 10
 ```
-
-To run on a specific test file on a specific module (in this case `cover_agent/PromptBuilder.py` and `tests/test_PromptBuilder.py`), run the following command:
-```shell
-cover-agent \
---model="gpt-4o"
---source-file-path "cover_agent/PromptBuilder.py"
---test-file-path "tests/test_PromptBuilder.py"
---code-coverage-report-path "tests/coverage_prompt_builder.xml"
---test-command "pytest --cov=cover_agent.PromptBuilder --cov-report=xml:tests/coverage_prompt_builder.xml --cov-report=term tests/test_PromptBuilder.py"
---test-command-dir "./"
---coverage-type"cobertura"
---desired-coverage 80
---max-iterations 5
-```
-Note: If you are using Poetry then use the `poetry run cover-agent` command instead of the `cover-agent` run command.
-
-#### Go
 
 For an example using **go** `cd` into `templated_tests/go_webservice`, set up the project following the `README.md`.
 To work with coverage reporting, you need to install `gocov` and `gocov-xml`. Run the following commands to install these tools:
@@ -155,8 +136,6 @@ cover-agent \
   --max-iterations 1
 ```
 
-#### Java
-
 For an example using **java** `cd` into `templated_tests/java_gradle`, set up the project following the [README.md](templated_tests/java_gradle/README.md).
 To work with jacoco coverage reporting, follow the [README.md](templated_tests/java_gradle/README.md) Requirements section:
 and then run the following command:
@@ -171,33 +150,20 @@ cover-agent \
   --desired-coverage=70 \
   --max-iterations=1
 ```
+Try and add more tests to this project by running this command at the root of this repository:
+```shell
+poetry run cover-agent \
+  --source-file-path "cover_agent/main.py" \
+  --test-file-path "tests/test_main.py" \
+  --code-coverage-report-path "coverage.xml" \
+  --test-command "poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent --cov-report=xml --cov-report=term --log-cli-level=INFO" \
+  --coverage-type "cobertura" \
+  --desired-coverage 70 \
+  --max-iterations 1 \
+  --model "gpt-4o"
+```
 
-
-[//]: # (Try and add more tests to this project by running this command at the root of this repository:)
-
-[//]: # ()
-[//]: # (```shell)
-
-[//]: # (poetry run cover-agent \)
-
-[//]: # (  --source-file-path "cover_agent/main.py" \)
-
-[//]: # (  --test-file-path "tests/test_main.py" \)
-
-[//]: # (  --code-coverage-report-path "coverage.xml" \)
-
-[//]: # (  --test-command "poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent --cov-report=xml --cov-report=term --log-cli-level=INFO" \)
-
-[//]: # (  --coverage-type "cobertura" \)
-
-[//]: # (  --desired-coverage 70 \)
-
-[//]: # (  --max-iterations 1 \)
-
-[//]: # (  --model "gpt-4o")
-
-[//]: # (```)
-
+Note: If you are using Poetry then use the `poetry run cover-agent` command instead of the `cover-agent` run command.
 
 ### Outputs
 A few debug files will be outputted locally within the repository (that are part of the `.gitignore`)
