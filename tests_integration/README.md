@@ -55,3 +55,11 @@ These tests should **absolutely** be run before a massive refactor or any major 
 
 ## How it works
 The integration tests run within Docker containers in order to prove out complete isolation from any external or existing environment
+
+# Increasing Coverage Iteratively
+The `increase_coverage.py` script attempts to run Cover Agent for all files within the `cover_agent` directory. You'll need to call a Poetry shell first before running like so:
+```
+poetry install
+poetry shell
+python tests_integration/increase_coverage.py
+```
