@@ -4,6 +4,9 @@
 # VSCode settings directory
 .vscode
 
+# IntelliJ IDEA project settings
+.idea
+
 # Generated reports
 .coverage
 coverage.xml

@@ -30,7 +30,7 @@ class TestFilePreprocessor:
     # Test for a Python file with a comment that looks like a class definition
     def test_py_file_with_commented_class(self):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as tmp:
-            tmp.write(b"# class myPythonFile:\n    pass\n")
+            tmp.write(b"# class myPythonFile:\n#    pass\n")
             tmp.close()
             preprocessor = FilePreprocessor(tmp.name)
             input_text = "Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit,\nsed do eiusmod tempor incididunt."

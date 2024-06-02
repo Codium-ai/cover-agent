@@ -10,7 +10,7 @@ class TestAICaller:
 
     @patch("cover_agent.AICaller.AICaller.call_model")
     def test_call_model_simplified(self, mock_call_model):
-        # Setup the mock to return a predefined response
+        # Set up the mock to return a predefined response
         mock_call_model.return_value = ("Hello world!", 2, 10)
         prompt = {"system": "", "user": "Hello, world!"}
 

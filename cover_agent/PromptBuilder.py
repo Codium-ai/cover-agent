@@ -73,10 +73,10 @@ class PromptBuilder:
         self.language = language
         # add line numbers to each line in 'source_file'. start from 1
         self.source_file_numbered = "\n".join(
-            [f"{i+1} {line}" for i, line in enumerate(self.source_file.split("\n"))]
+            [f"{i + 1} {line}" for i, line in enumerate(self.source_file.split("\n"))]
         )
         self.test_file_numbered = "\n".join(
-            [f"{i+1} {line}" for i, line in enumerate(self.test_file.split("\n"))]
+            [f"{i + 1} {line}" for i, line in enumerate(self.test_file.split("\n"))]
         )
 
         # Conditionally fill in optional sections
