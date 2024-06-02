@@ -24,6 +24,8 @@ installer:
 		--add-data "cover_agent/settings/analyze_suite_test_insert_line.toml:." \
 		--hidden-import=tiktoken_ext.openai_public \
 		--hidden-import=tiktoken_ext \
+		--hidden-import=wandb \
+		--hidden-import=wandb_gql \
 		--onefile \
 		--name cover-agent \
 		cover_agent/main.py
