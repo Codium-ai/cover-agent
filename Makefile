@@ -1,4 +1,5 @@
 # Makefile
+SITE_PACKAGES=$(shell python -c "import wandb, os; print(os.path.dirname(wandb.__file__))")
 
 .PHONY: test build installer
 
@@ -22,6 +23,7 @@ installer:
 		--add-data "cover_agent/settings/test_generation_prompt.toml:." \
 		--add-data "cover_agent/settings/analyze_suite_test_headers_indentation.toml:." \
 		--add-data "cover_agent/settings/analyze_suite_test_insert_line.toml:." \
+		--add-data "$(SITE_PACKAGES)/vendor:wandb/vendor" \
 		--hidden-import=tiktoken_ext.openai_public \
 		--hidden-import=tiktoken_ext \
 		--hidden-import=wandb \
