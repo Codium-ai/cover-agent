@@ -1,6 +1,9 @@
 import pytest
 from unittest.mock import patch
-from cover_agent.UnitTestGenerator import UnitTestGenerator, extract_error_message_python
+from cover_agent.UnitTestGenerator import (
+    UnitTestGenerator,
+    extract_error_message_python,
+)
 from cover_agent.ReportGenerator import ReportGenerator
 import os
 
@@ -13,10 +16,16 @@ class TestUnitTestGenerator:
         MAX_TOKENS = 4096
 
         DRY_RUN = True  # Unit tests should not be making calls to the LLM model
-        CANNED_TESTS = {'tests':[
-            {'test_code': 'def test_current_date():\n    response = client.get("/current-date")\n    assert response.status_code == 200\n    assert "date" in response.json()'},
-            {'test_code':'def test_add():\n    response = client.get("/add/2/3")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 5'},
-        ]}
+        CANNED_TESTS = {
+            "new_tests": [
+                {
+                    "test_code": 'def test_current_date():\n    response = client.get("/current-date")\n    assert response.status_code == 200\n    assert "date" in response.json()'
+                },
+                {
+                    "test_code": 'def test_add():\n    response = client.get("/add/2/3")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 5'
+                },
+            ]
+        }
 
         REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         TEST_FILE = f"{REPO_ROOT}/templated_tests/python_fastapi/test_app.py"
@@ -47,7 +56,8 @@ class TestUnitTestGenerator:
 
         # Validate the generated tests and generate a report
         results_list = [
-            test_gen.validate_test(generated_test, generated_tests) for generated_test in generated_tests['tests']
+            test_gen.validate_test(generated_test, generated_tests)
+            for generated_test in generated_tests["new_tests"]
         ]
         ReportGenerator.generate_report(results_list, "test_results.html")
 
@@ -62,11 +72,18 @@ class TestUnitTestGenerator:
         MAX_TOKENS = 4096
 
         DRY_RUN = True  # Unit tests should not be making calls to the LLM model
-        CANNED_TESTS = {'language': 'python',
-            'tests':[
-            {'test_code': 'def test_current_date():\n    response = client.get("/current-date")\n    assert response.status_code == 200\n    assert "date" in response.json()', "new_imports_code":""},
-            {'test_code':'def test_add():\n    response = client.get("/add/2/3")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 5'},
-        ]}
+        CANNED_TESTS = {
+            "language": "python",
+            "new_tests": [
+                {
+                    "test_code": 'def test_current_date():\n    response = client.get("/current-date")\n    assert response.status_code == 200\n    assert "date" in response.json()',
+                    "new_imports_code": "",
+                },
+                {
+                    "test_code": 'def test_add():\n    response = client.get("/add/2/3")\n    assert response.status_code == 200\n    assert "result" in response.json()\n    assert response.json()["result"] == 5'
+                },
+            ],
+        }
 
         REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         TEST_FILE = f"{REPO_ROOT}/templated_tests/python_fastapi/test_app.py"
@@ -97,7 +114,8 @@ class TestUnitTestGenerator:
 
         # Validate the generated tests and generate a report
         results_list = [
-            test_gen.validate_test(generated_test, generated_tests) for generated_test in generated_tests['tests']
+            test_gen.validate_test(generated_test, generated_tests)
+            for generated_test in generated_tests["new_tests"]
         ]
         ReportGenerator.generate_report(results_list, "test_results.html")
 
@@ -109,13 +127,12 @@ class TestUnitTestGenerator:
 class TestExtractErrorMessage:
     def test_extract_single_match(self):
         fail_message = "=== FAILURES ===\\nError occurred here\\n=== END ==="
-        expected = '\\nError occurred here\\n'
+        expected = "\\nError occurred here\\n"
         result = extract_error_message_python(fail_message)
         assert result == expected, f"Expected '{expected}', got '{result}'"
 
-
     def test_extract_bad_match(self):
         fail_message = 33
-        expected = ''
+        expected = ""
         result = extract_error_message_python(fail_message)
         assert result == expected, f"Expected '{expected}', got '{result}'"
