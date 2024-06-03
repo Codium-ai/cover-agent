@@ -4,13 +4,11 @@ import com.davidparry.cover.imp.Fibonacci;
 
 public class SimpleMathOperations {
 
-    private Fibonacci fibonacci;
+    private final Fibonacci fibonacci;
 
     public SimpleMathOperations(Fibonacci fibonacci) {
         this.fibonacci = fibonacci;
     }
-
-    public SimpleMathOperations(){}
 
     public int add(int a, int b) {
         return a + b;
