@@ -92,7 +92,7 @@ jobs:
         python-version: '3.12'
     - name: Install Dependencies
       run: |
-        pip install poetry
+        pip install poetry wandb
         poetry install
     - name: Build Executable
       run: make installer
