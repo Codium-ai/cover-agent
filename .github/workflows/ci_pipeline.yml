@@ -77,95 +77,95 @@ jobs:
           cd /tmp
           cover-agent --help        
 
-  # build:
-  #   needs: test
-  #   strategy:
-  #     matrix:
-  #      os: [ubuntu-latest, windows-latest, macos-latest]
+  build:
+    needs: test
+    strategy:
+      matrix:
+       os: [ubuntu-latest, windows-latest, macos-latest]
 
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: Set up Python
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: '3.12'
-  #   - name: Install Dependencies
-  #     run: |
-  #       pip install poetry
-  #       poetry install
-  #   - name: Build Executable
-  #     run: make installer
-  #   - name: Test Executable (Windows)
-  #     if: ${{ matrix.os == 'windows-latest' }}
-  #     run: .\dist\cover-agent.exe --help
-  #     shell: pwsh
-  #   - name: Test Executable (Unix)
-  #     if: ${{ matrix.os != 'windows-latest' }}
-  #     run: ./dist/cover-agent --help
-  #     shell: bash
-  #   - name: Upload Executable
-  #     uses: actions/upload-artifact@v2
-  #     with:
-  #       name: cover-agent-${{ matrix.os }}
-  #       path: dist/cover-agent*
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12'
+    - name: Install Dependencies
+      run: |
+        pip install poetry
+        poetry install
+    - name: Build Executable
+      run: make installer
+    - name: Test Executable (Windows)
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: .\dist\cover-agent.exe --help
+      shell: pwsh
+    - name: Test Executable (Unix)
+      if: ${{ matrix.os != 'windows-latest' }}
+      run: ./dist/cover-agent --help
+      shell: bash
+    - name: Upload Executable
+      uses: actions/upload-artifact@v2
+      with:
+        name: cover-agent-${{ matrix.os }}
+        path: dist/cover-agent*
 
-  # release:
-  #   needs: [build, changes]
-  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.version_changed == 'true'
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - uses: actions/checkout@v2
-  #   - name: Download executables (Ubuntu)
-  #     uses: actions/download-artifact@v2
-  #     with:
-  #       name: cover-agent-ubuntu-latest
-  #       path: dist/ubuntu-latest
-  #   - uses: actions/download-artifact@v2
-  #     with:
-  #       name: cover-agent-windows-latest
-  #       path: dist/windows-latest
-  #   - uses: actions/download-artifact@v2
-  #     with:
-  #       name: cover-agent-macos-latest
-  #       path: dist/macos-latest
-  #   - name: Extract version
-  #     run: |
-  #       echo "VERSION=$(cat cover_agent/version.txt)" >> $GITHUB_ENV
-  #   - name: Create Release
-  #     id: create_release
-  #     uses: actions/create-release@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       tag_name: ${{ env.VERSION }}
-  #       release_name: Release ${{ env.VERSION }}
-  #       draft: false
-  #       prerelease: false
-  #   - name: Upload Release Asset (Ubuntu)
-  #     uses: actions/upload-release-asset@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #       asset_path: dist/ubuntu-latest/cover-agent
-  #       asset_name: cover-agent-ubuntu
-  #       asset_content_type: application/octet-stream
-  #   - name: Upload Release Asset (Windows)
-  #     uses: actions/upload-release-asset@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #       asset_path: dist/windows-latest/cover-agent.exe
-  #       asset_name: cover-agent-windows.exe
-  #       asset_content_type: application/octet-stream
-  #   - name: Upload Release Asset (macOS)
-  #     uses: actions/upload-release-asset@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #       asset_path: dist/macos-latest/cover-agent
-  #       asset_name: cover-agent-macos
-  #       asset_content_type: application/octet-stream
+  release:
+    needs: [build, changes]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.version_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download executables (Ubuntu)
+      uses: actions/download-artifact@v2
+      with:
+        name: cover-agent-ubuntu-latest
+        path: dist/ubuntu-latest
+    - uses: actions/download-artifact@v2
+      with:
+        name: cover-agent-windows-latest
+        path: dist/windows-latest
+    - uses: actions/download-artifact@v2
+      with:
+        name: cover-agent-macos-latest
+        path: dist/macos-latest
+    - name: Extract version
+      run: |
+        echo "VERSION=$(cat cover_agent/version.txt)" >> $GITHUB_ENV
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.VERSION }}
+        release_name: Release ${{ env.VERSION }}
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset (Ubuntu)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/ubuntu-latest/cover-agent
+        asset_name: cover-agent-ubuntu
+        asset_content_type: application/octet-stream
+    - name: Upload Release Asset (Windows)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/windows-latest/cover-agent.exe
+        asset_name: cover-agent-windows.exe
+        asset_content_type: application/octet-stream
+    - name: Upload Release Asset (macOS)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/macos-latest/cover-agent
+        asset_name: cover-agent-macos
+        asset_content_type: application/octet-stream
