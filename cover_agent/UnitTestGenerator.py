@@ -372,7 +372,7 @@ class UnitTestGenerator:
                 processed_test = "\n".join(processed_test_lines)
                 # insert the additional imports at the top of the file
                 if additional_imports and additional_imports not in processed_test:
-                    processed_test_lines = processed_test.split("\n")
+                    processed_test_lines = processed_test.split(os.linesep)
                     processed_test_lines.insert(1, additional_imports)
                     processed_test = "\n".join(processed_test_lines)
                 with open(self.test_file_path, "w") as test_file:
