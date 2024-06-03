@@ -76,7 +76,8 @@ COMMAND="/usr/local/bin/cover-agent \
   --test-command \"$TEST_COMMAND\" \
   --coverage-type \"cobertura\" \
   --desired-coverage 70 \
-  --max-iterations 1"
+  --max-iterations 1 \
+  --strict-coverage"
 
 if [ -n "$MODEL" ]; then
   COMMAND="$COMMAND --model \"$MODEL\""
