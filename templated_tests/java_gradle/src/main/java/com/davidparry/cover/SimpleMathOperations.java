@@ -1,6 +1,16 @@
- package com.davidparry.cover;
+package com.davidparry.cover;
 
- public class SimpleMathOperations {
+import com.davidparry.cover.imp.Fibonacci;
+
+public class SimpleMathOperations {
+
+    private Fibonacci fibonacci;
+
+    public SimpleMathOperations(Fibonacci fibonacci) {
+        this.fibonacci = fibonacci;
+    }
+
+    public SimpleMathOperations(){}
 
     public int add(int a, int b) {
         return a + b;
@@ -22,9 +32,6 @@
     }
 
     public int fibonacci(int n) {
-        if (n <= 1) {
-            return n;
-        }
-        return fibonacci(n - 1) + fibonacci(n - 2);
+        return fibonacci.calculate(n);
     }
 }
