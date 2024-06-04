@@ -338,9 +338,10 @@ class UnitTestGenerator:
             # Step 0: no pre-process.
             # We asked the model that each generated test should be a self-contained independent test
             test_code = generated_test.get("test_code", "").rstrip()
-            additional_imports = (
-                generated_test.get("new_imports_code", "").strip().strip('"')
-            )
+            additional_imports = generated_test.get("new_imports_code", "").strip()
+            if additional_imports[0]=='"' and additional_imports[-1]=='"':
+                additional_imports = additional_imports.strip('"')
+
             # check if additional_imports only contains '"':
             if additional_imports and additional_imports == '""':
                 additional_imports = ""
@@ -381,6 +382,7 @@ class UnitTestGenerator:
                         + additional_imports_lines
                         + processed_test_lines[relevant_line_number_to_insert_imports_after:]
                     )
+                    self.relevant_line_number_to_insert_tests_after += len(additional_imports_lines) # this is important, otherwise the next test will be inserted at the wrong line
                 processed_test = "\n".join(processed_test_lines)
 
                 with open(self.test_file_path, "w") as test_file:
