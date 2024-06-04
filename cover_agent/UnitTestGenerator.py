@@ -244,7 +244,7 @@ class UnitTestGenerator:
             test_headers_indentation = None
             allowed_attempts = 3
             counter_attempts = 0
-            while test_headers_indentation is None:
+            while test_headers_indentation is None and counter_attempts < allowed_attempts:
                 prompt_headers_indentation = (
                     self.prompt_builder.build_prompt_custom(
                         file="analyze_suite_test_headers_indentation"
@@ -258,8 +258,7 @@ class UnitTestGenerator:
                     "test_headers_indentation", None
                 )
                 counter_attempts += 1
-                if counter_attempts >= allowed_attempts:
-                    break
+
             if test_headers_indentation is None:
                 raise Exception("Failed to analyze the test headers indentation")
 
@@ -296,7 +295,7 @@ class UnitTestGenerator:
             self.relevant_line_number_to_insert_imports_after = relevant_line_number_to_insert_imports_after
         except Exception as e:
             self.logger.error(f"Error during initial test suite analysis: {e}")
-            raise "Error during initial test suite analysis"
+            raise Exception("Error during initial test suite analysis")
 
     def generate_tests(self, max_tokens=4096, dry_run=False):
         self.prompt = self.build_prompt()
