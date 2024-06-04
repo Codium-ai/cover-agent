@@ -17,18 +17,18 @@ from cover_agent.settings.config_loader import get_settings
 
 class UnitTestGenerator:
     def __init__(
-        self,
-        source_file_path: str,
-        test_file_path: str,
-        code_coverage_report_path: str,
-        test_command: str,
-        llm_model: str,
-        api_base: str = "",
-        test_command_dir: str = os.getcwd(),
-        included_files: list = None,
-        coverage_type="cobertura",
-        desired_coverage: int = 90,  # Default to 90% coverage if not specified
-        additional_instructions: str = "",
+            self,
+            source_file_path: str,
+            test_file_path: str,
+            code_coverage_report_path: str,
+            test_command: str,
+            llm_model: str,
+            api_base: str = "",
+            test_command_dir: str = os.getcwd(),
+            included_files: list = None,
+            coverage_type="cobertura",
+            desired_coverage: int = 90,  # Default to 90% coverage if not specified
+            additional_instructions: str = "",
     ):
         """
         Initialize the UnitTestGenerator class with the provided parameters.
@@ -128,7 +128,7 @@ class UnitTestGenerator:
             command=self.test_command, cwd=self.test_command_dir
         )
         assert (
-            exit_code == 0
+                exit_code == 0
         ), f'Fatal: Error running test command. Are you sure the command is correct? "{self.test_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
 
         # Instantiate CoverageProcessor and process the coverage report
@@ -365,9 +365,9 @@ class UnitTestGenerator:
                 test_code_lines = test_code_indented.split("\n")
                 # insert the test code at the relevant line
                 processed_test_lines = (
-                    original_content_lines[:relevant_line_number_to_insert_after]
-                    + test_code_lines
-                    + original_content_lines[relevant_line_number_to_insert_after:]
+                        original_content_lines[:relevant_line_number_to_insert_after]
+                        + test_code_lines
+                        + original_content_lines[relevant_line_number_to_insert_after:]
                 )
                 processed_test = "\n".join(processed_test_lines)
                 # insert the additional imports at the top of the file
@@ -401,7 +401,8 @@ class UnitTestGenerator:
                         "test": generated_test,
                     }
 
-                    error_message = extract_error_message_python(fail_details["stdout"])
+                    error_message = extract_error_message(self, fail_details)
+
                     if error_message:
                         logging.error(f"Error message:\n{error_message}")
 
@@ -458,7 +459,7 @@ class UnitTestGenerator:
 
                         if 'WANDB_API_KEY' in os.environ:
                             root_span = Trace(
-                                name="fail_details_"+datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                                name="fail_details_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                                 kind="llm",  # kind can be "llm", "chain", "agent" or "tool
                                 inputs={"test_code": fail_details["test"]},
                                 outputs=fail_details)
@@ -526,6 +527,36 @@ def extract_error_message_python(fail_message):
                 err_str = "...\n" + "\n".join(err_str_lines[-MAX_LINES:])
             return err_str
         return ""
+    except Exception as e:
+        logging.error(f"Error extracting error message: {e}")
+        return ""
+
+
+def extract_error_message(self, fail_details):
+    coverage_type = getattr(self, 'coverage_type', 'python')
+    if coverage_type == 'jacoco':
+        return extract_error_message_jacoco(fail_details)
+    else:
+        return extract_error_message_python(fail_details["stdout"])
+
+
+def extract_error_message_jacoco(fail_details):
+    try:
+        MAX_LINES = 15
+        lines = ""
+        stdout = fail_details["stdout"]
+        stderr = fail_details["stderr"]
+
+        match = re.search(r'Task :testClasses(.*?)Task :test FAILED', stdout, re.DOTALL)
+        if match:
+            extracted_text = match.group(1).strip()
+            lines = extracted_text.split('\n')
+
+        if lines == "":
+            lines = stderr.split('\n')
+
+        extracted_lines = lines[:MAX_LINES]
+        return "\n".join(extracted_lines)
     except Exception as e:
         logging.error(f"Error extracting error message: {e}")
         return ""

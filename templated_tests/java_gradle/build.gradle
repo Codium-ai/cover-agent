@@ -13,6 +13,10 @@ repositories {
 
 dependencies {
     testImplementation 'org.spockframework:spock-core:2.4-M4-groovy-4.0'
+    testImplementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+    testImplementation 'org.mockito:mockito-core:4.11.0'
+    testImplementation 'net.bytebuddy:byte-buddy:1.12.20'
+    testImplementation 'cglib:cglib-nodep:3.3.0'
 }
 
 test {

@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch
 from cover_agent.UnitTestGenerator import (
     UnitTestGenerator,
-    extract_error_message_python,
+    extract_error_message_python, extract_error_message_jacoco, extract_error_message,
 )
 from cover_agent.ReportGenerator import ReportGenerator
 import os
@@ -136,3 +136,81 @@ class TestExtractErrorMessage:
         expected = ""
         result = extract_error_message_python(fail_message)
         assert result == expected, f"Expected '{expected}', got '{result}'"
+
+    def test_extracts_stdout_message_remove_irrelevant_output(self):
+        fail_details = {
+            "stdout": """> Task :clean
+> Task :compileJava
+> Task :compileGroovy NO-SOURCE
+> Task :processResources NO-SOURCE
+> Task :classes
+> Task :compileTestJava NO-SOURCE
+> Task :compileTestGroovy
+> Task :processTestResources NO-SOURCE
+> Task :testClasses
+
+> Task :test
+
+SimpleMathOperationsSpec > should return correct product when multiplying two positive integers FAILED
+    org.spockframework.runtime.SpockComparisonFailure at SimpleMathOperationsSpec.groovy:37
+
+> Task :test FAILED
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.5/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+4 actionable tasks: 4 executed
+""",
+            "stderr": ""
+        }
+        result = extract_error_message_jacoco(fail_details)
+        expected_message = ("SimpleMathOperationsSpec > should return correct product when multiplying two positive "
+                            "integers FAILED")
+        assert expected_message in result
+
+    def test_extracts_stderr_message_general_failure(self):
+        fail_details = {
+            "stdout": "",
+            "stderr": """startup failed: /Users/davidparry/code/github/cover-agent/templated_tests/java_gradle/src
+            /test/groovy/com/davidparry/cover/SimpleMathOperationsSpec.groovy: 31: unable to resolve class Fibonacci 
+            @ line 31, column 19. Fibonacci fibonacci = Mock(Fibonacci) ^
+
+1 error
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong
+Execution failed for task ':compileTestGroovy'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 1s"""
+        }
+        result = extract_error_message_jacoco(fail_details)
+        expected_message = "SimpleMathOperationsSpec.groovy: 31: unable to resolve class Fibonacci"
+        assert expected_message in result
+
+    def test_extract_error_message_python_standard_failure(self):
+        fail_details = {
+            "stdout": "=== FAILURES ===\nE   AssertionError: assert 1 == 2\n===\n"
+        }
+        expected_output = "E   AssertionError: assert 1 == 2"
+        result = extract_error_message(self, fail_details)
+        assert result == expected_output
+
+    def test_extract_error_message_jacoco_standard_failure(self):
+        self.coverage_type = "jacoco"
+        message = ("A Error message possibly for missing imports to can not compile bad syntax etc.. but not a failure "
+                   "in a test.")
+        fail_details = {
+            "stdout": "",
+            "stderr": message
+        }
+        result = extract_error_message(self, fail_details)
+        assert result == message
