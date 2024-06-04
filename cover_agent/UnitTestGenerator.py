@@ -263,10 +263,11 @@ class UnitTestGenerator:
             if test_headers_indentation is None:
                 raise Exception("Failed to analyze the test headers indentation")
 
-            relevant_line_number_to_insert_after = None
+            relevant_line_number_to_insert_tests_after = None
+            relevant_line_number_to_insert_imports_after = None
             allowed_attempts = 3
             counter_attempts = 0
-            while not relevant_line_number_to_insert_after:
+            while not relevant_line_number_to_insert_tests_after:
                 prompt_test_headers_indentation = (
                     self.prompt_builder.build_prompt_custom(
                         file="analyze_suite_test_insert_line"
@@ -276,21 +277,23 @@ class UnitTestGenerator:
                     self.ai_caller.call_model(prompt=prompt_test_headers_indentation)
                 )
                 tests_dict = load_yaml(response)
-                relevant_line_number_to_insert_after = tests_dict.get(
-                    "relevant_line_number_to_insert_after", None
+                relevant_line_number_to_insert_tests_after = tests_dict.get(
+                    "relevant_line_number_to_insert_tests_after", None
+                )
+                relevant_line_number_to_insert_imports_after = tests_dict.get(
+                    "relevant_line_number_to_insert_imports_after", None
                 )
                 counter_attempts += 1
                 if counter_attempts >= allowed_attempts:
                     break
-            if not relevant_line_number_to_insert_after:
+            if not relevant_line_number_to_insert_tests_after:
                 raise Exception(
                     "Failed to analyze the relevant line number to insert new tests"
                 )
 
             self.test_headers_indentation = test_headers_indentation
-            self.relevant_line_number_to_insert_after = (
-                relevant_line_number_to_insert_after
-            )
+            self.relevant_line_number_to_insert_tests_after = relevant_line_number_to_insert_tests_after
+            self.relevant_line_number_to_insert_imports_after = relevant_line_number_to_insert_imports_after
         except Exception as e:
             self.logger.error(f"Error during initial test suite analysis: {e}")
             raise "Error during initial test suite analysis"
@@ -341,9 +344,9 @@ class UnitTestGenerator:
             # check if additional_imports only contains '"':
             if additional_imports and additional_imports == '""':
                 additional_imports = ""
-            relevant_line_number_to_insert_after = (
-                self.relevant_line_number_to_insert_after
-            )
+            relevant_line_number_to_insert_tests_after = self.relevant_line_number_to_insert_tests_after
+            relevant_line_number_to_insert_imports_after = self.relevant_line_number_to_insert_imports_after
+
             needed_indent = self.test_headers_indentation
             # remove initial indent of the test code, and insert the needed indent
             test_code_indented = test_code
@@ -356,7 +359,7 @@ class UnitTestGenerator:
                     )
             test_code_indented = "\n" + test_code_indented.strip("\n") + "\n"
 
-            if test_code_indented and relevant_line_number_to_insert_after:
+            if test_code_indented and relevant_line_number_to_insert_tests_after:
 
                 # Step 1: Append the generated test to the relevant line in the test file
                 with open(self.test_file_path, "r") as test_file:
@@ -365,14 +368,21 @@ class UnitTestGenerator:
                 test_code_lines = test_code_indented.split("\n")
                 # insert the test code at the relevant line
                 processed_test_lines = (
-                    original_content_lines[:relevant_line_number_to_insert_after]
+                    original_content_lines[:relevant_line_number_to_insert_tests_after]
                     + test_code_lines
-                    + original_content_lines[relevant_line_number_to_insert_after:]
+                    + original_content_lines[relevant_line_number_to_insert_tests_after:]
                 )
+                # insert the additional imports at line 'relevant_line_number_to_insert_imports_after'
                 processed_test = "\n".join(processed_test_lines)
-                # insert the additional imports at the top of the file
                 if additional_imports and additional_imports not in processed_test:
-                    processed_test = additional_imports + "\n\n" + processed_test
+                    additional_imports_lines = additional_imports.split("\n")
+                    processed_test_lines = (
+                        processed_test_lines[:relevant_line_number_to_insert_imports_after]
+                        + additional_imports_lines
+                        + processed_test_lines[relevant_line_number_to_insert_imports_after:]
+                    )
+                processed_test = "\n".join(processed_test_lines)
+
                 with open(self.test_file_path, "w") as test_file:
                     test_file.write(processed_test)
 
