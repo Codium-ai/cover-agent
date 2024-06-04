@@ -266,7 +266,7 @@ class UnitTestGenerator:
             relevant_line_number_to_insert_imports_after = None
             allowed_attempts = 3
             counter_attempts = 0
-            while not relevant_line_number_to_insert_tests_after:
+            while not relevant_line_number_to_insert_tests_after and counter_attempts < allowed_attempts:
                 prompt_test_insert_line = (
                     self.prompt_builder.build_prompt_custom(
                         file="analyze_suite_test_insert_line"
@@ -283,8 +283,7 @@ class UnitTestGenerator:
                     "relevant_line_number_to_insert_imports_after", None
                 )
                 counter_attempts += 1
-                if counter_attempts >= allowed_attempts:
-                    break
+
             if not relevant_line_number_to_insert_tests_after:
                 raise Exception(
                     "Failed to analyze the relevant line number to insert new tests"
@@ -338,7 +337,7 @@ class UnitTestGenerator:
             # We asked the model that each generated test should be a self-contained independent test
             test_code = generated_test.get("test_code", "").rstrip()
             additional_imports = generated_test.get("new_imports_code", "").strip()
-            if additional_imports[0]=='"' and additional_imports[-1]=='"':
+            if additional_imports and additional_imports[0] == '"' and additional_imports[-1] == '"':
                 additional_imports = additional_imports.strip('"')
 
             # check if additional_imports only contains '"':
