@@ -245,13 +245,13 @@ class UnitTestGenerator:
             allowed_attempts = 3
             counter_attempts = 0
             while test_headers_indentation is None:
-                prompt_test_headers_indentation = (
+                prompt_headers_indentation = (
                     self.prompt_builder.build_prompt_custom(
                         file="analyze_suite_test_headers_indentation"
                     )
                 )
                 response, prompt_token_count, response_token_count = (
-                    self.ai_caller.call_model(prompt=prompt_test_headers_indentation)
+                    self.ai_caller.call_model(prompt=prompt_headers_indentation)
                 )
                 tests_dict = load_yaml(response)
                 test_headers_indentation = tests_dict.get(
@@ -268,13 +268,13 @@ class UnitTestGenerator:
             allowed_attempts = 3
             counter_attempts = 0
             while not relevant_line_number_to_insert_tests_after:
-                prompt_test_headers_indentation = (
+                prompt_test_insert_line = (
                     self.prompt_builder.build_prompt_custom(
                         file="analyze_suite_test_insert_line"
                     )
                 )
                 response, prompt_token_count, response_token_count = (
-                    self.ai_caller.call_model(prompt=prompt_test_headers_indentation)
+                    self.ai_caller.call_model(prompt=prompt_test_insert_line)
                 )
                 tests_dict = load_yaml(response)
                 relevant_line_number_to_insert_tests_after = tests_dict.get(
