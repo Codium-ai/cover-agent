@@ -375,7 +375,7 @@ class UnitTestGenerator:
                 )
                 # insert the additional imports at line 'relevant_line_number_to_insert_imports_after'
                 processed_test = "\n".join(processed_test_lines)
-                if additional_imports and additional_imports not in processed_test:
+                if relevant_line_number_to_insert_imports_after and additional_imports and additional_imports not in processed_test:
                     additional_imports_lines = additional_imports.split("\n")
                     processed_test_lines = (
                         processed_test_lines[:relevant_line_number_to_insert_imports_after]
