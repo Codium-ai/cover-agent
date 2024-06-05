@@ -18,7 +18,8 @@ class TestsAnalysis(BaseModel):
     language: str = Field(description="The programming language used by the test file")
     testing_framework: str = Field(description="The testing framework needed to run the tests in the test file")
     number_of_tests: int = Field(description="The number of tests in the test file")
-    relevant_line_number_to_insert_after: int = Field(description="The line number in the test file, **after which** the new tests should be inserted, so they will be a part of the existing test suite. Place the new tests after the last test in the suite.")
+    relevant_line_number_to_insert_tests_after: int = Field(description="The line number in the test file, **after which** the new tests should be inserted, so they will be a part of the existing test suite. Place the new tests after the last test in the suite.")
+    relevant_line_number_to_insert_imports_after: int = Field(description="The line number in the test file, **after which**  new imports should be inserted, so they will be a legal valid code, and the new test file will be able to run. The new imports should be introduced as independent import lines, and not as part of the existing imports.")
 =====
 
 
@@ -27,8 +28,14 @@ Example output:
 language: {{ language }}
 testing_framework: ...
 number_of_tests: ...
-relevant_line_number_to_insert_after: ...
+relevant_line_number_to_insert_tests_after: ...
+relevant_line_number_to_insert_imports_after: ...
 ```
+
+{%- if additional_instructions_text|trim  %}
+
+{{ additional_instructions_text|trim }}
+{% endif %}
 
 The Response should be only a valid YAML object, without any introduction text or follow-up text.
 

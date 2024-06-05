@@ -1,5 +1,4 @@
 import pytest
-from unittest.mock import patch
 from cover_agent.UnitTestGenerator import (
     UnitTestGenerator,
     extract_error_message_python,
@@ -7,6 +6,7 @@ from cover_agent.UnitTestGenerator import (
 from cover_agent.ReportGenerator import ReportGenerator
 import os
 
+from unittest.mock import patch, mock_open
 
 class TestUnitTestGenerator:
     def test_end_to_end1(self):
@@ -44,7 +44,7 @@ class TestUnitTestGenerator:
             test_command_dir=f"{REPO_ROOT}/templated_tests/python_fastapi",
             included_files=None,
         )
-        test_gen.relevant_line_number_to_insert_after = 10
+        test_gen.relevant_line_number_to_insert_tests_after = 10
         test_gen.test_headers_indentation = 4
 
         # Generate the tests
@@ -102,7 +102,7 @@ class TestUnitTestGenerator:
             test_command_dir=f"{REPO_ROOT}/templated_tests/python_fastapi",
             included_files=None,
         )
-        test_gen.relevant_line_number_to_insert_after = 10
+        test_gen.relevant_line_number_to_insert_tests_after = 10
         test_gen.test_headers_indentation = 4
 
         # Generate the tests
@@ -122,6 +122,21 @@ class TestUnitTestGenerator:
         # Write back sample test file contents
         with open(TEST_FILE, "w") as f:
             f.write(original_file_contents)
+
+
+    def test_get_included_files_mixed_paths(self):
+        with patch("builtins.open", mock_open(read_data="file content")) as mock_file:
+            mock_file.side_effect = [IOError("File not found"), mock_open(read_data="file content").return_value]
+            included_files = ["invalid_file1.txt", "valid_file2.txt"]
+            result = UnitTestGenerator.get_included_files(included_files)
+            assert result == "file content"
+
+
+    def test_get_included_files_valid_paths(self):
+        with patch("builtins.open", mock_open(read_data="file content")):
+            included_files = ["file1.txt", "file2.txt"]
+            result = UnitTestGenerator.get_included_files(included_files)
+            assert result == "file content\nfile content"
 
 
 class TestExtractErrorMessage:

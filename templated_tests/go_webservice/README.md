@@ -62,6 +62,7 @@ This section provides instructions on how to run tests and generate a Cobertura 
 2. **Convert coverage data to Cobertura format:**
    Use `gocov` and `gocov-xml` to convert the coverage data to Cobertura XML format:
    ```bash
+   export PATH="$HOME/go/bin:$PATH"
    gocov convert coverage.out | gocov-xml > coverage.xml
    ```
 
