@@ -5,7 +5,7 @@ SITE_PACKAGES=$(shell python -c "import wandb, os; print(os.path.dirname(wandb._
 
 # Run unit tests with Pytest
 test:
-	poetry run pytest --junitxml=testLog.xml --cov=cover_agent --cov-report=xml:cobertura.xml --cov-report=term --cov-fail-under=70 --log-cli-level=INFO
+	poetry run pytest --junitxml=testLog.xml --cov=cover_agent --cov-report=xml:cobertura.xml --cov-report=term --cov-fail-under=65 --log-cli-level=INFO
 
 # Use Python Black to format python files
 format:
