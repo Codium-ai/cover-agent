@@ -32,8 +32,9 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 ## News and Updates
 
 ### 2024-06-05:
-We extended are support for adding new imports for the generated tests.
-Also added a [usage_examples](docs/usage_examples.md) file with more elaborate examples of how to use the Cover Agent.
+The logic and prompts for adding new imports for the generated tests have been improved.
+
+We also added a [usage examples](docs/usage_examples.md) file, with more elaborate examples of how to use the Cover Agent.
 
 ### 2024-06-01:
 Added support for comprehensive logging to [Weights and Biases](https://wandb.ai/). Set the `WANDB_API_KEY` environment variable to enable this feature.
@@ -106,12 +107,12 @@ cover-agent \
   --included-files "<optional_list_of_files_to_include>"
 ```
 
-You can use the example projects within this repository to run this code as a test.
-In [usage_examples](docs/usage_examples.md) file we provide more elaborate examples of how to use the Cover Agent.
+You can use the example code below to try out the Cover Agent.
+(Note that the [usage_examples](docs/usage_examples.md) file provides more elaborate examples of how to use the Cover Agent)
 
 #### Python
 
-Follow the steps in the README.md file located in the `templated_tests/python_fastapi/` directory to setup an environment, then return to the root of the repository and run the following command to add tests to the **python fastapi** example:
+Follow the steps in the README.md file located in the `templated_tests/python_fastapi/` directory to setup an environment, then return to the root of the repository, and run the following command to add tests to the **python fastapi** example:
 ```shell
 cover-agent \
   --source-file-path "templated_tests/python_fastapi/app.py" \

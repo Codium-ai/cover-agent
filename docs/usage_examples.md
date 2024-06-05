@@ -27,7 +27,7 @@ cover-agent \
 --code-coverage-report-path "tests/coverage_prompt_builder.xml"
 --test-command "pytest --cov=cover_agent.PromptBuilder --cov-report=xml:tests/coverage_prompt_builder.xml --cov-report=term tests/test_PromptBuilder.py --timeout=10"
 --test-command-dir "./"
---coverage-type"cobertura"
+--coverage-type "cobertura"
 --desired-coverage 90
 --max-iterations 5
 ```
