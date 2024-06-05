@@ -31,6 +31,10 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 
 ## News and Updates
 
+### 2024-06-05:
+We extended are support for adding new imports for the generated tests.
+Also added a [usage_examples](docs/usage_examples.md) file with more elaborate examples of how to use the Cover Agent.
+
 ### 2024-06-01:
 Added support for comprehensive logging to [Weights and Biases](https://wandb.ai/). Set the `WANDB_API_KEY` environment variable to enable this feature.
 
@@ -103,8 +107,11 @@ cover-agent \
 ```
 
 You can use the example projects within this repository to run this code as a test.
+In [usage_examples](docs/usage_examples.md) file we provide more elaborate examples of how to use the Cover Agent.
 
-Follow the steps in the README.md file located in the `templated_tests/python_fastapi/` directory, then return to the root of the repository and run the following command to add tests to the **python fastapi** example:
+#### Python
+
+Follow the steps in the README.md file located in the `templated_tests/python_fastapi/` directory to setup an environment, then return to the root of the repository and run the following command to add tests to the **python fastapi** example:
 ```shell
 cover-agent \
   --source-file-path "templated_tests/python_fastapi/app.py" \
@@ -116,6 +123,8 @@ cover-agent \
   --desired-coverage 70 \
   --max-iterations 10
 ```
+
+#### Go
 
 For an example using **go** `cd` into `templated_tests/go_webservice`, set up the project following the `README.md`.
 To work with coverage reporting, you need to install `gocov` and `gocov-xml`. Run the following commands to install these tools:
@@ -136,6 +145,7 @@ cover-agent \
   --max-iterations 1
 ```
 
+#### Java
 For an example using **java** `cd` into `templated_tests/java_gradle`, set up the project following the [README.md](templated_tests/java_gradle/README.md).
 To work with jacoco coverage reporting, follow the [README.md](templated_tests/java_gradle/README.md) Requirements section:
 and then run the following command:
@@ -150,20 +160,6 @@ cover-agent \
   --desired-coverage=70 \
   --max-iterations=1
 ```
-Try and add more tests to this project by running this command at the root of this repository:
-```shell
-poetry run cover-agent \
-  --source-file-path "cover_agent/main.py" \
-  --test-file-path "tests/test_main.py" \
-  --code-coverage-report-path "coverage.xml" \
-  --test-command "poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent --cov-report=xml --cov-report=term --log-cli-level=INFO" \
-  --coverage-type "cobertura" \
-  --desired-coverage 70 \
-  --max-iterations 1 \
-  --model "gpt-4o"
-```
-
-Note: If you are using Poetry then use the `poetry run cover-agent` command instead of the `cover-agent` run command.
 
 ### Outputs
 A few debug files will be outputted locally within the repository (that are part of the `.gitignore`)
