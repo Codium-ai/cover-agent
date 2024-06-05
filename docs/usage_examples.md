@@ -33,10 +33,12 @@ cover-agent \
 ```
 
 ## Example 3: Utilizing additional instructions
-For complicated test files with multiple classes, it will not be clear for the AI model which test classes to focus on.
-We can use the `--additional-instructions` flag to provide instructions to the model which test classes to extend coverage for.
+For complicated test files with multiple classes, it will not be clear for the AI model which class to focus on.
 
-For example, the file [`cover_agent/UnitTestGenerator.py`](../cover_agent/UnitTestGenerator.py) has several test classes. We can use the `--additional-instructions` flag to instruct the model to focus on the `TestUnitTestGenerator` class.
+We can use the `--additional-instructions` flag to provide instructions to the model, so it can focus on the specific class we are interested in.
+
+For example, the file [`cover_agent/test_UnitTestGenerator.py`](../cover_agent/test_UnitTestGenerator.py) has two test classes - `TestUnitTestGenerator` and `TestExtractErrorMessage`.
+We can use the `--additional-instructions` flag to instruct the model to focus on the `TestUnitTestGenerator` class.
 
 ```shell
 cover-agent \
