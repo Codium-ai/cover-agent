@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version_changed: ${{ steps.filter.outputs.version_changed }}
+      relevant_changes: ${{ steps.filter.outputs.relevant_changes }}
     steps:
       - uses: actions/checkout@v3
       - uses: dorny/paths-filter@v2
@@ -22,8 +23,13 @@ jobs:
           filters: |
             version_changed:
               - 'cover_agent/version.txt'
+            relevant_changes:
+              - '!README.md'
+              - '!docs/**'
 
   test:
+    needs: [changes]
+    if: needs.changes.outputs.relevant_changes == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -78,7 +84,8 @@ jobs:
           cover-agent --help        
 
   build:
-    needs: test
+    needs: [test, changes]
+    if: needs.changes.outputs.relevant_changes == 'true'
     strategy:
       matrix:
        os: [ubuntu-latest, windows-latest, macos-latest]
@@ -111,8 +118,12 @@ jobs:
         path: dist/cover-agent*
 
   release:
+    # This job will run only if the following conditions are met:
+    # - The event is a 'push' to the 'main' branch
+    # - The 'version.txt' file has changed
+    # - There are relevant changes outside of 'README.md' and the 'docs/' folder
     needs: [build, changes]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.version_changed == 'true'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.version_changed == 'true' && needs.changes.outputs.relevant_changes == 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

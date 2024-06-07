@@ -21,14 +21,14 @@ cover-agent \
 With this example, we run the `tests/test_PromptBuilder.py` file only on the `PromptBuilder` module, using a more elaborate test command:
 ```shell
 cover-agent \
---model="gpt-4o"
---source-file-path "cover_agent/PromptBuilder.py"
---test-file-path "tests/test_PromptBuilder.py"
---code-coverage-report-path "tests/coverage_prompt_builder.xml"
---test-command "pytest --cov=cover_agent.PromptBuilder --cov-report=xml:tests/coverage_prompt_builder.xml --cov-report=term tests/test_PromptBuilder.py --timeout=10"
---test-command-dir "./"
---coverage-type "cobertura"
---desired-coverage 90
+--model="gpt-4o" \
+--source-file-path "cover_agent/PromptBuilder.py" \
+--test-file-path "tests/test_PromptBuilder.py" \
+--code-coverage-report-path "tests/coverage_prompt_builder.xml" \
+--test-command "pytest --cov=cover_agent.PromptBuilder --cov-report=xml:tests/coverage_prompt_builder.xml --cov-report=term tests/test_PromptBuilder.py --timeout=10" \
+--test-command-dir "./" \
+--coverage-type "cobertura" \
+--desired-coverage 90 \
 --max-iterations 5
 ```
 
@@ -42,13 +42,13 @@ We can use the `--additional-instructions` flag to instruct the model to focus o
 
 ```shell
 cover-agent \
---model="gpt-4o"
---source-file-path "cover_agent/UnitTestGenerator.py"
---test-file-path "tests/test_UnitTestGenerator.py"
---code-coverage-report-path "coverage.xml"
---test-command " pytest tests/test_UnitTestGenerator.py --cov=cover_agent --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=5"
---coverage-type "cobertura"
---desired-coverage 90
---max-iterations 5
+--model="gpt-4o" \
+--source-file-path "cover_agent/UnitTestGenerator.py" \
+--test-file-path "tests/test_UnitTestGenerator.py" \
+--code-coverage-report-path "coverage.xml" \
+--test-command " pytest tests/test_UnitTestGenerator.py --cov=cover_agent --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=5" \
+--coverage-type "cobertura" \
+--desired-coverage 90 \
+--max-iterations 5 \
 --additional-instructions="add tests to the class 'TestUnitTestGenerator'"
 ```
