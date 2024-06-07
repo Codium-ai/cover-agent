@@ -116,3 +116,32 @@ class TestCoverageProcessor:
         assert class_name == 'MyClass', "Expected class name to be 'MyClass'"
 
 
+    def test_verify_report_update_file_not_updated(self, mocker):
+        mocker.patch('os.path.exists', return_value=True)
+        mocker.patch('os.path.getmtime', return_value=1234567.0)
+        
+        processor = CoverageProcessor("fake_path", "app.py", "cobertura")
+        with pytest.raises(AssertionError, match='Fatal: The coverage report file was not updated after the test command.'):
+            processor.verify_report_update(1234567890)
+
+
+    def test_verify_report_update_file_not_exist(self, mocker):
+        mocker.patch('os.path.exists', return_value=False)
+        
+        processor = CoverageProcessor("fake_path", "app.py", "cobertura")
+        with pytest.raises(AssertionError, match='Fatal: Coverage report "fake_path" was not generated.'):
+            processor.verify_report_update(1234567890)
+
+
+    def test_process_coverage_report(self, mocker):
+        mock_verify = mocker.patch('cover_agent.CoverageProcessor.CoverageProcessor.verify_report_update')
+        mock_parse = mocker.patch('cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report', return_value=([], [], 0.0))
+        
+        processor = CoverageProcessor("fake_path", "app.py", "cobertura")
+        result = processor.process_coverage_report(1234567890)
+        
+        mock_verify.assert_called_once_with(1234567890)
+        mock_parse.assert_called_once()
+        assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
+
+

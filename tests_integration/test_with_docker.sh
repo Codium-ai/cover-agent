@@ -80,7 +80,7 @@ COMMAND="/usr/local/bin/cover-agent \
   --test-command \"$TEST_COMMAND\" \
   --coverage-type \"$COVERAGE_TYPE\" \
   --desired-coverage 70 \
-  --max-iterations 1 \
+  --max-iterations 2 \
   --strict-coverage"
 
 if [ -n "$MODEL" ]; then
