@@ -145,3 +145,14 @@ class TestCoverageProcessor:
         assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
 
 
+    def test_parse_missed_covered_lines_jacoco_key_error(self, mocker):
+        mock_open = mocker.patch('builtins.open', mocker.mock_open(read_data='PACKAGE,CLASS,LINE_MISSED,LINE_COVERED\ncom.example,MyClass,5,10'))
+        mocker.patch('csv.DictReader', return_value=[
+            {'PACKAGE': 'com.example', 'CLASS': 'MyClass', 'LINE_MISSED': '5'}])  # Missing 'LINE_COVERED'
+        
+        processor = CoverageProcessor("path/to/coverage_report.csv", "path/to/MyClass.java", "jacoco")
+        
+        with pytest.raises(KeyError):
+            processor.parse_missed_covered_lines_jacoco("com.example", "MyClass")
+
+

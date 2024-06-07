@@ -51,3 +51,15 @@ class TestFilePreprocessor:
             assert (
                 processed_text == expected_output
             ), "Python file with class should indent the text."
+
+    def test_py_file_with_syntax_error(self):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as tmp:
+            tmp.write(b"def function(:\n    pass\n")  # Invalid syntax
+            tmp.close()
+            preprocessor = FilePreprocessor(tmp.name)
+            input_text = "Lorem ipsum dolor sit amet,\nconsectetur adipiscing elit,\nsed do eiusmod tempor incididunt."
+            processed_text = preprocessor.process_file(input_text)
+            assert (
+                processed_text == input_text
+            ), "Python file with syntax error should not alter the text and handle the exception gracefully."
+

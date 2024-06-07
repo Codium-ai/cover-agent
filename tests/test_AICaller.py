@@ -100,3 +100,10 @@ class TestAICaller:
             assert prompt_tokens == 2
             assert response_tokens == 10
 
+
+    def test_call_model_missing_keys(self, ai_caller):
+        prompt = {"user": "Hello, world!"}
+        with pytest.raises(KeyError) as exc_info:
+            ai_caller.call_model(prompt)
+        assert str(exc_info.value) == '"The prompt dictionary must contain \'system\' and \'user\' keys."'
+
