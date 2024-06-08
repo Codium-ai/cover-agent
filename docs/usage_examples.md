@@ -52,3 +52,22 @@ cover-agent \
 --max-iterations 5 \
 --additional-instructions="add tests to the class 'TestUnitTestGenerator'"
 ```
+
+## Example 4: Adding extra context files
+In some cases, the AI model may require additional context to understand the code better, in addition to the source and test file.
+You can utilize the `--included-files` flag to provide additional context files to the model.
+
+```shell
+cover-agent \
+--model="gpt-4o" \
+--source-file-path "cover_agent/main.py" \
+--included-files "cover_agent/CoverAgent.py" \
+--test-file-path "tests/test_main.py" \
+--code-coverage-report-path "coverage.xml" \
+--test-command "pytest tests/test_main.py --cov=cover_agent --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=10" \
+--test-command-dir "./" \
+--coverage-type "cobertura" \
+--desired-coverage 96 \
+--max-iterations  8
+```
+

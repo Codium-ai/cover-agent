@@ -13,7 +13,6 @@ Additional guidelines:
 - After each individual test has been added, review all tests to ensure they cover the full range of scenarios, including how to handle exceptions or errors.
 - If the original test file contains a test suite, assume that each generated test will be a part of the same suite. Ensure that the new tests are consistent with the existing test suite in terms of style, naming conventions, and structure.
 
-
 ## Source File
 Here is the source file that you will be writing tests against, called `{{ source_file_name }}`.
 Note that we have manually added line numbers for each line of code, to help you understand the code coverage report.
@@ -31,12 +30,16 @@ Here is the file that contains the existing tests, called `{{ test_file_name }}`
 
 
 {%- if additional_includes_section|trim %}
+
+
 {{ additional_includes_section|trim }}
 {% endif %}
+
 
 {%- if failed_tests_section|trim  %}
 
 {{ failed_tests_section|trim }}
+
 {% endif %}
 
 {%- if additional_instructions_text|trim  %}
@@ -58,6 +61,7 @@ The output must be a YAML object equivalent to type $NewTests, according to the 
 class SingleTest(BaseModel):
     test_behavior: str = Field(description="Short description of the behavior the test covers")
 {%- if language in ["python","java"] %}
+    lines_to_cover: str = Field(description="A list of line numbers, currently uncovered, that this specific new test aims to cover")
     test_name: str = Field(description=" A short test name, in snake case, that reflects the behaviour to test")
 {%- else %}
     test_name: str = Field(description=" A short unique test name, that should reflect the test objective")
@@ -81,6 +85,8 @@ new_tests:
 - test_behavior: |
     Test that the function returns the correct output for a single element list
 {%- if language in ["python","java"] %}
+  lines_to_cover: |
+    [1,2,5, ...]
   test_name: |
     test_single_element_list
 {%- else %}
