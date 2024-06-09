@@ -176,13 +176,20 @@ class UnitTestGenerator:
         """
         if included_files:
             included_files_content = []
+            file_names = []
             for file_path in included_files:
                 try:
                     with open(file_path, "r") as file:
                         included_files_content.append(file.read())
+                        file_names.append(file_path)
                 except IOError as e:
                     print(f"Error reading file {file_path}: {str(e)}")
-            return "\n".join(included_files_content) if included_files_content else None
+            out_str = ""
+            if included_files_content:
+                for i, content in enumerate(included_files_content):
+                    out_str += f"file_path: `{file_names[i]}`\ncontent:\n```\n{content}\n```\n"
+
+            return out_str.strip()
         return ""
 
     def build_prompt(self):
@@ -523,7 +530,7 @@ class UnitTestGenerator:
 def extract_error_message_python(fail_message):
     try:
         # Define a regular expression pattern to match the error message
-        MAX_LINES = 15
+        MAX_LINES = 20
         pattern = r"={3,} FAILURES ={3,}(.*?)(={3,}|$)"
         match = re.search(pattern, fail_message, re.DOTALL)
         if match:
