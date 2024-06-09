@@ -9,7 +9,9 @@ make installer
 
 You will also need [Docker](https://www.docker.com/) installed.
 
-Note: These scripts were written for Linux but they have been tested on a Windows system using WSL 2 and Docker for Desktop.
+__Note:__ These scripts were written for Linux but they have been tested on a Windows system using WSL 2 and Docker for Desktop.
+
+Since the targets live in Linux you'll need to build the installer in Linux (versus on Windows and MacOS). This can be done automatically in the `sh tests_integration/test_all.sh` script by add the `--run-installer` flag.
 
 ## How to run
 You can run these example test suites using a locally hosted LLM or in the cloud just as you would normally with Cover Agent
