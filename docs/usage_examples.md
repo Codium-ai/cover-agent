@@ -61,8 +61,8 @@ You can utilize the `--included-files` flag to provide additional context files 
 cover-agent \
 --model="gpt-4o" \
 --source-file-path "cover_agent/main.py" \
---included-files "cover_agent/CoverAgent.py" \
 --test-file-path "tests/test_main.py" \
+--included-files "cover_agent/CoverAgent.py" \
 --code-coverage-report-path "coverage.xml" \
 --test-command "pytest tests/test_main.py --cov=cover_agent --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=10" \
 --test-command-dir "./" \
