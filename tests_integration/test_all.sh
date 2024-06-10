@@ -63,6 +63,16 @@ sh tests_integration/test_with_docker.sh \
   --test-command "go test -coverprofile=coverage.out && gocov convert coverage.out | gocov-xml > coverage.xml" \
   --model $MODEL
 
+# Java Gradle Calculator example
+sh tests_integration/test_with_docker.sh \
+  --dockerfile "templated_tests/java_gradle/Dockerfile" \
+  --source-file-path "src/main/java/com/davidparry/cover/SimpleMathOperations.java" \
+  --test-file-path "src/test/groovy/com/davidparry/cover/SimpleMathOperationsSpec.groovy" \
+  --test-command "./gradlew clean test jacocoTestReport" \
+  --coverage-type "jacoco" \
+  --code-coverage-report-path "build/reports/jacoco/test/jacocoTestReport.csv" \
+  --model $MODEL
+
 # # Java Spring Calculator example
 # sh tests_integration/test_with_docker.sh \
 #   --dockerfile "templated_tests/java_spring_calculator/Dockerfile" \
