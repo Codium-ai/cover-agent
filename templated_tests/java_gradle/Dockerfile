@@ -3,9 +3,7 @@ FROM ubuntu:24.04 as builder
 
 # Install Java, Python 3.12, and its dev dependencies
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && \
-    apt-get install -y wget unzip openjdk-11-jdk && \
-    apt-get clean
+RUN apt-get update && apt-get install -y wget unzip openjdk-11-jdk && apt-get clean
 
 # Install specific Gradle version
 RUN wget https://services.gradle.org/distributions/gradle-7.2-bin.zip -P /tmp && \
