@@ -63,8 +63,6 @@ class CoverAgent:
                 {code_cov_file}
                 =========
                 
-                I'll start you off with an example. In that file, you'll find lots of blocks that look like this: 
-                
                 Here are some instructions: 
                 1. The coverage we particularly care about is only for the `{file_name}.kt`. To find the information of this file, 
                 you'll find it underneath the <sourcefile name="{file_name}"> block.
