@@ -7,21 +7,16 @@ user="""\
 You are a code assistant that accepts a {{ language }} test file as input.
 Your goal is to analyze this file, and provide several feedbacks: the programming language of the test file, the testing framework needed to run the tests in the test file, the number of tests in the test file, and the line number in the test file, after which the new tests should be inserted, so they will be a part of the existing test suite.
 
+
 Here is the file that contains the existing tests, called `{{ test_file_name }}`.
 =========
 {{ test_file_numbered|trim }}
 =========
 
-
-Now, you need to analyze the test file and provide a YAML object equivalent to type $TestsAnalysis, according to the following Pydantic definitions:
-=====
-class TestsAnalysis(BaseModel):
-    language: str = Field(description="The programming language used by the test file")
-    testing_framework: str = Field(description="The testing framework needed to run the tests in the test file")
-    number_of_tests: int = Field(description="The number of tests in the test file")
-    relevant_line_number_to_insert_tests_after: int = Field(description="The line number in the test file, **after which** the new tests should be inserted, so they will be a part of the existing test suite. Place the new tests after the last test in the suite.")
-    relevant_line_number_to_insert_imports_after: int = Field(description="The line number in the test file, **after which**  new imports should be inserted, so they will be a legal valid code, and the new test file will be able to run. The new imports should be introduced as independent import lines, and not as part of the existing imports.")
-=====
+If {{ language }} is Kotlin, the test file will be a Junit test file, and the tests will be written in the `@Test` annotation.
+Ensure that the line number is correct, so the new tests will be inserted in the correct place in the test file. By "correct place", we mean that the new tests will be inserted after the last test in the test file,
+but before the closing curly brace of the test class. ENSURE THE RELEVANT LINE NUMBER TO INSERT TESTS AFTER IS IN THE SAME CLASS THAT ALL OF THE OTHER FILES ARE IN.
+DO NOT MAKE THE LINE NUMBER THE SAME AS THE ENDING CURLY BRACE OF THE CLASS. MAKE IT IN THE CLASS... PLEASE. MAKE IT THE LAST CURLY BRACE OF THE LAST TEST INSIDE OF THE TEST CLASS, BUT NOT THE CURLY BRACE OF THE CLASS ITSELF
 
 
 Example output:
