@@ -44,9 +44,52 @@ class CoverAgent:
 
     def _duplicate_test_file(self):
         if self.args.test_file_output_path != "":
-            shutil.copy(self.args.test_file_path, self.args.test_file_output_path)
+            shutil.copy(self.args.test_file_path,
+                        self.args.test_file_output_path)
         else:
             self.args.test_file_output_path = self.args.test_file_path
+
+    def generate_response(self):
+        with open(self.args.code_coverage_report_path, "r") as f:
+            code_cov_file = str(f.read())
+
+        prompt = f"""
+                ## Overview
+                
+                Here is the jacoco code coverage report for the test suite.
+                =========
+                {code_cov_file}
+                =========
+                
+                
+                Tell me number of lines covered, the total number of lines as well as the percentage of lines covered.
+                
+                Example output:
+                ```yaml
+                lines_covered: ...
+                total_lines: ...
+                ```
+                
+                The Response should be only a valid YAML object, without any introduction text or follow-up text.
+                DO NOT ADD ANYTHING AFTER YOUR ANSWER. I DON'T WANT YOU TO SAY ANYTHING EXCEPT THE TWO YAML FIELDS AND THEIR INTEGER VALUES
+                
+                Answer:
+                ```yaml
+                """
+        print("Prompt", prompt)
+        response = ""
+        attempts = 0
+        while "```yaml" not in response:
+            attempts += 1
+            print('attempts', attempts)
+            response, prompt_token_count, response_token_count = (
+                self.test_gen.ai_caller.call_model(prompt={
+                    "system": "",
+                    "user": prompt
+                })
+            )
+
+        return response
 
     def run(self):
         if 'WANDB_API_KEY' in os.environ:
@@ -61,15 +104,18 @@ class CoverAgent:
         self.test_gen.initial_test_suite_analysis()
 
         while (
-            self.test_gen.current_coverage < (self.test_gen.desired_coverage / 100)
+            self.test_gen.current_coverage < (
+                self.test_gen.desired_coverage / 100)
             and iteration_count < self.args.max_iterations
         ):
             self.logger.info(
                 f"Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%"
             )
-            self.logger.info(f"Desired Coverage: {self.test_gen.desired_coverage}%")
+            self.logger.info(
+                f"Desired Coverage: {self.test_gen.desired_coverage}%")
 
-            generated_tests_dict = self.test_gen.generate_tests(max_tokens=4096)
+            generated_tests_dict = self.test_gen.generate_tests(
+                max_tokens=4096)
 
             for generated_test in generated_tests_dict.get("new_tests", []):
                 test_result = self.test_gen.validate_test(
@@ -86,39 +132,7 @@ class CoverAgent:
                     file="analyze_test_coverage"
                 )
 
-                with open(self.args.code_coverage_report_path, "r") as f:
-                    code_cov_file = str(f.read())
-
-                prompt = f"""
-                        ## Overview
-                        
-                        Here is the jacoco code coverage report for the test suite.
-                        =========
-                        {code_cov_file}
-                        =========
-                        
-                        
-                        Tell me number of lines covered, the total number of lines as well as the percentage of lines covered.
-                        
-                        Example output:
-                        ```yaml
-                        lines_covered: ...
-                        total_lines: ...
-                        ```
-                        
-                        The Response should be only a valid YAML object, without any introduction text or follow-up text.
-                        DO NOT ADD ANYTHING AFTER YOUR ANSWER. I DON'T WANT YOU TO SAY ANYTHING EXCEPT THE TWO YAML FIELDS AND THEIR INTEGER VALUES
-                        
-                        Answer:
-                        ```yaml
-                        """
-                print("Prompt", prompt)
-                response, prompt_token_count, response_token_count = (
-                    self.test_gen.ai_caller.call_model(prompt={
-                        "system": "",
-                        "user": prompt
-                    })
-                )
+                response = self.generate_response()
 
                 #
                 # Example output:
@@ -127,13 +141,15 @@ class CoverAgent:
                 # total_lines: ...
                 # ```
 
-                resp = load_yaml(response, keys_fix_yaml=["lines_covered", "total_lines"])
+                resp = load_yaml(response, keys_fix_yaml=[
+                                 "lines_covered", "total_lines"])
                 print("response yaml", resp)
                 total_lines = resp["total_lines"]
                 lines_covered = resp["lines_covered"]
                 print("lines_covered", lines_covered)
                 print("total_lines", total_lines)
-                self.test_gen.current_coverage = int(lines_covered) / int(total_lines)
+                self.test_gen.current_coverage = int(
+                    lines_covered) / int(total_lines)
 
                 print("prompt", prompt)
                 print("response", response)
