@@ -69,7 +69,8 @@ class CoverAgent:
                 2. In the `<sourcefile name="{file_name}">` block, you will find information about the instructions on each line hit, 
                 as well as the methods, lines, and classes' coverages. 
                 3. We only want you to consider the line by line coverage of this file. That information can be found in the 
-                <counter type="LINE" missed="3" covered="3"/> line. 
+                <counter type="LINE" missed="N" covered="N"/> line. I'm using placeholders here since the actual `missed`
+                and `covered` lines might have different information.
                 
                 So for example, if we say that we care about the line coverage for `{file_name}`, you should look for a block that 
                 looks like this in the coverage report: 
