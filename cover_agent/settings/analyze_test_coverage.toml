@@ -1,0 +1,26 @@
+[analyze_test_coverage]
+system="""\
+"""
+
+user="""\
+## Overview
+
+Here is the jacoco code coverage report for the test suite.
+=========
+{{ code_coverage_report|trim }}
+=========
+
+Tell me number of lines covered, the total number of lines as well as the percentage of lines covered.
+
+Example output:
+```yaml
+lines_covered: ...
+total_lines: ...
+```
+
+The Response should be only a valid YAML object, without any introduction text or follow-up text.
+
+Answer:
+```yaml
+
+"""
