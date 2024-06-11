@@ -53,16 +53,52 @@ class CoverAgent:
         with open(self.args.code_coverage_report_path, "r") as f:
             code_cov_file = str(f.read())
 
+        file_name = self.test_gen.source_file_path.split('/')[-1]
+
         prompt = f"""
                 ## Overview
                 
-                Here is the jacoco code coverage report for the test suite.
+                Hi Mr. Llama, here is the jacoco code coverage report for the test suite.
                 =========
                 {code_cov_file}
                 =========
                 
+                I'll start you off with an example. In that file, you'll find lots of blocks that look like this: 
                 
-                Tell me number of lines covered, the total number of lines as well as the percentage of lines covered.
+                Here are some instructions: 
+                1. The coverage we particularly care about is only for the `{file_name}.kt`. To find the information of this file, 
+                you'll find it underneath the <sourcefile name="{file_name}"> block.
+                2. In the `<sourcefile name="{file_name}">` block, you will find information about the instructions on each line hit, 
+                as well as the methods, lines, and classes' coverages. 
+                3. We only want you to consider the line by line coverage of this file. That information can be found in the 
+                <counter type="LINE" missed="3" covered="3"/> line. 
+                
+                So for example, if we say that we care about the line coverage for `{file_name}`, you should look for a block that 
+                looks like this in the coverage report: 
+                
+                <sourcefile name="{file_name}">
+                    <line nr="5" mi="5" ci="0" mb="2" cb="0"/>
+                    <line nr="6" mi="4" ci="0" mb="0" cb="0"/>
+                    <line nr="8" mi="1" ci="0" mb="0" cb="0"/>
+                    <line nr="13" mi="0" ci="5" mb="0" cb="2"/>
+                    <line nr="14" mi="0" ci="4" mb="0" cb="0"/>
+                    <line nr="16" mi="0" ci="1" mb="0" cb="0"/>
+                    <counter type="INSTRUCTION" missed="10" covered="10"/>
+                    <counter type="BRANCH" missed="2" covered="2"/>
+                    <counter type="LINE" missed="3" covered="3"/>
+                    <counter type="COMPLEXITY" missed="2" covered="2"/>
+                    <counter type="METHOD" missed="1" covered="1"/>
+                    <counter type="CLASS" missed="0" covered="1"/>
+                </sourcefile>
+                
+                In this case, the `LINE` XML tag says that there are 3 missed and 3 covered lines. That means there were 6 lines 
+                in total in the `{file_name}` file, and 3 were missed and 3 were covered by tests. The coverage percentage 
+                in this case would be 50%. If our target percentage was 75%, this wouldn't be acceptable.
+
+                Now, please tell us the following information: 1) the number of lines covered, 2) the total 
+                number of lines in the file, as well as 3) the percentage of lines covered. 
+                
+                And please do so in the following output: 
                 
                 Example output:
                 ```yaml
