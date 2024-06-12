@@ -145,7 +145,7 @@ class PromptBuilder:
                 get_settings().test_generation_prompt.user
             ).render(variables)
         except Exception as e:
-            logging.error(f"Error rendering prompt: {e}")
+            logging.error(f"Error rendering prompt: {e}, source_file: {self.source_file_name}, test_file: {self.test_file_name}")
             return {"system": "", "user": ""}
 
         # print(f"#### user_prompt:\n\n{user_prompt}")
