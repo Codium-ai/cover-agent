@@ -1,6 +1,6 @@
 import logging
 
-from jinja2 import Environment, StrictUndefined
+from jinja2 import Environment, StrictUndefined, select_autoescape
 from cover_agent.settings.config_loader import get_settings
 
 MAX_TESTS_PER_RUN = 4
@@ -73,10 +73,7 @@ class PromptBuilder:
         self.language = language
         # add line numbers to each line in 'source_file'. start from 1
         self.source_file_numbered = "\n".join(
-            [f"{i + 1} {line}" for i, line in enumerate(self.source_file.split("\n"))]
-        )
-        self.test_file_numbered = "\n".join(
-            [f"{i + 1} {line}" for i, line in enumerate(self.test_file.split("\n"))]
+            [f"{i+1} {line}" for i, line in enumerate(self.source_file.split("\n"))]
         )
 
         # Conditionally fill in optional sections
@@ -128,7 +125,6 @@ class PromptBuilder:
             "source_file_name": self.source_file_name,
             "test_file_name": self.test_file_name,
             "source_file_numbered": self.source_file_numbered,
-            "test_file_numbered": self.test_file_numbered,
             "source_file": self.source_file,
             "test_file": self.test_file,
             "code_coverage_report": self.code_coverage_report,
@@ -138,7 +134,9 @@ class PromptBuilder:
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
         }
-        environment = Environment(undefined=StrictUndefined)
+        environment = Environment(
+            undefined=StrictUndefined, autoescape=select_autoescape(['html', 'xml'])
+        )
         try:
             system_prompt = environment.from_string(
                 get_settings().test_generation_prompt.system
@@ -151,33 +149,4 @@ class PromptBuilder:
             return {"system": "", "user": ""}
 
         # print(f"#### user_prompt:\n\n{user_prompt}")
-        return {"system": system_prompt, "user": user_prompt}
-
-    def build_prompt_custom(self, file) -> dict:
-        variables = {
-            "source_file_name": self.source_file_name,
-            "test_file_name": self.test_file_name,
-            "source_file_numbered": self.source_file_numbered,
-            "test_file_numbered": self.test_file_numbered,
-            "source_file": self.source_file,
-            "test_file": self.test_file,
-            "code_coverage_report": self.code_coverage_report,
-            "additional_includes_section": self.included_files,
-            "failed_tests_section": self.failed_test_runs,
-            "additional_instructions_text": self.additional_instructions,
-            "language": self.language,
-            "max_tests": MAX_TESTS_PER_RUN,
-        }
-        environment = Environment(undefined=StrictUndefined)
-        try:
-            system_prompt = environment.from_string(
-                get_settings().get(file).system
-            ).render(variables)
-            user_prompt = environment.from_string(get_settings().get(file).user).render(
-                variables
-            )
-        except Exception as e:
-            logging.error(f"Error rendering prompt: {e}")
-            return {"system": "", "user": ""}
-
         return {"system": system_prompt, "user": user_prompt}
