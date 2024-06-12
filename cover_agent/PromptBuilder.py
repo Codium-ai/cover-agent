@@ -134,7 +134,7 @@ class PromptBuilder:
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
         }
-        environment = Environment(
+        self.environment = Environment(
             undefined=StrictUndefined, autoescape=select_autoescape(['html', 'xml'])
         )
         try:
