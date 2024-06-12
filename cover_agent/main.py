@@ -2,6 +2,7 @@ import argparse
 import os
 from cover_agent.CoverAgent import CoverAgent
 from cover_agent.version import __version__
+import logging
 
 
 def parse_args():
@@ -10,10 +11,16 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description=f"Cover Agent v{__version__}")
     parser.add_argument(
-        "--source-file-path", required=True, help="Path to the source file."
+        "--source-file-path", required=False, help="Path to the source file."
     )
     parser.add_argument(
-        "--test-file-path", required=True, help="Path to the input test file."
+        "--test-file-path", required=False, help="Path to the input test file."
+    )
+    parser.add_argument(
+        "--source-file-directory", required=False, help="Path to the source directory"
+    )
+    parser.add_argument(
+        "--test-file-directory", required=False, help="Path to the input test directory"
     )
     parser.add_argument(
         "--test-file-output-path",
@@ -91,8 +98,36 @@ def parse_args():
 
 def main():
     args = parse_args()
-    agent = CoverAgent(args)
-    agent.run()
+
+    # If we pass only one source file path, just run the agent on the file.
+    if args.source_file_path:
+        print(f"Attempting to generate unit tests for {args.source_file_path} in {args.test_file_path} ...")
+        agent = CoverAgent(args)
+        agent.run()
+
+    elif args.source_file_directory:
+        print(f"Attempting to generate unit tests for all Python files in {args.source_file_directory} ...")
+        source_files = os.listdir(args.source_file_directory)
+        for file in source_files:
+            if os.path.splitext(file)[1] == ".py":
+                args.source_file_path = file
+
+                test_file_directory = os.getcwd() + "/test"
+                args.test_file_path = os.path.splitext(file)[0] + "_test.py"
+                print(f"Attempting to generate unit tests for {args.source_file_path} in {args.test_file_path} ...")
+
+                from pathlib import Path
+                Path(test_file_directory).mkdir(parents=True, exist_ok=True)
+                if not os.path.exists(args.test_file_path):
+                    with open(args.test_file_path, 'w') as target_file:
+                        target_file.write("")
+
+                agent = CoverAgent(args)
+                agent.run()
+
+    else:
+        print("Please provide either a source file path or directory.")
+        return
 
 
 if __name__ == "__main__":
