@@ -40,4 +40,4 @@ jobs:
         # Install bash
         apk add --no-cache bash
         # Execute the shell script with bash
-        bash tests_integration/test_all.sh
+        bash tests_integration/test_all.sh --run-installer
