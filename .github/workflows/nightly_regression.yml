@@ -33,8 +33,9 @@ jobs:
 
     # Step 2: Run integration tests
     - name: Run integration tests
+      shell: bash
       run: |
         # Ensure the script is executable
         chmod +x tests_integration/test_all.sh
-        # Execute the shell script
-        sh tests_integration/test_all.sh
+        # Execute the shell script with bash
+        bash tests_integration/test_all.sh
