@@ -7,7 +7,7 @@ on:
     - cron: '0 0 * * *'
   # Allow manual triggering of the workflow
   workflow_dispatch:
-  # Trigger the workflow when there is a push to the main branch
+  # Trigger the workflow when there is a push to the integrate-tests branch
   push:
     branches:
       - integrate-tests
@@ -33,9 +33,8 @@ jobs:
 
     # Step 2: Run integration tests
     - name: Run integration tests
-      shell: bash
       run: |
-        # Ensure the script is executable
-        chmod +x tests_integration/test_all.sh
+        # Install bash
+        apk add --no-cache bash
         # Execute the shell script with bash
         bash tests_integration/test_all.sh
