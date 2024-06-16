@@ -7,6 +7,10 @@ on:
     - cron: '0 0 * * *'
   # Allow manual triggering of the workflow
   workflow_dispatch:
+  # Trigger the workflow when there is a push to the main branch
+  push:
+    branches:
+      - integrate-tests
 
 jobs:
   run-integration-tests:
