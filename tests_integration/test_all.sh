@@ -41,6 +41,8 @@ if [ "$RUN_INSTALLER" = true ]; then
     # Run the Docker container with the current user's ID and group ID
     mkdir -p dist
     docker run --rm --volume "$(pwd)/dist:/app/dist" cover-agent-installer
+    ls -l
+    ls -l dist
 fi
 
 # Python FastAPI Example
