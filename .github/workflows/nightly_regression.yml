@@ -16,6 +16,9 @@ jobs:
   run-integration-tests:
     # Use the Docker image as the runner
     runs-on: ubuntu-latest
+    container:
+      image: docker:latest
+      options: --privileged # Required for Docker-in-Docker
 
     # Define the Docker service with Docker-in-Docker (DinD)
     services:
