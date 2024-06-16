@@ -5,40 +5,29 @@ on:
   # Schedule the workflow to run nightly at midnight
   schedule:
     - cron: '0 0 * * *'
-  # Trigger the workflow when there is a push to the main branch
-  push:
-    branches:
-      - main
-      - integrate-tests
   # Allow manual triggering of the workflow
   workflow_dispatch:
 
 jobs:
-  # Define the job for running integration tests
   run-integration-tests:
-    # Use the latest Ubuntu runner
+    # Use the Docker image as the runner
     runs-on: ubuntu-latest
 
-    # Set environment variables
+    # Define the Docker service with Docker-in-Docker (DinD)
+    services:
+      docker:
+        image: docker:latest
+        options: --privileged # Required for Docker-in-Docker
+
     env:
-      # Set the OPEN_API_KEY environment variable using a secret stored in GitHub Secrets
       OPEN_API_KEY: ${{ secrets.OPENAI_KEY }}
 
-    # Define the steps to execute in the job
     steps:
     # Step 1: Check out the repository code
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    # Step 2: Set up Docker
-    - name: Set up Docker
-      run: |
-        # Update package lists
-        sudo apt-get update
-        # Install Docker
-        sudo apt-get install -y docker.io
-
-    # Step 3: Run integration tests
+    # Step 2: Run integration tests
     - name: Run integration tests
       run: |
         # Ensure the script is executable

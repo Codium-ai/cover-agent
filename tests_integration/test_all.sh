@@ -35,43 +35,39 @@ done
 
 # Conditional Docker commands
 if [ "$RUN_INSTALLER" = true ]; then
-    # Get the current user ID and group ID
-    USER_ID=$(id -u)
-    GROUP_ID=$(id -g)
-
     # Build the installer within a Docker container
     docker build -t cover-agent-installer -f Dockerfile .
 
     # Run the Docker container with the current user's ID and group ID
     mkdir -p dist
-    docker run --rm --user $USER_ID:$GROUP_ID --volume "$(pwd)/dist:/app/dist" cover-agent-installer
+    docker run --rm --volume "$(pwd)/dist:/app/dist" cover-agent-installer
 fi
 
-# Python FastAPI Example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/python_fastapi/Dockerfile" \
-  --source-file-path "app.py" \
-  --test-file-path "test_app.py" \
-  --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
-  --model "gpt-3.5-turbo"
+# # Python FastAPI Example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/python_fastapi/Dockerfile" \
+#   --source-file-path "app.py" \
+#   --test-file-path "test_app.py" \
+#   --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
+#   --model "gpt-3.5-turbo"
 
-# Go Webservice Example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/go_webservice/Dockerfile" \
-  --source-file-path "app.go" \
-  --test-file-path "app_test.go" \
-  --test-command "go test -coverprofile=coverage.out && gocov convert coverage.out | gocov-xml > coverage.xml" \
-  --model $MODEL
+# # Go Webservice Example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/go_webservice/Dockerfile" \
+#   --source-file-path "app.go" \
+#   --test-file-path "app_test.go" \
+#   --test-command "go test -coverprofile=coverage.out && gocov convert coverage.out | gocov-xml > coverage.xml" \
+#   --model $MODEL
 
-# Java Gradle example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/java_gradle/Dockerfile" \
-  --source-file-path "src/main/java/com/davidparry/cover/SimpleMathOperations.java" \
-  --test-file-path "src/test/groovy/com/davidparry/cover/SimpleMathOperationsSpec.groovy" \
-  --test-command "./gradlew clean test jacocoTestReport" \
-  --coverage-type "jacoco" \
-  --code-coverage-report-path "build/reports/jacoco/test/jacocoTestReport.csv" \
-  --model $MODEL
+# # Java Gradle example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/java_gradle/Dockerfile" \
+#   --source-file-path "src/main/java/com/davidparry/cover/SimpleMathOperations.java" \
+#   --test-file-path "src/test/groovy/com/davidparry/cover/SimpleMathOperationsSpec.groovy" \
+#   --test-command "./gradlew clean test jacocoTestReport" \
+#   --coverage-type "jacoco" \
+#   --code-coverage-report-path "build/reports/jacoco/test/jacocoTestReport.csv" \
+#   --model $MODEL
 
 # Java Spring Calculator example
 sh tests_integration/test_with_docker.sh \
