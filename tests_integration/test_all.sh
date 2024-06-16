@@ -43,13 +43,13 @@ if [ "$RUN_INSTALLER" = true ]; then
     docker run --rm --volume "$(pwd)/dist:/app/dist" cover-agent-installer
 fi
 
-# # Python FastAPI Example
-# sh tests_integration/test_with_docker.sh \
-#   --dockerfile "templated_tests/python_fastapi/Dockerfile" \
-#   --source-file-path "app.py" \
-#   --test-file-path "test_app.py" \
-#   --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
-#   --model "gpt-3.5-turbo"
+# Python FastAPI Example
+sh tests_integration/test_with_docker.sh \
+  --dockerfile "templated_tests/python_fastapi/Dockerfile" \
+  --source-file-path "app.py" \
+  --test-file-path "test_app.py" \
+  --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
+  --model "gpt-3.5-turbo"
 
 # # Go Webservice Example
 # sh tests_integration/test_with_docker.sh \
@@ -69,21 +69,21 @@ fi
 #   --code-coverage-report-path "build/reports/jacoco/test/jacocoTestReport.csv" \
 #   --model $MODEL
 
-# Java Spring Calculator example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/java_spring_calculator/Dockerfile" \
-  --source-file-path "src/main/java/com/example/calculator/controller/CalculatorController.java" \
-  --test-file-path "src/test/java/com/example/calculator/controller/CalculatorControllerTest.java" \
-  --test-command "mvn verify" \
-  --coverage-type "jacoco" \
-  --code-coverage-report-path "target/site/jacoco/jacoco.csv" \
-  --model $MODEL
+# # Java Spring Calculator example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/java_spring_calculator/Dockerfile" \
+#   --source-file-path "src/main/java/com/example/calculator/controller/CalculatorController.java" \
+#   --test-file-path "src/test/java/com/example/calculator/controller/CalculatorControllerTest.java" \
+#   --test-command "mvn verify" \
+#   --coverage-type "jacoco" \
+#   --code-coverage-report-path "target/site/jacoco/jacoco.csv" \
+#   --model $MODEL
 
-# VanillaJS Example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/js_vanilla/Dockerfile" \
-  --source-file-path "ui.js" \
-  --test-file-path "ui.test.js" \
-  --test-command "npm run test:coverage" \
-  --code-coverage-report-path "coverage/coverage.xml" \
-  --model $MODEL
+# # VanillaJS Example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/js_vanilla/Dockerfile" \
+#   --source-file-path "ui.js" \
+#   --test-file-path "ui.test.js" \
+#   --test-command "npm run test:coverage" \
+#   --code-coverage-report-path "coverage/coverage.xml" \
+#   --model $MODEL
