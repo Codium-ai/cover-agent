@@ -1,5 +1,5 @@
 # Dockerfile to build installer for Cover Agent
-FROM python:3.12
+FROM python:3.12-bullseye
 
 WORKDIR /app
 

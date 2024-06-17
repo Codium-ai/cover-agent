@@ -45,23 +45,4 @@ public class CalculatorControllerTest {
                 .andExpect(content().string("1.0"));
     }
 
-    @Test
-    public void testMultiply() throws Exception {
-        mockMvc.perform(get("/multiply?a=2&b=3"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("6.0"));
-    }
-
-    @Test
-    public void testDivide() throws Exception {
-        mockMvc.perform(get("/divide?a=6&b=3"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("2.0"));
-    }
-
-    // @Test
-    // public void testDivideByZero() throws Exception {
-    //     mockMvc.perform(get("/divide?a=1&b=0"))
-    //             .andExpect(status().isBadRequest());
-    // }
 }

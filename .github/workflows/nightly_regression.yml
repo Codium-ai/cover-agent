@@ -1,0 +1,76 @@
+name: Nightly Integration Tests
+
+# Define the events that will trigger this workflow
+on:
+  # Schedule the workflow to run nightly at midnight
+  schedule:
+    - cron: '0 0 * * *'
+  # Allow manual triggering of the workflow
+  workflow_dispatch:
+
+jobs:
+  build-executable:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12'
+    
+    # Step to cache Poetry dependencies
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/pypoetry
+          ~/.cache/pip
+        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
+    - name: Install Dependencies
+      run: |
+        pip install poetry wandb
+        poetry install
+    - name: Build Executable
+      run: make installer
+    - name: Upload Executable
+      uses: actions/upload-artifact@v2
+      with:
+        name: cover-agent
+        path: dist/cover-agent*
+
+  run-integration-tests:
+    needs: build-executable
+    runs-on: ubuntu-latest
+    container:
+      image: docker:latest
+      options: --privileged # Required for Docker-in-Docker
+
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_KEY }}
+
+    steps:
+    # Step 1: Check out the repository code
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # Step 2: Download the artifact
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: cover-agent
+        path: dist/
+
+    # Step 3: Run integration tests
+    - name: Run integration tests
+      run: |
+        # Set permissions for dist/cover-agent
+        chmod +x dist/cover-agent
+
+        # Install bash
+        apk add --no-cache bash
+        
+        # Execute the shell script with bash
+        bash tests_integration/test_all.sh

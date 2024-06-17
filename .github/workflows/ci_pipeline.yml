@@ -38,7 +38,19 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: '3.12'
+      
+      # Step to cache Poetry dependencies
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
       - name: Install Poetry
         run: pip install poetry
       - name: Install dependencies using Poetry
@@ -71,7 +83,19 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.x'
+          python-version: '3.12'
+      
+      # Step to cache Poetry dependencies
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
       - name: Install Poetry
         run: pip install poetry
       - name: Install dependencies using Poetry
@@ -88,7 +112,7 @@ jobs:
     if: needs.changes.outputs.relevant_changes == 'true'
     strategy:
       matrix:
-       os: [ubuntu-latest, windows-latest, macos-latest]
+       os: [ubuntu-22.04, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -97,6 +121,18 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.12'
+    
+    # Step to cache Poetry dependencies
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/pypoetry
+          ~/.cache/pip
+        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
     - name: Install Dependencies
       run: |
         pip install poetry wandb
@@ -130,8 +166,8 @@ jobs:
     - name: Download executables (Ubuntu)
       uses: actions/download-artifact@v2
       with:
-        name: cover-agent-ubuntu-latest
-        path: dist/ubuntu-latest
+        name: cover-agent-ubuntu-22.04
+        path: dist/ubuntu-22.04
     - uses: actions/download-artifact@v2
       with:
         name: cover-agent-windows-latest
@@ -159,7 +195,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/ubuntu-latest/cover-agent
+        asset_path: dist/ubuntu-22.04/cover-agent
         asset_name: cover-agent-ubuntu
         asset_content_type: application/octet-stream
     - name: Upload Release Asset (Windows)
