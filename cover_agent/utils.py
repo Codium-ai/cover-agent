@@ -37,7 +37,7 @@ def load_yaml(response_text: str, keys_fix_yaml: Optional[List[str]] = None) -> 
         if not data:
             logging.info("Failed to parse AI prediction after fixing YAML formatting.")
             raise Exception(
-                "Failed to parse AI prediction after fixing YAML formatting. Error: {e}."
+                "Failed to parse AI prediction after fixing YAML formatting."
             )
     return data
 
