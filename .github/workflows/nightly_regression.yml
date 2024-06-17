@@ -20,12 +20,6 @@ jobs:
       image: docker:latest
       options: --privileged # Required for Docker-in-Docker
 
-    # Define the Docker service with Docker-in-Docker (DinD)
-    services:
-      docker:
-        image: docker:latest
-        options: --privileged # Required for Docker-in-Docker
-
     env:
       OPEN_API_KEY: ${{ secrets.OPENAI_KEY }}
 
@@ -34,10 +28,27 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    # Step 2: Run integration tests
+    # Step 2: Install jq
+    - name: Install jq
+      run: |
+        apt-get update && apt-get install -y jq
+
+    # Step 3: Download latest release artifact
+    - name: Download latest release artifact
+      run: |
+        # Fetch the latest release information from GitHub API
+        latest_release_url=$(curl -s https://api.github.com/repos/Codium-ai/cover-agent/releases/latest | jq -r '.assets[] | select(.name == "cover-agent-ubuntu") | .browser_download_url')
+        # Download the latest release artifact
+        curl -L -o cover-agent-ubuntu $latest_release_url
+        # Make the artifact executable
+        chmod +x cover-agent-ubuntu
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Add this if the repository is private
+
+    # Step 4: Run integration tests
     - name: Run integration tests
       run: |
         # Install bash
         apk add --no-cache bash
         # Execute the shell script with bash
-        bash tests_integration/test_all.sh --run-installer
+        bash tests_integration/test_all.sh
