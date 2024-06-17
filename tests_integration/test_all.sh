@@ -39,13 +39,8 @@ if [ "$RUN_INSTALLER" = true ]; then
     docker build -t cover-agent-installer -f Dockerfile .
 
     # Run the Docker container with the current user's ID and group ID
-    pwd
-    ls -l
     mkdir -p dist
     docker run --rm --volume "$(pwd)/dist:/app/dist" cover-agent-installer
-    pwd
-    ls -l
-    ls -l dist
 fi
 
 # Python FastAPI Example

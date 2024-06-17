@@ -58,7 +58,11 @@ jobs:
     # Step 3: Run integration tests
     - name: Run integration tests
       run: |
+        # Set permissions for dist/cover-agent
+        chmod +x dist/cover-agent
+
         # Install bash
         apk add --no-cache bash
+        
         # Execute the shell script with bash
         bash tests_integration/test_all.sh
