@@ -21,6 +21,18 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.12'
+    
+    # Step to cache Poetry dependencies
+    - name: Cache Poetry dependencies
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/pypoetry
+          ~/.cache/pip
+        key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-poetry-
+
     - name: Install Dependencies
       run: |
         pip install poetry wandb
@@ -41,7 +53,7 @@ jobs:
       options: --privileged # Required for Docker-in-Docker
 
     env:
-      OPEN_API_KEY: ${{ secrets.OPENAI_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_KEY }}
 
     steps:
     # Step 1: Check out the repository code
