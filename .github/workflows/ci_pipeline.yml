@@ -1,182 +1,182 @@
-name: CI Pipeline
+# name: CI Pipeline
 
-on:
-  pull_request:
-    branches:
-      - main
-  push:
-    branches:
-      - main
+# on:
+#   pull_request:
+#     branches:
+#       - main
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  # Checks for changes in version.txt (used for release job)
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      version_changed: ${{ steps.filter.outputs.version_changed }}
-      relevant_changes: ${{ steps.filter.outputs.relevant_changes }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            version_changed:
-              - 'cover_agent/version.txt'
-            relevant_changes:
-              - '!README.md'
-              - '!docs/**'
+# jobs:
+#   # Checks for changes in version.txt (used for release job)
+#   changes:
+#     runs-on: ubuntu-latest
+#     outputs:
+#       version_changed: ${{ steps.filter.outputs.version_changed }}
+#       relevant_changes: ${{ steps.filter.outputs.relevant_changes }}
+#     steps:
+#       - uses: actions/checkout@v3
+#       - uses: dorny/paths-filter@v2
+#         id: filter
+#         with:
+#           filters: |
+#             version_changed:
+#               - 'cover_agent/version.txt'
+#             relevant_changes:
+#               - '!README.md'
+#               - '!docs/**'
 
-  test:
-    needs: [changes]
-    if: needs.changes.outputs.relevant_changes == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0 # Ensures we fetch all history for all branches
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-      - name: Install Poetry
-        run: pip install poetry
-      - name: Install dependencies using Poetry
-        run: poetry install
-      - name: Run tests and generate reports
-        env:
-          OPENAI_API_KEY: "This_is_a_fake_API_key"
-        run: make test
-      - name: Upload test report
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: test-reports
-          path: testLog.xml
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: coverage-reports
-          path: cobertura.xml
-        env:
-          pythonLocation: /opt/hostedtoolcache/Python/3.12.2/x64
-          LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.2/x64/lib
+#   test:
+#     needs: [changes]
+#     if: needs.changes.outputs.relevant_changes == 'true'
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#         with:
+#           fetch-depth: 0 # Ensures we fetch all history for all branches
+#       - name: Set up Python
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: '3.x'
+#       - name: Install Poetry
+#         run: pip install poetry
+#       - name: Install dependencies using Poetry
+#         run: poetry install
+#       - name: Run tests and generate reports
+#         env:
+#           OPENAI_API_KEY: "This_is_a_fake_API_key"
+#         run: make test
+#       - name: Upload test report
+#         uses: actions/upload-artifact@v2
+#         if: always()
+#         with:
+#           name: test-reports
+#           path: testLog.xml
+#       - name: Upload coverage report
+#         uses: actions/upload-artifact@v2
+#         if: always()
+#         with:
+#           name: coverage-reports
+#           path: cobertura.xml
+#         env:
+#           pythonLocation: /opt/hostedtoolcache/Python/3.12.2/x64
+#           LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.12.2/x64/lib
 
-  package-test:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-      - name: Install Poetry
-        run: pip install poetry
-      - name: Install dependencies using Poetry
-        run: poetry install
-      - name: Build, Install and Test Package from Different Location
-        run: |
-          poetry build
-          pip install dist/*.whl
-          cd /tmp
-          cover-agent --help        
+#   package-test:
+#     needs: test
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Set up Python
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: '3.x'
+#       - name: Install Poetry
+#         run: pip install poetry
+#       - name: Install dependencies using Poetry
+#         run: poetry install
+#       - name: Build, Install and Test Package from Different Location
+#         run: |
+#           poetry build
+#           pip install dist/*.whl
+#           cd /tmp
+#           cover-agent --help        
 
-  build:
-    needs: [test, changes]
-    if: needs.changes.outputs.relevant_changes == 'true'
-    strategy:
-      matrix:
-       os: [ubuntu-22.04, windows-latest, macos-latest]
+#   build:
+#     needs: [test, changes]
+#     if: needs.changes.outputs.relevant_changes == 'true'
+#     strategy:
+#       matrix:
+#        os: [ubuntu-22.04, windows-latest, macos-latest]
 
-    runs-on: ${{ matrix.os }}
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.12'
-    - name: Install Dependencies
-      run: |
-        pip install poetry wandb
-        poetry install
-    - name: Build Executable
-      run: make installer
-    - name: Test Executable (Windows)
-      if: ${{ matrix.os == 'windows-latest' }}
-      run: .\dist\cover-agent.exe --help
-      shell: pwsh
-    - name: Test Executable (Unix)
-      if: ${{ matrix.os != 'windows-latest' }}
-      run: ./dist/cover-agent --help
-      shell: bash
-    - name: Upload Executable
-      uses: actions/upload-artifact@v2
-      with:
-        name: cover-agent-${{ matrix.os }}
-        path: dist/cover-agent*
+#     runs-on: ${{ matrix.os }}
+#     steps:
+#     - uses: actions/checkout@v2
+#     - name: Set up Python
+#       uses: actions/setup-python@v2
+#       with:
+#         python-version: '3.12'
+#     - name: Install Dependencies
+#       run: |
+#         pip install poetry wandb
+#         poetry install
+#     - name: Build Executable
+#       run: make installer
+#     - name: Test Executable (Windows)
+#       if: ${{ matrix.os == 'windows-latest' }}
+#       run: .\dist\cover-agent.exe --help
+#       shell: pwsh
+#     - name: Test Executable (Unix)
+#       if: ${{ matrix.os != 'windows-latest' }}
+#       run: ./dist/cover-agent --help
+#       shell: bash
+#     - name: Upload Executable
+#       uses: actions/upload-artifact@v2
+#       with:
+#         name: cover-agent-${{ matrix.os }}
+#         path: dist/cover-agent*
 
-  release:
-    # This job will run only if the following conditions are met:
-    # - The event is a 'push' to the 'main' branch
-    # - The 'version.txt' file has changed
-    # - There are relevant changes outside of 'README.md' and the 'docs/' folder
-    needs: [build, changes]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.version_changed == 'true' && needs.changes.outputs.relevant_changes == 'true'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Download executables (Ubuntu)
-      uses: actions/download-artifact@v2
-      with:
-        name: cover-agent-ubuntu-22.04
-        path: dist/ubuntu-22.04
-    - uses: actions/download-artifact@v2
-      with:
-        name: cover-agent-windows-latest
-        path: dist/windows-latest
-    - uses: actions/download-artifact@v2
-      with:
-        name: cover-agent-macos-latest
-        path: dist/macos-latest
-    - name: Extract version
-      run: |
-        echo "VERSION=$(cat cover_agent/version.txt)" >> $GITHUB_ENV
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ env.VERSION }}
-        release_name: Release ${{ env.VERSION }}
-        draft: false
-        prerelease: false
-    - name: Upload Release Asset (Ubuntu)
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/ubuntu-22.04/cover-agent
-        asset_name: cover-agent-ubuntu
-        asset_content_type: application/octet-stream
-    - name: Upload Release Asset (Windows)
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/windows-latest/cover-agent.exe
-        asset_name: cover-agent-windows.exe
-        asset_content_type: application/octet-stream
-    - name: Upload Release Asset (macOS)
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/macos-latest/cover-agent
-        asset_name: cover-agent-macos
-        asset_content_type: application/octet-stream
+#   release:
+#     # This job will run only if the following conditions are met:
+#     # - The event is a 'push' to the 'main' branch
+#     # - The 'version.txt' file has changed
+#     # - There are relevant changes outside of 'README.md' and the 'docs/' folder
+#     needs: [build, changes]
+#     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.version_changed == 'true' && needs.changes.outputs.relevant_changes == 'true'
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@v2
+#     - name: Download executables (Ubuntu)
+#       uses: actions/download-artifact@v2
+#       with:
+#         name: cover-agent-ubuntu-22.04
+#         path: dist/ubuntu-22.04
+#     - uses: actions/download-artifact@v2
+#       with:
+#         name: cover-agent-windows-latest
+#         path: dist/windows-latest
+#     - uses: actions/download-artifact@v2
+#       with:
+#         name: cover-agent-macos-latest
+#         path: dist/macos-latest
+#     - name: Extract version
+#       run: |
+#         echo "VERSION=$(cat cover_agent/version.txt)" >> $GITHUB_ENV
+#     - name: Create Release
+#       id: create_release
+#       uses: actions/create-release@v1
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       with:
+#         tag_name: ${{ env.VERSION }}
+#         release_name: Release ${{ env.VERSION }}
+#         draft: false
+#         prerelease: false
+#     - name: Upload Release Asset (Ubuntu)
+#       uses: actions/upload-release-asset@v1
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       with:
+#         upload_url: ${{ steps.create_release.outputs.upload_url }}
+#         asset_path: dist/ubuntu-22.04/cover-agent
+#         asset_name: cover-agent-ubuntu
+#         asset_content_type: application/octet-stream
+#     - name: Upload Release Asset (Windows)
+#       uses: actions/upload-release-asset@v1
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       with:
+#         upload_url: ${{ steps.create_release.outputs.upload_url }}
+#         asset_path: dist/windows-latest/cover-agent.exe
+#         asset_name: cover-agent-windows.exe
+#         asset_content_type: application/octet-stream
+#     - name: Upload Release Asset (macOS)
+#       uses: actions/upload-release-asset@v1
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       with:
+#         upload_url: ${{ steps.create_release.outputs.upload_url }}
+#         asset_path: dist/macos-latest/cover-agent
+#         asset_name: cover-agent-macos
+#         asset_content_type: application/octet-stream

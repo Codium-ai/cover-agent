@@ -13,8 +13,28 @@ on:
       - integrate-tests
 
 jobs:
+  build-executable:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12'
+    - name: Install Dependencies
+      run: |
+        pip install poetry wandb
+        poetry install
+    - name: Build Executable
+      run: make installer
+    - name: Upload Executable
+      uses: actions/upload-artifact@v2
+      with:
+        name: cover-agent
+        path: dist/cover-agent*
+
   run-integration-tests:
-    # Use the Docker image as the runner
+    needs: build-executable
     runs-on: ubuntu-latest
     container:
       image: docker:latest
@@ -28,24 +48,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    # Step 2: Install jq
-    - name: Install jq
-      run: |
-        apt-get update && apt-get install -y jq
+    # Step 2: Download the artifact
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: cover-agent
+        path: dist/
 
-    # Step 3: Download latest release artifact
-    - name: Download latest release artifact
-      run: |
-        # Fetch the latest release information from GitHub API
-        latest_release_url=$(curl -s https://api.github.com/repos/Codium-ai/cover-agent/releases/latest | jq -r '.assets[] | select(.name == "cover-agent-ubuntu") | .browser_download_url')
-        # Download the latest release artifact
-        curl -L -o cover-agent-ubuntu $latest_release_url
-        # Make the artifact executable
-        chmod +x cover-agent-ubuntu
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Add this if the repository is private
-
-    # Step 4: Run integration tests
+    # Step 3: Run integration tests
     - name: Run integration tests
       run: |
         # Install bash
