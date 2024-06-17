@@ -1,11 +1,12 @@
+from __future__ import annotations
 import logging
 import re
 import yaml
 
-from typing import List
+from typing import List, Optional
 
 
-def load_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
+def load_yaml(response_text: str, keys_fix_yaml: Optional[List[str]] = None) -> dict:
     """
     Load and parse YAML data from a given response text.
 
@@ -22,6 +23,9 @@ def load_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         load_yaml(response_text, keys_fix_yaml=['key1', 'key2'])
 
     """
+    if keys_fix_yaml is None:
+        keys_fix_yaml = []
+
     response_text = response_text.strip().removeprefix("```yaml").rstrip("`")
     try:
         data = yaml.safe_load(response_text)
@@ -31,11 +35,16 @@ def load_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         )
         data = try_fix_yaml(response_text, keys_fix_yaml=keys_fix_yaml)
         if not data:
-            logging.info(f"Failed to parse AI prediction after fixing YAML formatting.")
+            logging.info("Failed to parse AI prediction after fixing YAML formatting.")
+            raise Exception(
+                "Failed to parse AI prediction after fixing YAML formatting. Error: {e}."
+            )
     return data
 
 
-def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
+def try_fix_yaml(
+    response_text: str, keys_fix_yaml: Optional[List[str]] = None
+) -> dict | None:
     """
     Attempt to fix YAML formatting issues in the given response text.
 
@@ -57,6 +66,9 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
     Example:
         try_fix_yaml(response_text, keys_fix_yaml=['key1', 'key2'])
     """
+    if keys_fix_yaml is None:
+        keys_fix_yaml = []
+
     response_text_lines = response_text.split("\n")
 
     # first fallback - try to convert 'relevant line: ...' to relevant line: |-\n        ...'
@@ -72,7 +84,7 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
                 )
     try:
         data = yaml.safe_load("\n".join(response_text_lines_copy))
-        logging.info(f"Successfully parsed AI prediction after adding |-\n")
+        logging.info("Successfully parsed AI prediction after adding |-\n")
         return data
     except:
         pass
@@ -85,7 +97,7 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         try:
             data = yaml.safe_load(snippet_text.removeprefix("```yaml").rstrip("`"))
             logging.info(
-                f"Successfully parsed AI prediction after extracting yaml snippet"
+                "Successfully parsed AI prediction after extracting yaml snippet"
             )
             return data
         except:
@@ -97,7 +109,7 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
     )
     try:
         data = yaml.safe_load(response_text_copy)
-        logging.info(f"Successfully parsed AI prediction after removing curly brackets")
+        logging.info("Successfully parsed AI prediction after removing curly brackets")
         return data
     except:
         pass
@@ -136,7 +148,7 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         try:
             data = yaml.safe_load(response_text_copy)
             logging.info(
-                f"Successfully parsed AI prediction when using the language: key as a starting point"
+                "Successfully parsed AI prediction when using the language: key as a starting point"
             )
             return data
         except:
