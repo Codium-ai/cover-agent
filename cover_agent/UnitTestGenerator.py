@@ -312,9 +312,9 @@ class UnitTestGenerator:
             response, prompt_token_count, response_token_count = (
                 self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
             )
-        self.logger.info(
-            f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}"
-        )
+            self.logger.info(
+                f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}"
+            )
         try:
             tests_dict = load_yaml(
                 response,
