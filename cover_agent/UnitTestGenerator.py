@@ -29,6 +29,7 @@ class UnitTestGenerator:
         coverage_type="cobertura",
         desired_coverage: int = 90,  # Default to 90% coverage if not specified
         additional_instructions: str = "",
+        failed_test_case_visibility: bool = False,
     ):
         """
         Initialize the UnitTestGenerator class with the provided parameters.
@@ -74,6 +75,7 @@ class UnitTestGenerator:
         # Run coverage and build the prompt
         self.run_coverage()
         self.prompt = self.build_prompt()
+        self.failed_test_case_visibility = failed_test_case_visibility
 
     def get_code_language(self, source_file_path):
         """
@@ -337,6 +339,51 @@ class UnitTestGenerator:
             tests_dict = []
 
         return tests_dict
+    
+    def append_failure_details_as_comments(self, fail_details,additional_imports):
+        relevant_line_number_to_insert_tests_after = self.relevant_line_number_to_insert_tests_after
+        relevant_line_number_to_insert_imports_after = self.relevant_line_number_to_insert_imports_after
+        failure_details = []
+        print(failure_details)
+        failure_details.append("\n/* Test Failure Details */\n")
+        failure_details.append(f"/* Status: {fail_details['status']}\n")
+        failure_details.append(f"/* Reason: {fail_details['reason']}*/\n")
+        failure_details.append(f"/* Exit Code: {fail_details['exit_code']}*/\n")
+        failure_details.append(f"/* Stderr: {fail_details['stderr']}*/\n")
+        failure_details.append(f"/* Test Behaviour: {fail_details['test']['test_behavior']}*/\n")
+        failure_details.append(f"/* Error: {fail_details['stdout'].split("coverage:")[0]}*/\n")
+        failure_details.append(f"/* Test Name: {fail_details['test']['test_name']}*/\n")
+        failure_details.append(f"/* Test Code: {fail_details['test']['test_code']}*/\n")
+        failure_details.append(f"/* Test Tags: {fail_details['test']['test_tags']}*/\n")
+        test_code_indented = ''.join(failure_details)
+         # Step 1: Append the generated test to the relevant line in the test file
+        with open(self.test_file_path, "r") as test_file:
+            original_content = test_file.read()  # Store original content
+        original_content_lines = original_content.split("\n")
+        test_code_lines = test_code_indented.split("\n")
+        # insert the test code at the relevant line
+        processed_test_lines = (
+            original_content_lines[:relevant_line_number_to_insert_tests_after]
+            +test_code_lines
+            + original_content_lines[relevant_line_number_to_insert_tests_after:]
+        )
+        # insert the additional imports at line 'relevant_line_number_to_insert_imports_after'
+        processed_test = "\n".join(processed_test_lines)
+        if relevant_line_number_to_insert_imports_after and additional_imports and additional_imports not in processed_test:
+            additional_imports_lines = additional_imports.split("\n")
+            processed_test_lines = (
+                processed_test_lines[:relevant_line_number_to_insert_imports_after]
+                + additional_imports_lines
+                + processed_test_lines[relevant_line_number_to_insert_imports_after:]
+            )
+            self.relevant_line_number_to_insert_tests_after += len(additional_imports_lines) # this is important, otherwise the next test will be inserted at the wrong line
+        processed_test = "\n".join(processed_test_lines)
+
+        with open(self.test_file_path, "w") as test_file:
+            test_file.write(processed_test)
+        return failure_details
+
+
 
     def validate_test(self, generated_test: dict, generated_tests_dict: dict):
         try:
@@ -403,6 +450,19 @@ class UnitTestGenerator:
 
                 # Step 3: Check for pass/fail from the Runner object
                 if exit_code != 0:
+                    # Test failed due to compilation error , roll back the test file to it's original content
+                    if "syntax error" in stderr or "SyntaxError" in stderr or "IndentationError" in stderr or "ImportError" in stderr:
+                        with open(self.test_file_path, "w") as test_file:
+                            test_file.write(original_content)
+                        self.logger.info(f"Skipping a generated test that failed due to compilation error")
+                        return {
+                            "status": "COMPILATION_ERROR",
+                            "reason": "Compiltaion error",
+                            "exit_code": exit_code,
+                            "stderr": stderr,
+                            "stdout": stdout,
+                            "test": generated_test,
+                        }
                     # Test failed, roll back the test file to its original content
                     with open(self.test_file_path, "w") as test_file:
                         test_file.write(original_content)
@@ -419,11 +479,10 @@ class UnitTestGenerator:
                     error_message = extract_error_message_python(fail_details["stdout"])
                     if error_message:
                         logging.error(f"Error message:\n{error_message}")
-
                     self.failed_test_runs.append(
                         {"code": generated_test, "error_message": error_message}
                     )  # Append failure details to the list
-
+                    
                     if 'WANDB_API_KEY' in os.environ:
                         fail_details["error_message"] = error_message
                         root_span = Trace(
@@ -432,7 +491,8 @@ class UnitTestGenerator:
                             inputs={"test_code": fail_details["test"]},
                             outputs=fail_details)
                         root_span.log(name='inference')
-
+                    if self.failed_test_case_visibility:
+                        self.append_failure_details_as_comments(fail_details,additional_imports)
                     return fail_details
 
                 # If test passed, check for coverage increase
@@ -469,8 +529,7 @@ class UnitTestGenerator:
                                 "code": fail_details["test"],
                                 "error_message": "did not increase code coverage",
                             }
-                        )  # Append failure details to the list
-
+                        )  
                         if 'WANDB_API_KEY' in os.environ:
                             root_span = Trace(
                                 name="fail_details_"+datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
