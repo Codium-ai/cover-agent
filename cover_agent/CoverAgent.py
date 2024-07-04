@@ -58,7 +58,7 @@ class CoverAgent:
         test_results_list = []
 
         self.test_gen.initial_test_suite_analysis()
-        failed_test_cases = []
+
         while (
             self.test_gen.current_coverage < (self.test_gen.desired_coverage / 100)
             and iteration_count < self.args.max_iterations
@@ -68,15 +68,13 @@ class CoverAgent:
             )
             self.logger.info(f"Desired Coverage: {self.test_gen.desired_coverage}%")
 
-            generated_tests_dict = {'language': 'go', 'existing_test_function_signature': 'func TestRootEndpoint(t *testing.T) {\n', 'new_tests': [{'test_behavior': 'Test the square endpoint with a positive number\n', 'test_name': 'TestSquareEndpoint\n', 'test_code': 'func TestSquareEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/square/3", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Contains(t, w.Body.String(), "\\"result\\":9")\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}, {'test_behavior': 'Test the palindrome endpoint with a palindrome string\n', 'test_name': 'TestPalindromeEndpoint\n', 'test_code': 'func TestPalindromeEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/is-palindrome/racecar", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Contains(t, w.Body.String(), "\\"is_palindrome\\":false")\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}, {'test_behavior': 'Test the palindrome endpoint with a non-palindrome string\n', 'test_name': 'TestNonPalindromeEndpoint\n', 'test_code': 'func TestNonPalindromeEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/is-palindrome/hello", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Contains(t, w.Body.String(), "\\"is_palindrome\\":false")\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}, {'test_behavior': 'Test the days until new year endpoint for correct calculation\n', 'test_name': 'TestDaysUntilNewYearEndpoint\n', 'test_code': 'func TestDaysUntilNewYearEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/days-until-new-year", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  // We cannot assert a fixed number of days as it changes every day\n  // Instead, we check if the response is a non-negative integer\n  assert.Regexp(t, `"days_until_new_year":\\d+`, w.Body.String())\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}]}
-            #generated_tests_dict = self.test_gen.generate_tests(max_tokens=4096)#{'language': 'go', 'existing_test_function_signature': 'func TestRootEndpoint(t *testing.T) {\n', 'new_tests': [{'test_behavior': 'Test the subtract endpoint with valid positive and negative numbers\n', 'test_name': 'TestSubtractEndpoint\n', 'test_code': 'func TestSubtractEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/subtract/10/5", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Contains(t, w.Body.String(), "\\"result\\":5")\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}, {'test_behavior': 'Test the multiply endpoint with valid numbers\n', 'test_name': 'TestMultiplyEndpoint\n', 'test_code': 'func TestMultiplyEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/multiply/4/5", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Contains(t, w.Body.String(), "\\"result\\":20")\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}, {'test_behavior': 'Test the divide endpoint with valid non-zero denominator\n', 'test_name': 'TestDivideEndpoint\n', 'test_code': 'func TestDivideEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/divide/20/4", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Contains(t, w.Body.String(), "\\"result\\":5")\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}, {'test_behavior': 'Test the square endpoint with a valid number\n', 'test_name': 'TestSquareEndpoint\n', 'test_code': 'func TestSquareEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/square/7", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Contains(t, w.Body.String(), "\\"result\\":49")\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}, {'test_behavior': 'Test the square root endpoint with a positive number\n', 'test_name': 'TestSqrtEndpoint\n', 'test_code': 'func TestSqrtEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/sqrt/16", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Contains(t, w.Body.String(), "\\"result\\":4")\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}, {'test_behavior': 'Test the palindrome endpoint with a palindrome string\n', 'test_name': 'TestIsPalindromeEndpoint\n', 'test_code': 'func TestIsPalindromeEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/is-palindrome/racecar", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Contains(t, w.Body.String(), "\\"is_palindrome\\":true")\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}, {'test_behavior': 'Test the palindrome endpoint with a non-palindrome string\n', 'test_name': 'TestIsNotPalindromeEndpoint\n', 'test_code': 'func TestIsNotPalindromeEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/is-palindrome/hello", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Contains(t, w.Body.String(), "\\"is_palindrome\\":true")\n}\n', 'new_imports_code': '""\n', 'test_tags': 'edge case'}, {'test_behavior': 'Test the days until new year endpoint to ensure it returns a positive number of days\n', 'test_name': 'TestDaysUntilNewYearEndpoint\n', 'test_code': 'func TestDaysUntilNewYearEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/days-until-new-year", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Regexp(t, `\\d+`, w.Body.String())\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}, {'test_behavior': 'Test the echo endpoint to ensure it returns the correct message\n', 'test_name': 'TestEchoEndpoint\n', 'test_code': 'func TestEchoEndpoint(t *testing.T) {\n  router := SetupRouter()\n\n  w := httptest.NewRecorder()\n  req, _ := http.NewRequest("GET", "/echo/hello-world", nil)\n  router.ServeHTTP(w, req)\n\n  assert.Equal(t, http.StatusOK, w.Code)\n  assert.Contains(t, w.Body.String(), "\\"message\\":\\"hello-world\\"")\n}\n', 'new_imports_code': '""\n', 'test_tags': 'happy path'}]}
-            #print('ABC \n ',generated_tests_dict,'\n ABC')
+            generated_tests_dict = self.test_gen.generate_tests(max_tokens=4096)
+
             for generated_test in generated_tests_dict.get("new_tests", []):
-                test_result,fail_report = self.test_gen.validate_test(
+                test_result = self.test_gen.validate_test(
                     generated_test, generated_tests_dict
                 )
                 test_results_list.append(test_result)
-                failed_test_cases.append(fail_report)
 
             iteration_count += 1
 
@@ -84,6 +82,7 @@ class CoverAgent:
                 self.test_gen.desired_coverage / 100
             ):
                 self.test_gen.run_coverage()
+
         if self.test_gen.current_coverage >= (self.test_gen.desired_coverage / 100):
             self.logger.info(
                 f"Reached above target coverage of {self.test_gen.desired_coverage}% (Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%) in {iteration_count} iterations."
@@ -96,10 +95,7 @@ class CoverAgent:
                 sys.exit(2)
             else:
                 self.logger.info(failure_message)
-        for content in failed_test_cases:
-            with open(self.args.test_file_output_path, "a") as test_file:
-                for str in content:
-                    test_file.write(str)
+
         ReportGenerator.generate_report(
             test_results_list, self.args.report_filepath
         )
