@@ -351,7 +351,7 @@ class UnitTestGenerator:
         failure_details.append(f"/* Exit Code: {fail_details['exit_code']}*/\n")
         failure_details.append(f"/* Stderr: {fail_details['stderr']}*/\n")
         failure_details.append(f"/* Test Behaviour: {fail_details['test']['test_behavior']}*/\n")
-        failure_details.append(f"/* Error: {fail_details['stdout'].split("coverage:")[0]}*/\n")
+        failure_details.append(f"/* Error: {fail_details['stdout'].split('coverage:')[0]}*/\n")
         failure_details.append(f"/* Test Name: {fail_details['test']['test_name']}*/\n")
         failure_details.append(f"/* Test Code: {fail_details['test']['test_code']}*/\n")
         failure_details.append(f"/* Test Tags: {fail_details['test']['test_tags']}*/\n")
@@ -427,13 +427,20 @@ class UnitTestGenerator:
                 )
                 # insert the additional imports at line 'relevant_line_number_to_insert_imports_after'
                 processed_test = "\n".join(processed_test_lines)
+                print("additional_imports are: ", additional_imports)
+                print("relevant_line_number_to_insert_imports_after are: ", relevant_line_number_to_insert_imports_after)
+                print("processed_test are: ", processed_test)
+                original_import_statement = "".join(processed_test_lines[:relevant_line_number_to_insert_imports_after])
+                print("original_import_statement are: ", original_import_statement)
                 if relevant_line_number_to_insert_imports_after and additional_imports and additional_imports not in processed_test:
                     additional_imports_lines = additional_imports.split("\n")
+                    print("additional_imports_lines are: ", additional_imports_lines)
                     processed_test_lines = (
                         processed_test_lines[:relevant_line_number_to_insert_imports_after]
                         + additional_imports_lines
                         + processed_test_lines[relevant_line_number_to_insert_imports_after:]
                     )
+                    print("processed_test_lines are: ", processed_test_lines)
                     self.relevant_line_number_to_insert_tests_after += len(additional_imports_lines) # this is important, otherwise the next test will be inserted at the wrong line
                 processed_test = "\n".join(processed_test_lines)
 
@@ -450,6 +457,7 @@ class UnitTestGenerator:
 
                 # Step 3: Check for pass/fail from the Runner object
                 if exit_code != 0:
+                    exit(0)
                     # Test failed due to compilation error , roll back the test file to it's original content
                     if "syntax error" in stderr or "SyntaxError" in stderr or "IndentationError" in stderr or "ImportError" in stderr:
                         with open(self.test_file_path, "w") as test_file:
