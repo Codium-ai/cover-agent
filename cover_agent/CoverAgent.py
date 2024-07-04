@@ -17,6 +17,7 @@ class CoverAgent:
         self._validate_paths()
         self._duplicate_test_file()
 
+
         self.test_gen = UnitTestGenerator(
             source_file_path=args.source_file_path,
             test_file_path=args.test_file_output_path,
@@ -37,9 +38,11 @@ class CoverAgent:
                 f"Source file not found at {self.args.source_file_path}"
             )
         if not os.path.isfile(self.args.test_file_path):
-            raise FileNotFoundError(
-                f"Test file not found at {self.args.test_file_path}"
-            )
+            with open(self.args.source_file_path,'r') as file:
+                first_line = file.readline().strip()
+            with open(self.args.test_file_path, 'w') as file:
+                file.write(first_line)
+
 
     def _duplicate_test_file(self):
         if self.args.test_file_output_path != "":
