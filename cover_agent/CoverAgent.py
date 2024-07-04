@@ -39,6 +39,7 @@ class CoverAgent:
                 first_line = file.readline().strip()
             with open(self.args.test_file_path, 'w') as file:
                 file.write(first_line)
+                file.write("\n\nimport (\n\n)")
 
 
     def _duplicate_test_file(self):

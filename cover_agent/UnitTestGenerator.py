@@ -383,6 +383,10 @@ class UnitTestGenerator:
             test_file.write(processed_test)
         return failure_details
 
+    def parse_packages(self, input_str):
+        input_str = input_str.replace('import', '').replace('(', '').replace(')', '').strip()
+        packages = [pkg.strip('" \t') for pkg in input_str.splitlines() if pkg.strip()]
+        return packages
 
 
     def validate_test(self, generated_test: dict, generated_tests_dict: dict):
@@ -390,7 +394,8 @@ class UnitTestGenerator:
             # Step 0: no pre-process.
             # We asked the model that each generated test should be a self-contained independent test
             test_code = generated_test.get("test_code", "").rstrip()
-            additional_imports = generated_test.get("new_imports_code", "").strip()
+            # additional_imports = generated_test.get("new_imports_code", "").strip()
+            additional_imports = self.parse_packages(generated_test.get("new_imports_code", ""))
             if additional_imports and additional_imports[0] == '"' and additional_imports[-1] == '"':
                 additional_imports = additional_imports.strip('"')
 
@@ -430,10 +435,18 @@ class UnitTestGenerator:
                 print("additional_imports are: ", additional_imports)
                 print("relevant_line_number_to_insert_imports_after are: ", relevant_line_number_to_insert_imports_after)
                 print("processed_test are: ", processed_test)
-                original_import_statement = "".join(processed_test_lines[:relevant_line_number_to_insert_imports_after])
-                print("original_import_statement are: ", original_import_statement)
-                if relevant_line_number_to_insert_imports_after and additional_imports and additional_imports not in processed_test:
-                    additional_imports_lines = additional_imports.split("\n")
+                import_section_re = re.compile(r'(?s)(import\s*\()(.+?)(\))')
+                print("import_section_re are: ", import_section_re)
+                match = import_section_re.search(original_content)
+                original_import_section = match.group(2)
+                original_import_section = original_import_section
+                print("original_import_section are: ", original_import_section)
+                additional_imports_filtered = [f"\"{Import}\"" for Import in additional_imports if Import not in original_import_section]
+                print("additional_imports_filtered are: ", additional_imports_filtered)
+                # if relevant_line_number_to_insert_imports_after and additional_imports and additional_imports not in processed_test:
+                #     additional_imports_lines = additional_imports.split("\n")
+                if relevant_line_number_to_insert_imports_after and additional_imports_filtered:
+                    additional_imports_lines = additional_imports_filtered
                     print("additional_imports_lines are: ", additional_imports_lines)
                     processed_test_lines = (
                         processed_test_lines[:relevant_line_number_to_insert_imports_after]
@@ -457,7 +470,6 @@ class UnitTestGenerator:
 
                 # Step 3: Check for pass/fail from the Runner object
                 if exit_code != 0:
-                    exit(0)
                     # Test failed due to compilation error , roll back the test file to it's original content
                     if "syntax error" in stderr or "SyntaxError" in stderr or "IndentationError" in stderr or "ImportError" in stderr:
                         with open(self.test_file_path, "w") as test_file:
@@ -517,6 +529,8 @@ class UnitTestGenerator:
                         )
                     )
 
+                    print("new_percentage_covered: ", new_percentage_covered)
+                    print("current_coverage: ", self.current_coverage)
                     if new_percentage_covered <= self.current_coverage:
                         # Coverage has not increased, rollback the test by removing it from the test file
                         with open(self.test_file_path, "w") as test_file:
