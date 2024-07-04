@@ -85,7 +85,11 @@ def parse_args():
         action="store_true",
         help="If set, Cover-Agent will return a non-zero exit code if the desired code coverage is not achieved. Default: False.",
     )
-
+    parser.add_argument(
+        "--failed-test-case-visibility",
+        action="store_true",
+        help="If set, Cover-Agent will add assertion failed test cases as comments in the test file. Default : False",
+    )
     return parser.parse_args()
 
 
