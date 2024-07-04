@@ -33,11 +33,7 @@ class CoverAgent:
         )
 
     def _validate_paths(self):
-        if not os.path.isfile(self.args.source_file_path):
-            raise FileNotFoundError(
-                f"Source file not found at {self.args.source_file_path}"
-            )
-        if not os.path.isfile(self.args.test_file_path):
+        if not os.path.isfile(self.args.source_file_path) or not os.path.isfile(self.args.test_file_path):
             with open(self.args.source_file_path,'r') as file:
                 first_line = file.readline().strip()
             with open(self.args.test_file_path, 'w') as file:
