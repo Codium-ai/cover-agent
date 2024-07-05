@@ -3,6 +3,10 @@
 # Exit on error
 set -e
 
+# Check for required commands
+command -v ruby >/dev/null 2>&1 || { echo >&2 "Ruby is required but it's not installed. Aborting."; exit 1; }
+command -v gcc >/dev/null 2>&1 || { echo >&2 "GCC is required but it's not installed. Aborting."; exit 1; }
+
 # Generate the test runner using the Ruby script from Unity
 echo "Generating test runner..."
 ruby Unity/auto/generate_test_runner.rb test_calc.c test_calc_Runner.c
