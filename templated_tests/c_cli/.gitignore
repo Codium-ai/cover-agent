@@ -1,0 +1,10 @@
+# Unity testing files
+*.gcda
+*.gcno
+*_Runner.c
+# Code Coverage
+*.info
+
+# Binaries
+test_calc
+
