@@ -43,13 +43,17 @@ if [ "$RUN_INSTALLER" = true ]; then
     docker run --rm --volume "$(pwd)/dist:/app/dist" cover-agent-installer
 fi
 
-# Python FastAPI Example
+# C Calculator Example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/python_fastapi/Dockerfile" \
-  --source-file-path "app.py" \
-  --test-file-path "test_app.py" \
-  --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
-  --model "gpt-3.5-turbo"
+  --dockerfile "templated_tests/c_cli/Dockerfile" \
+  --source-file-path "calc.c" \
+  --test-file-path "test_calc.c" \
+  --code-coverage-report-path "coverage.xml" \
+  --test-command "sh build_and_test_with_coverage.sh" \
+  --coverage-type "cobertura" \
+  --max-iterations "6" \
+  --desired-coverage "50" \
+  --model $MODEL
 
 # Go Webservice Example
 sh tests_integration/test_with_docker.sh \
@@ -87,3 +91,11 @@ sh tests_integration/test_with_docker.sh \
   --test-command "npm run test:coverage" \
   --code-coverage-report-path "coverage/coverage.xml" \
   --model $MODEL
+
+# Python FastAPI Example
+sh tests_integration/test_with_docker.sh \
+  --dockerfile "templated_tests/python_fastapi/Dockerfile" \
+  --source-file-path "app.py" \
+  --test-file-path "test_app.py" \
+  --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
+  --model "gpt-3.5-turbo"

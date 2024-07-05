@@ -48,7 +48,7 @@ Run tests and generate coverage report:
 ./calc_tests
 lcov --capture --directory . --output-file coverage.info
 lcov --remove coverage.info '*/Unity/*' '*/test_*' --output-file coverage_filtered.info
-lcov --list coverage.info
+lcov --list coverage_filtered.info
 ```
 
 See `build_and_test_with_coverage.sh` for a complete script to build and run the tests with coverage
