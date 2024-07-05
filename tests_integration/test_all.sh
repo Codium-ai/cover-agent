@@ -51,8 +51,18 @@ sh tests_integration/test_with_docker.sh \
   --code-coverage-report-path "coverage.xml" \
   --test-command "sh build_and_test_with_coverage.sh" \
   --coverage-type "cobertura" \
-  --max-iterations "6" \
+  --max-iterations "4" \
   --desired-coverage "50" \
+  --model $MODEL
+
+  # C++ Calculator Example
+sh tests_integration/test_with_docker.sh \
+  --dockerfile "templated_tests/cpp_cli/Dockerfile" \
+  --source-file-path "calculator.cpp" \
+  --test-file-path "test_calculator.cpp" \
+  --code-coverage-report-path "coverage.xml" \
+  --test-command "sh build_and_test_with_coverage.sh" \
+  --coverage-type "cobertura" \
   --model $MODEL
 
 # Go Webservice Example
