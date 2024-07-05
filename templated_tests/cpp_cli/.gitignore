@@ -1,0 +1,13 @@
+# Make files
+*.cmake
+CMakeCache.txt
+CMakeFiles/*
+Makefile
+
+# Code Coverage
+*.info
+coverage.xml
+
+# Binaries
+calculator
+test_calculator
