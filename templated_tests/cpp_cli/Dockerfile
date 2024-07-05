@@ -1,16 +1,10 @@
-FROM gcc:14
+FROM python:3
 
 # Install build tools
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    software-properties-common \
-    g++ \
-    cmake \
-    make \
-    lcov
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y g++ cmake make lcov
 
-# Add the Ubuntu Toolchain PPA and upgrade libstdc++
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test
-RUN apt-get update && apt-get upgrade -y libstdc++6
+# install packages for code coverage
+RUN pip install lcov_cobertura
 
 # Install Google Test source
 RUN apt-get install -y libgtest-dev
