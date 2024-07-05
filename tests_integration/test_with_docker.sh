@@ -13,6 +13,8 @@ TEST_FILE_PATH=""
 TEST_COMMAND=""
 COVERAGE_TYPE="cobertura"
 CODE_COVERAGE_REPORT_PATH="coverage.xml"
+MAX_ITERATIONS=2  # Default value
+DESIRED_COVERAGE=70  # Default value
 
 # Function to clean up Docker container
 cleanup() {
@@ -38,6 +40,8 @@ while [ "$#" -gt 0 ]; do
     --test-command) TEST_COMMAND="$2"; shift ;;
     --coverage-type) COVERAGE_TYPE="$2"; shift ;;
     --code-coverage-report-path) CODE_COVERAGE_REPORT_PATH="$2"; shift ;;
+    --max-iterations) MAX_ITERATIONS="$2"; shift ;;
+    --desired-coverage) DESIRED_COVERAGE="$2"; shift ;;
     *) echo "Unknown parameter passed: $1"; exit 1 ;;
   esac
   shift
@@ -79,8 +83,8 @@ COMMAND="/usr/local/bin/cover-agent \
   --code-coverage-report-path \"$CODE_COVERAGE_REPORT_PATH\" \
   --test-command \"$TEST_COMMAND\" \
   --coverage-type \"$COVERAGE_TYPE\" \
-  --desired-coverage 70 \
-  --max-iterations 2 \
+  --desired-coverage $DESIRED_COVERAGE \
+  --max-iterations $MAX_ITERATIONS \
   --strict-coverage"
 
 if [ -n "$MODEL" ]; then
