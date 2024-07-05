@@ -219,6 +219,9 @@ poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent
 ```
 This will also generate all logs and output reports that are generated in `.github/workflows/ci_pipeline.yml`.
 
+### Building the binary locally
+You can build the binary locally simply by invoking the `make installer` command. This will run PyInstaller locally on your machine. Ensure that you have set up the poetry project first (i.e. running `poetry install`).
+
 ## Roadmap
 Below is the roadmap of planned features, with the current implementation status:
 
