@@ -142,9 +142,12 @@ class TestPromptBuilder:
     def test_build_prompt_custom_handles_rendering_exception(self, monkeypatch):
         def mock_render(*args, **kwargs):
             raise Exception("Rendering error")
-        
-        monkeypatch.setattr("jinja2.Environment.from_string", lambda *args, **kwargs: type('', (), {"render": mock_render})())
-        
+
+        monkeypatch.setattr(
+            "jinja2.Environment.from_string",
+            lambda *args, **kwargs: type("", (), {"render": mock_render})(),
+        )
+
         builder = PromptBuilder(
             source_file_path="source_path",
             test_file_path="test_path",
@@ -153,13 +156,15 @@ class TestPromptBuilder:
         result = builder.build_prompt_custom("custom_file")
         assert result == {"system": "", "user": ""}
 
-
     def test_build_prompt_handles_rendering_exception(self, monkeypatch):
         def mock_render(*args, **kwargs):
             raise Exception("Rendering error")
-        
-        monkeypatch.setattr("jinja2.Environment.from_string", lambda *args, **kwargs: type('', (), {"render": mock_render})())
-        
+
+        monkeypatch.setattr(
+            "jinja2.Environment.from_string",
+            lambda *args, **kwargs: type("", (), {"render": mock_render})(),
+        )
+
         builder = PromptBuilder(
             source_file_path="source_path",
             test_file_path="test_path",
@@ -167,4 +172,3 @@ class TestPromptBuilder:
         )
         result = builder.build_prompt()
         assert result == {"system": "", "user": ""}
-
