@@ -96,6 +96,11 @@ class CoverAgent:
             else:
                 self.logger.info(failure_message)
 
+        # Provide metric on total token usage
+        self.logger.info(
+            f"Total number of tokens used for LLM model {self.test_gen.ai_caller.model}: {self.test_gen.total_token_count}"
+        )
+
         ReportGenerator.generate_report(
             test_results_list, self.args.report_filepath
         )

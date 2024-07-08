@@ -70,6 +70,7 @@ class UnitTestGenerator:
         # States to maintain within this class
         self.preprocessor = FilePreprocessor(self.test_file_path)
         self.failed_test_runs = []
+        self.total_token_count = 0
 
         # Run coverage and build the prompt
         self.run_coverage()
@@ -247,6 +248,21 @@ class UnitTestGenerator:
         return self.prompt_builder.build_prompt()
 
     def initial_test_suite_analysis(self):
+        """
+        Perform the initial analysis of the test suite structure.
+
+        This method iterates through a series of attempts to analyze the test suite structure by interacting with the AI model. 
+        It constructs prompts based on specific files and calls to the AI model to gather information such as test headers indentation, 
+        relevant line numbers for inserting new tests, and relevant line numbers for inserting imports. 
+        The method handles multiple attempts to gather this information and raises exceptions if the analysis fails.
+
+        Raises:
+            Exception: If the test headers indentation cannot be analyzed successfully.
+            Exception: If the relevant line number to insert new tests cannot be determined.
+
+        Returns:
+            None
+    """
         try:
             test_headers_indentation = None
             allowed_attempts = 3
@@ -260,6 +276,7 @@ class UnitTestGenerator:
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_headers_indentation)
                 )
+                self.total_token_count += prompt_token_count + response_token_count
                 tests_dict = load_yaml(response)
                 test_headers_indentation = tests_dict.get(
                     "test_headers_indentation", None
@@ -282,6 +299,7 @@ class UnitTestGenerator:
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_test_insert_line)
                 )
+                self.total_token_count += prompt_token_count + response_token_count
                 tests_dict = load_yaml(response)
                 relevant_line_number_to_insert_tests_after = tests_dict.get(
                     "relevant_line_number_to_insert_tests_after", None
@@ -304,6 +322,24 @@ class UnitTestGenerator:
             raise Exception("Error during initial test suite analysis")
 
     def generate_tests(self, max_tokens=4096, dry_run=False):
+        """
+        Generate tests using the AI model based on the constructed prompt.
+
+        This method generates tests by calling the AI model with the constructed prompt. 
+        It handles both dry run and actual test generation scenarios. In a dry run, it returns canned test responses. 
+        In the actual run, it calls the AI model with the prompt and processes the response to extract test 
+        information such as test tags, test code, test name, and test behavior.
+
+        Parameters:
+            max_tokens (int, optional): The maximum number of tokens to use for generating tests. Defaults to 4096.
+            dry_run (bool, optional): A flag indicating whether to perform a dry run without calling the AI model. Defaults to False.
+
+        Returns:
+            dict: A dictionary containing the generated tests with test tags, test code, test name, and test behavior. If an error occurs during test generation, an empty dictionary is returned.
+
+        Raises:
+            Exception: If there is an error during test generation, such as a parsing error while processing the AI model response.
+        """
         self.prompt = self.build_prompt()
 
         if dry_run:
@@ -312,9 +348,7 @@ class UnitTestGenerator:
             response, prompt_token_count, response_token_count = (
                 self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
             )
-        self.logger.info(
-            f"Total token used count for LLM model {self.ai_caller.model}: {prompt_token_count + response_token_count}"
-        )
+            self.total_token_count += prompt_token_count + response_token_count
         try:
             tests_dict = load_yaml(
                 response,
@@ -339,6 +373,32 @@ class UnitTestGenerator:
         return tests_dict
 
     def validate_test(self, generated_test: dict, generated_tests_dict: dict):
+        """
+        Validate a generated test by inserting it into the test file, running the test, and checking for pass/fail.
+
+        Parameters:
+            generated_test (dict): The generated test to validate, containing test code and additional imports.
+            generated_tests_dict (dict): A dictionary containing information about the generated tests.
+
+        Returns:
+            dict: A dictionary containing the status of the test validation, including pass/fail status, exit code, stderr, stdout, and the test details.
+
+        Steps:
+            0. Assume each generated test is a self-contained independent test.
+            1. Extract the test code and additional imports from the generated test.
+            2. Clean up the additional imports if necessary.
+            3. Determine the relevant line numbers for inserting tests and imports.
+            4. Adjust the indentation of the test code to match the required indentation.
+            5. Insert the test code and additional imports into the test file at the relevant lines.
+            6. Run the test using the Runner class.
+            7. Check the exit code to determine if the test passed or failed.
+            8. If the test failed, roll back the test file to its original content and log the failure.
+            9. If the test passed, check if the code coverage has increased using the CoverageProcessor class.
+            10. If the coverage has not increased, roll back the test file and log the failure.
+            11. If the coverage has increased, update the current coverage and log the success.
+            12. Handle any exceptions that occur during the validation process, log the errors, and roll back the test file if necessary.
+            13. Log additional details and error messages for failed tests, and optionally, use the Trace class for detailed logging if 'WANDB_API_KEY' is present in the environment variables.
+        """
         try:
             # Step 0: no pre-process.
             # We asked the model that each generated test should be a self-contained independent test
@@ -528,6 +588,16 @@ class UnitTestGenerator:
 
 
 def extract_error_message_python(fail_message):
+    """
+    Extracts and returns the error message from the provided failure message.
+
+    Parameters:
+        fail_message (str): The failure message containing the error message to be extracted.
+
+    Returns:
+        str: The extracted error message from the failure message, or an empty string if no error message is found.
+
+    """
     try:
         # Define a regular expression pattern to match the error message
         MAX_LINES = 20
