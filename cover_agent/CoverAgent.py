@@ -48,8 +48,8 @@ class CoverAgent:
             self.args.test_file_output_path = self.args.test_file_path
 
     def run(self):
-        if 'WANDB_API_KEY' in os.environ:
-            wandb.login(key=os.environ['WANDB_API_KEY'])
+        if "WANDB_API_KEY" in os.environ:
+            wandb.login(key=os.environ["WANDB_API_KEY"])
             time_and_date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             run_name = f"{self.args.model}_" + time_and_date
             wandb.init(project="cover-agent", name=run_name)
@@ -78,9 +78,7 @@ class CoverAgent:
 
             iteration_count += 1
 
-            if self.test_gen.current_coverage < (
-                self.test_gen.desired_coverage / 100
-            ):
+            if self.test_gen.current_coverage < (self.test_gen.desired_coverage / 100):
                 self.test_gen.run_coverage()
 
         if self.test_gen.current_coverage >= (self.test_gen.desired_coverage / 100):
@@ -98,12 +96,13 @@ class CoverAgent:
 
         # Provide metric on total token usage
         self.logger.info(
-            f"Total number of tokens used for LLM model {self.test_gen.ai_caller.model}: {self.test_gen.total_token_count}"
+            f"Total number of input tokens used for LLM model {self.test_gen.ai_caller.model}: {self.test_gen.total_input_token_count}"
+        )
+        self.logger.info(
+            f"Total number of output tokens used for LLM model {self.test_gen.ai_caller.model}: {self.test_gen.total_output_token_count}"
         )
 
-        ReportGenerator.generate_report(
-            test_results_list, self.args.report_filepath
-        )
+        ReportGenerator.generate_report(test_results_list, self.args.report_filepath)
 
-        if 'WANDB_API_KEY' in os.environ:
+        if "WANDB_API_KEY" in os.environ:
             wandb.finish()

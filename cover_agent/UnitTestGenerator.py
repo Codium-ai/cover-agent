@@ -70,7 +70,8 @@ class UnitTestGenerator:
         # States to maintain within this class
         self.preprocessor = FilePreprocessor(self.test_file_path)
         self.failed_test_runs = []
-        self.total_token_count = 0
+        self.total_input_token_count = 0
+        self.total_output_token_count = 0
 
         # Run coverage and build the prompt
         self.run_coverage()
@@ -188,7 +189,9 @@ class UnitTestGenerator:
             out_str = ""
             if included_files_content:
                 for i, content in enumerate(included_files_content):
-                    out_str += f"file_path: `{file_names[i]}`\ncontent:\n```\n{content}\n```\n"
+                    out_str += (
+                        f"file_path: `{file_names[i]}`\ncontent:\n```\n{content}\n```\n"
+                    )
 
             return out_str.strip()
         return ""
@@ -251,9 +254,9 @@ class UnitTestGenerator:
         """
         Perform the initial analysis of the test suite structure.
 
-        This method iterates through a series of attempts to analyze the test suite structure by interacting with the AI model. 
-        It constructs prompts based on specific files and calls to the AI model to gather information such as test headers indentation, 
-        relevant line numbers for inserting new tests, and relevant line numbers for inserting imports. 
+        This method iterates through a series of attempts to analyze the test suite structure by interacting with the AI model.
+        It constructs prompts based on specific files and calls to the AI model to gather information such as test headers indentation,
+        relevant line numbers for inserting new tests, and relevant line numbers for inserting imports.
         The method handles multiple attempts to gather this information and raises exceptions if the analysis fails.
 
         Raises:
@@ -262,21 +265,22 @@ class UnitTestGenerator:
 
         Returns:
             None
-    """
+        """
         try:
             test_headers_indentation = None
             allowed_attempts = 3
             counter_attempts = 0
-            while test_headers_indentation is None and counter_attempts < allowed_attempts:
-                prompt_headers_indentation = (
-                    self.prompt_builder.build_prompt_custom(
-                        file="analyze_suite_test_headers_indentation"
-                    )
+            while (
+                test_headers_indentation is None and counter_attempts < allowed_attempts
+            ):
+                prompt_headers_indentation = self.prompt_builder.build_prompt_custom(
+                    file="analyze_suite_test_headers_indentation"
                 )
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_headers_indentation)
                 )
-                self.total_token_count += prompt_token_count + response_token_count
+                self.total_input_token_count += prompt_token_count
+                self.total_output_token_count += response_token_count
                 tests_dict = load_yaml(response)
                 test_headers_indentation = tests_dict.get(
                     "test_headers_indentation", None
@@ -290,16 +294,18 @@ class UnitTestGenerator:
             relevant_line_number_to_insert_imports_after = None
             allowed_attempts = 3
             counter_attempts = 0
-            while not relevant_line_number_to_insert_tests_after and counter_attempts < allowed_attempts:
-                prompt_test_insert_line = (
-                    self.prompt_builder.build_prompt_custom(
-                        file="analyze_suite_test_insert_line"
-                    )
+            while (
+                not relevant_line_number_to_insert_tests_after
+                and counter_attempts < allowed_attempts
+            ):
+                prompt_test_insert_line = self.prompt_builder.build_prompt_custom(
+                    file="analyze_suite_test_insert_line"
                 )
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_test_insert_line)
                 )
-                self.total_token_count += prompt_token_count + response_token_count
+                self.total_input_token_count += prompt_token_count
+                self.total_output_token_count += response_token_count
                 tests_dict = load_yaml(response)
                 relevant_line_number_to_insert_tests_after = tests_dict.get(
                     "relevant_line_number_to_insert_tests_after", None
@@ -315,8 +321,12 @@ class UnitTestGenerator:
                 )
 
             self.test_headers_indentation = test_headers_indentation
-            self.relevant_line_number_to_insert_tests_after = relevant_line_number_to_insert_tests_after
-            self.relevant_line_number_to_insert_imports_after = relevant_line_number_to_insert_imports_after
+            self.relevant_line_number_to_insert_tests_after = (
+                relevant_line_number_to_insert_tests_after
+            )
+            self.relevant_line_number_to_insert_imports_after = (
+                relevant_line_number_to_insert_imports_after
+            )
         except Exception as e:
             self.logger.error(f"Error during initial test suite analysis: {e}")
             raise Exception("Error during initial test suite analysis")
@@ -325,9 +335,9 @@ class UnitTestGenerator:
         """
         Generate tests using the AI model based on the constructed prompt.
 
-        This method generates tests by calling the AI model with the constructed prompt. 
-        It handles both dry run and actual test generation scenarios. In a dry run, it returns canned test responses. 
-        In the actual run, it calls the AI model with the prompt and processes the response to extract test 
+        This method generates tests by calling the AI model with the constructed prompt.
+        It handles both dry run and actual test generation scenarios. In a dry run, it returns canned test responses.
+        In the actual run, it calls the AI model with the prompt and processes the response to extract test
         information such as test tags, test code, test name, and test behavior.
 
         Parameters:
@@ -348,7 +358,8 @@ class UnitTestGenerator:
             response, prompt_token_count, response_token_count = (
                 self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
             )
-            self.total_token_count += prompt_token_count + response_token_count
+            self.total_input_token_count += prompt_token_count
+            self.total_output_token_count += response_token_count
         try:
             tests_dict = load_yaml(
                 response,
@@ -404,14 +415,22 @@ class UnitTestGenerator:
             # We asked the model that each generated test should be a self-contained independent test
             test_code = generated_test.get("test_code", "").rstrip()
             additional_imports = generated_test.get("new_imports_code", "").strip()
-            if additional_imports and additional_imports[0] == '"' and additional_imports[-1] == '"':
+            if (
+                additional_imports
+                and additional_imports[0] == '"'
+                and additional_imports[-1] == '"'
+            ):
                 additional_imports = additional_imports.strip('"')
 
             # check if additional_imports only contains '"':
             if additional_imports and additional_imports == '""':
                 additional_imports = ""
-            relevant_line_number_to_insert_tests_after = self.relevant_line_number_to_insert_tests_after
-            relevant_line_number_to_insert_imports_after = self.relevant_line_number_to_insert_imports_after
+            relevant_line_number_to_insert_tests_after = (
+                self.relevant_line_number_to_insert_tests_after
+            )
+            relevant_line_number_to_insert_imports_after = (
+                self.relevant_line_number_to_insert_imports_after
+            )
 
             needed_indent = self.test_headers_indentation
             # remove initial indent of the test code, and insert the needed indent
@@ -436,18 +455,30 @@ class UnitTestGenerator:
                 processed_test_lines = (
                     original_content_lines[:relevant_line_number_to_insert_tests_after]
                     + test_code_lines
-                    + original_content_lines[relevant_line_number_to_insert_tests_after:]
+                    + original_content_lines[
+                        relevant_line_number_to_insert_tests_after:
+                    ]
                 )
                 # insert the additional imports at line 'relevant_line_number_to_insert_imports_after'
                 processed_test = "\n".join(processed_test_lines)
-                if relevant_line_number_to_insert_imports_after and additional_imports and additional_imports not in processed_test:
+                if (
+                    relevant_line_number_to_insert_imports_after
+                    and additional_imports
+                    and additional_imports not in processed_test
+                ):
                     additional_imports_lines = additional_imports.split("\n")
                     processed_test_lines = (
-                        processed_test_lines[:relevant_line_number_to_insert_imports_after]
+                        processed_test_lines[
+                            :relevant_line_number_to_insert_imports_after
+                        ]
                         + additional_imports_lines
-                        + processed_test_lines[relevant_line_number_to_insert_imports_after:]
+                        + processed_test_lines[
+                            relevant_line_number_to_insert_imports_after:
+                        ]
                     )
-                    self.relevant_line_number_to_insert_tests_after += len(additional_imports_lines) # this is important, otherwise the next test will be inserted at the wrong line
+                    self.relevant_line_number_to_insert_tests_after += len(
+                        additional_imports_lines
+                    )  # this is important, otherwise the next test will be inserted at the wrong line
                 processed_test = "\n".join(processed_test_lines)
 
                 with open(self.test_file_path, "w") as test_file:
@@ -484,14 +515,16 @@ class UnitTestGenerator:
                         {"code": generated_test, "error_message": error_message}
                     )  # Append failure details to the list
 
-                    if 'WANDB_API_KEY' in os.environ:
+                    if "WANDB_API_KEY" in os.environ:
                         fail_details["error_message"] = error_message
                         root_span = Trace(
-                            name="fail_details_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                            name="fail_details_"
+                            + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                             kind="llm",  # kind can be "llm", "chain", "agent" or "tool
                             inputs={"test_code": fail_details["test"]},
-                            outputs=fail_details)
-                        root_span.log(name='inference')
+                            outputs=fail_details,
+                        )
+                        root_span.log(name="inference")
 
                     return fail_details
 
@@ -531,13 +564,15 @@ class UnitTestGenerator:
                             }
                         )  # Append failure details to the list
 
-                        if 'WANDB_API_KEY' in os.environ:
+                        if "WANDB_API_KEY" in os.environ:
                             root_span = Trace(
-                                name="fail_details_"+datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                                name="fail_details_"
+                                + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                                 kind="llm",  # kind can be "llm", "chain", "agent" or "tool
                                 inputs={"test_code": fail_details["test"]},
-                                outputs=fail_details)
-                            root_span.log(name='inference')
+                                outputs=fail_details,
+                            )
+                            root_span.log(name="inference")
 
                         return fail_details
                 except Exception as e:
