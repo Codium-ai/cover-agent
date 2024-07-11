@@ -1,0 +1,7 @@
+# C# Compiled files
+**/bin
+**/obj
+*.http
+
+# Testing file
+**/TestResults/*

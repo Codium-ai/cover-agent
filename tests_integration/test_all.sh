@@ -55,7 +55,7 @@ sh tests_integration/test_with_docker.sh \
   --desired-coverage "50" \
   --model $MODEL
 
-  # C++ Calculator Example
+# C++ Calculator Example
 sh tests_integration/test_with_docker.sh \
   --dockerfile "templated_tests/cpp_cli/Dockerfile" \
   --source-file-path "calculator.cpp" \
@@ -64,6 +64,16 @@ sh tests_integration/test_with_docker.sh \
   --test-command "sh build_and_test_with_coverage.sh" \
   --coverage-type "cobertura" \
   --model $MODEL
+
+# C# Calculator Web Service
+sh tests_integration/test_with_docker.sh \
+--dockerfile "templated_tests/csharp_webservice/Dockerfile" \
+--source-file-path "CalculatorApi/CalculatorController.cs" \
+--test-file-path "CalculatorApi.Tests/CalculatorControllerTests.cs" \
+--code-coverage-report-path "CalculatorApi.Tests/TestResults/coverage.cobertura.xml" \
+--test-command "dotnet test --collect:'XPlat Code Coverage' CalculatorApi.Tests/ && find . -name 'coverage.cobertura.xml' -exec mv {} CalculatorApi.Tests/TestResults/coverage.cobertura.xml \;" \
+--coverage-type "cobertura" \
+--model $MODEL
 
 # Go Webservice Example
 sh tests_integration/test_with_docker.sh \

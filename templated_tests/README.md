@@ -6,6 +6,7 @@ For more details see each subfolder for test projects.
 | ------------------------- | --------------------- |
 | `c_cli`                   | C                     |
 | `cpp_cli`                 | C++                   |
+| `csharp_webservice`       | C#                    |
 | `go_webservice`           | Go                    |
 | `java_gradle`             | Java (using Gradle)   |
 | `java_spring_calculator`  | Jave (using Spring)   |
