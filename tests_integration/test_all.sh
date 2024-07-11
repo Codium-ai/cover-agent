@@ -109,3 +109,12 @@ sh tests_integration/test_with_docker.sh \
   --test-file-path "test_app.py" \
   --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
   --model "gpt-3.5-turbo"
+
+# Ruby Sinatra Example
+sh tests_integration/test_with_docker.sh \
+  --dockerfile "templated_tests/ruby_sinatra/Dockerfile" \
+  --source-file-path "app.rb" \
+  --test-file-path "test_app.rb" \
+  --test-command "ruby test_app.rb" \
+  --code-coverage-report-path "coverage/coverage.xml" \
+  --model $MODEL

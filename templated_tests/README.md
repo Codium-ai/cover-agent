@@ -11,3 +11,4 @@ For more details see each subfolder for test projects.
 | `java_spring_calculator`  | Jave (using Spring)   |
 | `js_vanilla`              | Vanilla JS            |
 | `python_fastapi`          | Python                |
+| `ruby_sinatra`            | Ruby                  |
