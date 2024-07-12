@@ -2,11 +2,10 @@
   "name": "calculator",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "build": "parcel build ./src/index.html",
-    "start": "parcel ./src/index.html",
-    "test": "nyc  --reporter=cobertura mocha -r ts-node/register tests/**/*.test.ts"
+    "start": "parcel ./src/index.html --port 3000",
+    "test": "nyc --reporter=cobertura mocha -r ts-node/register tests/**/*.test.ts"
   },
   "nyc": {
     "extension": [

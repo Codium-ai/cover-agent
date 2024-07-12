@@ -67,13 +67,13 @@ sh tests_integration/test_with_docker.sh \
 
 # C# Calculator Web Service
 sh tests_integration/test_with_docker.sh \
---dockerfile "templated_tests/csharp_webservice/Dockerfile" \
---source-file-path "CalculatorApi/CalculatorController.cs" \
---test-file-path "CalculatorApi.Tests/CalculatorControllerTests.cs" \
---code-coverage-report-path "CalculatorApi.Tests/TestResults/coverage.cobertura.xml" \
---test-command "dotnet test --collect:'XPlat Code Coverage' CalculatorApi.Tests/ && find . -name 'coverage.cobertura.xml' -exec mv {} CalculatorApi.Tests/TestResults/coverage.cobertura.xml \;" \
---coverage-type "cobertura" \
---model $MODEL
+  --dockerfile "templated_tests/csharp_webservice/Dockerfile" \
+  --source-file-path "CalculatorApi/CalculatorController.cs" \
+  --test-file-path "CalculatorApi.Tests/CalculatorControllerTests.cs" \
+  --code-coverage-report-path "CalculatorApi.Tests/TestResults/coverage.cobertura.xml" \
+  --test-command "dotnet test --collect:'XPlat Code Coverage' CalculatorApi.Tests/ && find . -name 'coverage.cobertura.xml' -exec mv {} CalculatorApi.Tests/TestResults/coverage.cobertura.xml \;" \
+  --coverage-type "cobertura" \
+  --model $MODEL
 
 # Go Webservice Example
 sh tests_integration/test_with_docker.sh \
