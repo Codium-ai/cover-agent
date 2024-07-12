@@ -13,3 +13,4 @@ For more details see each subfolder for test projects.
 | `js_vanilla`              | Vanilla JS            |
 | `python_fastapi`          | Python                |
 | `ruby_sinatra`            | Ruby                  |
+| `typescript_calculator`   | Typescript            |

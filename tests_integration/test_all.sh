@@ -128,3 +128,12 @@ sh tests_integration/test_with_docker.sh \
   --test-command "ruby test_app.rb" \
   --code-coverage-report-path "coverage/coverage.xml" \
   --model $MODEL
+
+# TypeScript Calculator Example
+sh tests_integration/test_with_docker.sh \
+  --dockerfile "templated_tests/typescript_calculator/Dockerfile" \
+  --source-file-path "src/modules/Calculator.ts" \
+  --test-file-path "tests/Calculator.test.ts" \
+  --test-command "npm run test" \
+  --code-coverage-report-path "coverage/cobertura-coverage.xml" \
+  --model $MODEL
