@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'sinatra', '~> 2.1'
+gem 'puma', '~> 5.0'
 gem 'json', '~> 2.5'
 gem 'minitest', '~> 5.14'
 gem 'rack-test', '~> 1.1'

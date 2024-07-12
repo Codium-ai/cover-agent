@@ -1,0 +1,142 @@
+@import "./node_modules/normalize-scss/sass/normalize";
+$border: 1px solid black;
+$color1: white;
+$color1-hover: rgb(249, 250, 136);
+$color2: orange;
+$color2-hover: white;
+$tileWidth: 59.5px;
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 62.5%;
+}
+
+.display {
+  $height: calc(#{$tileWidth} - 5px);
+  padding: 5px;
+  margin: 0;
+  font-size: 2.5rem;
+  background: rgb(222, 215, 215);
+  width: calc(100% - #{$tileWidth} - 15px);
+  height: $height;
+  position: absolute;
+  line-height: $height;
+  overflow-y: scroll;
+}
+
+.buttons {
+  display: flex;
+
+  .calcButton {
+    height: $tileWidth;
+  }
+}
+
+.calculator {
+  width: 250px;
+  border: $border;
+  padding: 5px;
+  position: relative;
+}
+
+.numbers {
+  display: flex;
+  flex-wrap: wrap;
+  width: 75%;
+
+  .calcButton {
+    width: $tileWidth;
+    border-bottom: $border;
+    border-left: $border;
+
+    &:nth-of-type(-n + 3) {
+      border-top: $border;
+    }
+  }
+
+  .calcButton0 {
+    width: $tileWidth * 1;
+  }
+}
+
+.operators {
+  width: 25%;
+  display: flex;
+  flex-direction: column;
+
+  .calcButton {
+    width: $tileWidth;
+    background: $color2;
+    transition: 0.3s all;
+    border-bottom: $border;
+    border-right: $border;
+    border-left: $border;
+
+    &:first-of-type {
+      border-top: $border;
+    }
+
+    &:hover {
+      background: $color2-hover;
+      cursor: pointer;
+    }
+  }
+}
+
+.calcButton {
+  border-radius: 0;
+  background: none;
+  border: none;
+  position: relative;
+  background: $color1;
+  transition: 0.3s all;
+
+  &:hover {
+    background: $color1-hover;
+    cursor: pointer;
+  }
+
+  span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+[data-value="clear"] {
+  display: block;
+  width: $tileWidth;
+  height: $tileWidth;
+  margin-left: auto;
+  border-top: $border;
+  border-right: $border;
+  border-left: $border;
+}
+
+.other {
+  display: flex;
+}
+
+[data-value="evaluate"] {
+  width: 75%;
+  height: $tileWidth;
+  border-bottom: $border;
+  border-left: $border;
+}
+
+[data-value="switchPolarity"] {
+  width: 25%;
+  height: $tileWidth;
+  border-bottom: $border;
+  border-right: $border;
+  border-left: $border;
+  background: $color2;
+  &:hover {
+    background: $color2-hover;
+    cursor: pointer;
+  }
+}
