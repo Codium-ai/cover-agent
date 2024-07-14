@@ -1,5 +1,5 @@
 # Top Level Sequence Diagram
-Cover Agent consists of many classes but the fundamental flow lives within the CoverAgent and UnitTestGenerator classes. The following is a sequence diagram depicting the flow of how Cover Agent works and interacts with a Large Language Model.
+Cover Agent consists of many classes but the fundamental flow lives within the CoverAgent and UnitTestGenerator classes. The following is a sequence diagram (written in [Mermaid](https://mermaid.js.org/syntax/sequenceDiagram.html)) depicting the flow of how Cover Agent works and interacts with a Large Language Model.
 
 ```mermaid
 sequenceDiagram
