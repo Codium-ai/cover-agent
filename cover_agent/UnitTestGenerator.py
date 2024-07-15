@@ -162,7 +162,7 @@ class UnitTestGenerator:
             self.logger.info(
                 "Will default to using the full coverage report. You will need to check coverage manually for each passing test."
             )
-            with open(self.code_coverage_report_path, "r") as f:
+            with open(self.code_coverage_report_path, "r", encoding="utf-8") as f:
                 self.code_coverage_report = f.read()
 
     @staticmethod
@@ -181,7 +181,7 @@ class UnitTestGenerator:
             file_names = []
             for file_path in included_files:
                 try:
-                    with open(file_path, "r") as file:
+                    with open(file_path, "r", encoding="utf-8") as file:
                         included_files_content.append(file.read())
                         file_names.append(file_path)
                 except IOError as e:
@@ -447,7 +447,7 @@ class UnitTestGenerator:
             if test_code_indented and relevant_line_number_to_insert_tests_after:
 
                 # Step 1: Append the generated test to the relevant line in the test file
-                with open(self.test_file_path, "r") as test_file:
+                with open(self.test_file_path, "r", encoding="utf-8") as test_file:
                     original_content = test_file.read()  # Store original content
                 original_content_lines = original_content.split("\n")
                 test_code_lines = test_code_indented.split("\n")
@@ -481,7 +481,7 @@ class UnitTestGenerator:
                     )  # this is important, otherwise the next test will be inserted at the wrong line
                 processed_test = "\n".join(processed_test_lines)
 
-                with open(self.test_file_path, "w") as test_file:
+                with open(self.test_file_path, "w", encoding="utf8") as test_file:
                     test_file.write(processed_test)
 
                 # Step 2: Run the test using the Runner class
@@ -495,7 +495,7 @@ class UnitTestGenerator:
                 # Step 3: Check for pass/fail from the Runner object
                 if exit_code != 0:
                     # Test failed, roll back the test file to its original content
-                    with open(self.test_file_path, "w") as test_file:
+                    with open(self.test_file_path, "w", encoding="utf8") as test_file:
                         test_file.write(original_content)
                     self.logger.info(f"Skipping a generated test that failed")
                     fail_details = {
@@ -544,7 +544,7 @@ class UnitTestGenerator:
 
                     if new_percentage_covered <= self.current_coverage:
                         # Coverage has not increased, rollback the test by removing it from the test file
-                        with open(self.test_file_path, "w") as test_file:
+                        with open(self.test_file_path, "w", encoding="utf-8") as test_file:
                             test_file.write(original_content)
                         self.logger.info(
                             "Test did not increase coverage. Rolling back."
@@ -579,7 +579,7 @@ class UnitTestGenerator:
                     # Handle errors gracefully
                     self.logger.error(f"Error during coverage verification: {e}")
                     # Optionally, roll back even in case of error
-                    with open(self.test_file_path, "w") as test_file:
+                    with open(self.test_file_path, "w", encoding="utf-8") as test_file:
                         test_file.write(original_content)
                     fail_details = {
                         "status": "FAIL",

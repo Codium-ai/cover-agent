@@ -151,7 +151,7 @@ class CoverageProcessor:
     def parse_missed_covered_lines_jacoco(
         self, package_name: str, class_name: str
     ) -> tuple[int, int]:
-        with open(self.file_path, "r") as file:
+        with open(self.file_path, "r", encoding="utf-8") as file:
             reader = csv.DictReader(file)
             missed, covered = 0, 0
             for row in reader:
@@ -173,7 +173,7 @@ class CoverageProcessor:
         package_name = ""
         class_name = ""
         try:
-            with open(self.src_file_path, "r") as file:
+            with open(self.src_file_path, "r", encoding="utf-8") as file:
                 for line in file:
                     if not package_name:  # Only match package if not already found
                         package_match = package_pattern.match(line)

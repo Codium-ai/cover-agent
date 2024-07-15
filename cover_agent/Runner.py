@@ -20,7 +20,7 @@ class Runner:
 
         # Ensure the command is executed with shell=True for string commands
         result = subprocess.run(
-            command, shell=True, cwd=cwd, text=True, capture_output=True
+            command, shell=True, cwd=cwd, text=True, capture_output=True, encoding="utf-8"
         )
 
         # Return a dictionary with the desired information
