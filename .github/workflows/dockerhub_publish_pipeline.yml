@@ -1,0 +1,47 @@
+name: Publish Docker Image on Change
+
+on:
+  pull_request:
+	branches:
+	  - main
+	paths:
+	  - 'test_integration/**/Dockerfile'
+
+jobs:
+  build-and-push:
+	runs-on: ubuntu-latest
+	steps:
+	  - name: Check out code
+		uses: actions/checkout@v2
+	  
+	  - name: Set up Docker Buildx
+		uses: docker/setup-buildx-action@v1
+	  
+	  - name: Login to DockerHub
+		uses: docker/login-action@v1
+		with:
+		  username: ${{ secrets.DOCKERHUB_USERNAME }}
+		  password: ${{ secrets.DOCKERHUB_TOKEN }}
+	  
+	  - name: Extract image name
+		id: image-name
+		run: |
+		  IMAGE_NAME=$(echo ${{ github.event.pull_request.modified }} | grep -oE 'test_integration/[^/]+/' | head -1 | cut -d'/' -f2)
+		  echo "::set-output name=image::${IMAGE_NAME}"
+	  
+	  - name: Build and push with commit tag
+		uses: docker/build-push-action@v2
+		with:
+		  context: ./test_integration/${{ steps.image-name.outputs.image }}
+		  file: ./test_integration/${{ steps.image-name.outputs.image }}/Dockerfile
+		  push: true
+		  tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.image-name.outputs.image }}:${{ github.sha }}
+	  
+	  - name: Build and push with latest tag
+		if: github.event.pull_request.merged == true && github.ref == 'refs/heads/main'
+		uses: docker/build-push-action@v2
+		with:
+		  context: ./test_integration/${{ steps.image-name.outputs.image }}
+		  file: ./test_integration/${{ steps.image-name.outputs.image }}/Dockerfile
+		  push: true
+		  tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ steps.image-name.outputs.image }}:latest
