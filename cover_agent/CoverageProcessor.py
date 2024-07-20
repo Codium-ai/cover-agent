@@ -169,16 +169,46 @@ class CoverageProcessor:
         lines_covered, lines_missed = [], []
 
         package_name, class_name = self.extract_package_and_class_java()
-        missed, covered = self.parse_missed_covered_lines_jacoco(
-            package_name, class_name
-        )
+        file_extension = self.get_file_extension(self.file_path)
+
+        missed, covered = 0, 0
+        if file_extension == 'xml':
+            missed, covered = self.parse_missed_covered_lines_jacoco_xml(
+                class_name
+            )
+        elif file_extension == 'csv':
+            missed, covered = self.parse_missed_covered_lines_jacoco_csv(
+                package_name, class_name
+            )
+        else:
+            raise ValueError(f"Unsupported JaCoCo code coverage report format: {file_extension}")
 
         total_lines = missed + covered
         coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0
 
         return lines_covered, lines_missed, coverage_percentage
 
-    def parse_missed_covered_lines_jacoco(
+    def parse_missed_covered_lines_jacoco_xml(
+        self, class_name: str
+    ) -> tuple[int, int]:
+        """Parses a JaCoCo XML code coverage report to extract covered and missed line numbers for a specific file."""
+        tree = ET.parse(self.file_path)
+        root = tree.getroot()
+        sourcefile = root.find(f".//sourcefile[@name='{class_name}.java']")
+
+        if sourcefile is None:
+            return 0, 0
+
+        missed, covered = 0, 0
+        for counter in sourcefile.findall('counter'):
+            if counter.attrib.get('type') == 'LINE':
+                missed += int(counter.attrib.get('missed', 0))
+                covered += int(counter.attrib.get('covered', 0))
+                break
+
+        return missed, covered
+
+    def parse_missed_covered_lines_jacoco_csv(
         self, package_name: str, class_name: str
     ) -> tuple[int, int]:
         with open(self.file_path, "r") as file:
@@ -222,3 +252,11 @@ class CoverageProcessor:
             raise
 
         return package_name, class_name
+
+    def get_file_extension(self, filename: str) -> str | None:
+        """Get the file extension from a given filename."""
+        match = re.search(r'\.(\w+)$', filename)
+        if match:
+            return match.group(1)
+        else:
+            return None
