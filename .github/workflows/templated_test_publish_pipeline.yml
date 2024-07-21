@@ -23,6 +23,7 @@ jobs:
         run: |
           git diff --name-only origin/${{ github.event.pull_request.base.ref }} origin/${{ github.event.pull_request.head.ref }}
           changes_dirs=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} origin/${{ github.event.pull_request.head.ref }} | grep 'templated_tests/' | xargs -I {} dirname {} | sort -u)
+          echo ${changes_dirs}
           echo "::set-output name=changes_dirs::${changes_dirs}"
 
       - name: Log in to DockerHub
