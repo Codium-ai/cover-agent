@@ -36,6 +36,7 @@ jobs:
           # Use the root directory name as the Docker image name and tag it with the commit SHA
           echo "Building and pushing Docker images for the following directories: ${{ steps.dirname.outputs.changes_dirs }}"
           for dir in ${{ steps.dirname.outputs.changes_dirs }}; do
-            docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$dir:${{ steps.sha.outputs.short_sha }} $dir
-            docker push ${{ secrets.DOCKERHUB_USERNAME }}/$dir:${{ steps.sha.outputs.short_sha }}
+            image=${dir//\//_}
+            docker build -t blazar00/$image:${{ steps.sha.outputs.short_sha }} $dir
+            docker push blazar00/$image:${{ steps.sha.outputs.short_sha }}
           done
