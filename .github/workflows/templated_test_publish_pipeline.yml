@@ -36,8 +36,9 @@ jobs:
         run: |
           # Assuming you have logged in to DockerHub in a previous step
           # Use the root directory name as the Docker image name and tag it with the commit SHA
-          echo "Building and pushing Docker images for the following directories: ${{ steps.dirname.outputs.changes_dirs }}"
-          for dir in ${{ steps.dirname.outputs.changes_dirs }}; do
+          changes_dirs=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} origin/${{ github.event.pull_request.head.ref }} | grep 'templated_tests/' | xargs -I {} dirname {} | sort -u)
+          echo "Building and pushing Docker images for the following directories: ${changes_dirs}"
+          for dir in ${changes_dirs}; do
             image=${dir//\//_}
             docker build -t blazar00/$image:${{ steps.sha.outputs.short_sha }} $dir
             docker push blazar00/$image:${{ steps.sha.outputs.short_sha }}
