@@ -18,14 +18,6 @@ jobs:
         id: sha
         run: echo "::set-output name=short_sha::$(git rev-parse --short ${{ github.event.pull_request.head.sha }})"
 
-      - name: Get parent directory names of changed files
-        id: dirname
-        run: |
-          git diff --name-only origin/${{ github.event.pull_request.base.ref }} origin/${{ github.event.pull_request.head.ref }}
-          changes_dirs=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} origin/${{ github.event.pull_request.head.ref }} | grep 'templated_tests/' | xargs -I {} dirname {} | sort -u)
-          echo ${changes_dirs}
-          echo "::set-output name=changes_dirs::${changes_dirs}"
-
       - name: Log in to DockerHub
         uses: docker/login-action@v1
         with:
@@ -34,11 +26,9 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          # Assuming you have logged in to DockerHub in a previous step
-          # Use the root directory name as the Docker image name and tag it with the commit SHA
           changes_dirs=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} origin/${{ github.event.pull_request.head.ref }} | grep 'templated_tests/' | xargs -I {} dirname {} | sort -u)
-          echo "Building and pushing Docker images for the following directories: ${changes_dirs}"
           for dir in ${changes_dirs}; do
+            echo "Building and pushing Docker images for the following directories: ${dir}"
             image=${dir//\//_}
             docker build -t blazar00/$image:${{ steps.sha.outputs.short_sha }} $dir
             docker push blazar00/$image:${{ steps.sha.outputs.short_sha }}
