@@ -4,6 +4,11 @@ on:
   pull_request:
     paths:
       - 'templated_tests/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'templated_tests/**'
 
 jobs:
   update-docker-reference:
@@ -26,10 +31,19 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          changes_dirs=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} origin/${{ github.event.pull_request.head.ref }} | grep 'templated_tests/' | xargs -I {} dirname {} | sort -u)
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            changes_dirs=$(git diff --name-only origin/${{ github.event.pull_request.base.ref }} origin/${{ github.event.pull_request.head.ref }} | grep 'templated_tests/' | xargs -I {} dirname {} | sort -u)
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            changes_dirs=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }} | grep 'templated_tests/' | xargs -I {} dirname {} | sort -u)
+          fi
           for dir in ${changes_dirs}; do
             echo "Building and pushing Docker images for the following directories: ${dir}"
             image=${dir//\//_}
-            docker build -t blazar00/$image:${{ steps.sha.outputs.short_sha }} $dir
-            docker push blazar00/$image:${{ steps.sha.outputs.short_sha }}
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              docker build -t blazar00/$image:${{ steps.sha.outputs.short_sha }} $dir
+              docker push blazar00/$image:${{ steps.sha.outputs.short_sha }}
+            elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+              docker build -t blazar00/$image:latest $dir
+              docker push blazar00/$image:latest
+            fi
           done
