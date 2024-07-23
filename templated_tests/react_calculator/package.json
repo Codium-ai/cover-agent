@@ -1,0 +1,43 @@
+{
+  "name": "react-calculator",
+  "version": "1.0.0",
+  "description": "A simple calculator built with React",
+  "main": "index.js",
+  "scripts": {
+      "start": "react-scripts start",
+      "build": "react-scripts build",
+      "test": "react-scripts test --coverage --watchAll=false",
+      "eject": "react-scripts eject"
+  },
+  "dependencies": {
+      "react": "^17.0.2",
+      "react-dom": "^17.0.2",
+      "react-scripts": "4.0.3"
+  },
+  "devDependencies": {
+      "enzyme": "^3.11.0",
+      "@wojtekmaj/enzyme-adapter-react-17": "^0.6.0",
+      "enzyme-to-json": "^3.6.2",
+      "jest-junit": "^12.0.0"
+  },
+  "jest": {
+      "coverageReporters": [
+          "cobertura"
+      ],
+      "collectCoverageFrom": [
+          "src/**/*.{js,jsx}",
+          "!src/index.js",
+          "!src/**/*.test.{js,jsx}"
+      ],
+      "coveragePathIgnorePatterns": [
+          "/node_modules/",
+          "/src/utils/testHelpers.js"
+      ]
+  },
+  "keywords": [
+      "react",
+      "calculator"
+  ],
+  "author": "",
+  "license": "ISC"
+}
