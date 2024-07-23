@@ -2,7 +2,7 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import Calculator from '../modules/Calculator'; 
 
-describe('Calculator Component - Exponentiation and Modulus Operations', () => {
+describe('Calculator Component', () => {
     let wrapper;
     beforeEach(() => {
         wrapper = shallow(<Calculator />);
@@ -22,13 +22,6 @@ describe('Calculator Component - Exponentiation and Modulus Operations', () => {
         wrapper.instance().handleInput('3');
         wrapper.instance().handleEquals();
         expect(wrapper.state('onDisplay')).toBe('1');
-    });
-});
-
-describe('Calculator Component - Clear Functionality', () => {
-    let wrapper;
-    beforeEach(() => {
-        wrapper = shallow(<Calculator />);
     });
 
     test('resets display to 0 on clear', () => {
@@ -60,13 +53,6 @@ describe('Calculator Component - Clear Functionality', () => {
         wrapper.instance().handleEquals();
         wrapper.instance().handleClear();
         expect(wrapper.state('lastActionEquals')).toBe(false);
-    });
-});
-
-describe('Calculator Component - Error Handling', () => {
-    let wrapper;
-    beforeEach(() => {
-        wrapper = shallow(<Calculator />);
     });
 
     test('throws error for invalid operator', () => {
