@@ -393,381 +393,233 @@ class UnitTestGenerator:
 
         Returns:
             dict: A dictionary containing the status of the test validation, including pass/fail status, exit code, stderr, stdout, and the test details.
+
+        Steps:
+            0. Assume each generated test is a self-contained independent test.
+            1. Extract the test code and additional imports from the generated test.
+            2. Clean up the additional imports if necessary.
+            3. Determine the relevant line numbers for inserting tests and imports.
+            4. Adjust the indentation of the test code to match the required indentation.
+            5. Insert the test code and additional imports into the test file at the relevant lines.
+            6. Run the test using the Runner class.
+            7. Check the exit code to determine if the test passed or failed.
+            8. If the test failed, roll back the test file to its original content and log the failure.
+            9. If the test passed, check if the code coverage has increased using the CoverageProcessor class.
+            10. If the coverage has not increased, roll back the test file and log the failure.
+            11. If the coverage has increased, update the current coverage and log the success.
+            12. Handle any exceptions that occur during the validation process, log the errors, and roll back the test file if necessary.
+            13. Log additional details and error messages for failed tests, and optionally, use the Trace class for detailed logging if 'WANDB_API_KEY' is present in the environment variables.
         """
         try:
-            # Extract test code and imports from the generated test
-            test_code, additional_imports = self.extract_test_code_and_imports(
-                generated_test
-            )
-            # Adjust the indentation of the test code
-            test_code_indented = self.adjust_indentation(test_code)
+            # Step 0: no pre-process.
+            # We asked the model that each generated test should be a self-contained independent test
+            test_code = generated_test.get("test_code", "").rstrip()
+            additional_imports = generated_test.get("new_imports_code", "").strip()
+            if (
+                additional_imports
+                and additional_imports[0] == '"'
+                and additional_imports[-1] == '"'
+            ):
+                additional_imports = additional_imports.strip('"')
 
-            if test_code_indented and self.relevant_line_number_to_insert_tests_after:
-                # Append the generated test to the relevant line in the test file and save the original content
-                original_content = self.append_generated_test(
-                    test_code_indented, additional_imports
+            # check if additional_imports only contains '"':
+            if additional_imports and additional_imports == '""':
+                additional_imports = ""
+            relevant_line_number_to_insert_tests_after = (
+                self.relevant_line_number_to_insert_tests_after
+            )
+            relevant_line_number_to_insert_imports_after = (
+                self.relevant_line_number_to_insert_imports_after
+            )
+
+            needed_indent = self.test_headers_indentation
+            # remove initial indent of the test code, and insert the needed indent
+            test_code_indented = test_code
+            if needed_indent:
+                initial_indent = len(test_code) - len(test_code.lstrip())
+                delta_indent = int(needed_indent) - initial_indent
+                if delta_indent > 0:
+                    test_code_indented = "\n".join(
+                        [delta_indent * " " + line for line in test_code.split("\n")]
+                    )
+            test_code_indented = "\n" + test_code_indented.strip("\n") + "\n"
+
+            if test_code_indented and relevant_line_number_to_insert_tests_after:
+
+                # Step 1: Append the generated test to the relevant line in the test file
+                with open(self.test_file_path, "r") as test_file:
+                    original_content = test_file.read()  # Store original content
+                original_content_lines = original_content.split("\n")
+                test_code_lines = test_code_indented.split("\n")
+                # insert the test code at the relevant line
+                processed_test_lines = (
+                    original_content_lines[:relevant_line_number_to_insert_tests_after]
+                    + test_code_lines
+                    + original_content_lines[
+                        relevant_line_number_to_insert_tests_after:
+                    ]
+                )
+                # insert the additional imports at line 'relevant_line_number_to_insert_imports_after'
+                processed_test = "\n".join(processed_test_lines)
+                if (
+                    relevant_line_number_to_insert_imports_after
+                    and additional_imports
+                    and additional_imports not in processed_test
+                ):
+                    additional_imports_lines = additional_imports.split("\n")
+                    processed_test_lines = (
+                        processed_test_lines[
+                            :relevant_line_number_to_insert_imports_after
+                        ]
+                        + additional_imports_lines
+                        + processed_test_lines[
+                            relevant_line_number_to_insert_imports_after:
+                        ]
+                    )
+                    self.relevant_line_number_to_insert_tests_after += len(
+                        additional_imports_lines
+                    )  # this is important, otherwise the next test will be inserted at the wrong line
+                processed_test = "\n".join(processed_test_lines)
+
+                with open(self.test_file_path, "w") as test_file:
+                    test_file.write(processed_test)
+
+                # Step 2: Run the test using the Runner class
+                self.logger.info(
+                    f'Running test with the following command: "{self.test_command}"'
+                )
+                stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
+                    command=self.test_command, cwd=self.test_command_dir
                 )
 
-                # Run the test using the Runner class
-                stdout, stderr, exit_code, time_of_test_command = self.run_test()
+                # Step 3: Check for pass/fail from the Runner object
                 if exit_code != 0:
-                    # Handle test failure and rollback changes
-                    return self.handle_test_failure(
-                        original_content, generated_test, stderr, stdout, exit_code
-                    )
+                    # Test failed, roll back the test file to its original content
+                    with open(self.test_file_path, "w") as test_file:
+                        test_file.write(original_content)
+                    self.logger.info(f"Skipping a generated test that failed")
+                    fail_details = {
+                        "status": "FAIL",
+                        "reason": "Test failed",
+                        "exit_code": exit_code,
+                        "stderr": stderr,
+                        "stdout": stdout,
+                        "test": generated_test,
+                    }
 
-                try:
-                    # Check if the code coverage has increased
-                    new_percentage_covered = self.check_coverage_increase(
-                        time_of_test_command
-                    )
-                    if new_percentage_covered <= self.current_coverage:
-                        # Handle coverage failure and rollback changes
-                        return self.handle_coverage_failure(
-                            original_content, generated_test, stderr, stdout, exit_code
+                    error_message = extract_error_message_python(fail_details["stdout"])
+                    if error_message:
+                        logging.error(f"Error message:\n{error_message}")
+
+                    self.failed_test_runs.append(
+                        {"code": generated_test, "error_message": error_message}
+                    )  # Append failure details to the list
+
+                    if "WANDB_API_KEY" in os.environ:
+                        fail_details["error_message"] = error_message
+                        root_span = Trace(
+                            name="fail_details_"
+                            + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                            kind="llm",  # kind can be "llm", "chain", "agent" or "tool
+                            inputs={"test_code": fail_details["test"]},
+                            outputs=fail_details,
                         )
-                except Exception as e:
-                    # Handle runtime error during coverage verification
-                    return self.handle_runtime_error(
-                        original_content, generated_test, stderr, stdout, exit_code, e
+                        root_span.log(name="inference")
+
+                    return fail_details
+
+                # If test passed, check for coverage increase
+                try:
+                    # Step 4: Check that the coverage has increased using the CoverageProcessor class
+                    new_coverage_processor = CoverageProcessor(
+                        file_path=self.code_coverage_report_path,
+                        src_file_path=self.source_file_path,
+                        coverage_type=self.coverage_type,
+                    )
+                    _, _, new_percentage_covered = (
+                        new_coverage_processor.process_coverage_report(
+                            time_of_test_command=time_of_test_command
+                        )
                     )
 
-                # Update current coverage and log success
+                    if new_percentage_covered <= self.current_coverage:
+                        # Coverage has not increased, rollback the test by removing it from the test file
+                        with open(self.test_file_path, "w") as test_file:
+                            test_file.write(original_content)
+                        self.logger.info(
+                            "Test did not increase coverage. Rolling back."
+                        )
+                        fail_details = {
+                            "status": "FAIL",
+                            "reason": "Coverage did not increase",
+                            "exit_code": exit_code,
+                            "stderr": stderr,
+                            "stdout": stdout,
+                            "test": generated_test,
+                        }
+                        self.failed_test_runs.append(
+                            {
+                                "code": fail_details["test"],
+                                "error_message": "did not increase code coverage",
+                            }
+                        )  # Append failure details to the list
+
+                        if "WANDB_API_KEY" in os.environ:
+                            root_span = Trace(
+                                name="fail_details_"
+                                + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                                kind="llm",  # kind can be "llm", "chain", "agent" or "tool
+                                inputs={"test_code": fail_details["test"]},
+                                outputs=fail_details,
+                            )
+                            root_span.log(name="inference")
+
+                        return fail_details
+                except Exception as e:
+                    # Handle errors gracefully
+                    self.logger.error(f"Error during coverage verification: {e}")
+                    # Optionally, roll back even in case of error
+                    with open(self.test_file_path, "w") as test_file:
+                        test_file.write(original_content)
+                    fail_details = {
+                        "status": "FAIL",
+                        "reason": "Runtime error",
+                        "exit_code": exit_code,
+                        "stderr": stderr,
+                        "stdout": stdout,
+                        "test": generated_test,
+                    }
+                    self.failed_test_runs.append(
+                        {
+                            "code": fail_details["test"],
+                            "error_message": "coverage verification error",
+                        }
+                    )  # Append failure details to the list
+                    return fail_details
+
+                # If everything passed and coverage increased, update current coverage and log success
                 self.current_coverage = new_percentage_covered
                 self.logger.info(
                     f"Test passed and coverage increased. Current coverage: {round(new_percentage_covered * 100, 2)}%"
                 )
-                return self.create_pass_response(
-                    generated_test, stderr, stdout, exit_code
-                )
+                return {
+                    "status": "PASS",
+                    "reason": "",
+                    "exit_code": exit_code,
+                    "stderr": stderr,
+                    "stdout": stdout,
+                    "test": generated_test,
+                }
         except Exception as e:
-            # Log and return error response in case of any exception
             self.logger.error(f"Error validating test: {e}")
-            return self.create_fail_response(
-                generated_test, f"Error validating test: {e}"
-            )
-
-    def extract_test_code_and_imports(self, generated_test):
-        """
-        Extract test code and additional imports from the generated test.
-
-        Parameters:
-            generated_test (dict): The generated test containing test code and additional imports.
-
-        Returns:
-            tuple: A tuple containing the test code and additional imports as strings.
-        """
-        test_code = generated_test.get("test_code", "").rstrip()
-        additional_imports = generated_test.get("new_imports_code", "").strip()
-        # Remove surrounding quotes if present
-        if (
-            additional_imports
-            and additional_imports[0] == '"'
-            and additional_imports[-1] == '"'
-        ):
-            additional_imports = additional_imports.strip('"')
-        if additional_imports == '""':
-            additional_imports = ""
-        return test_code, additional_imports
-
-    def adjust_indentation(self, test_code):
-        """
-        Adjust the indentation of the test code to match the required indentation.
-
-        Parameters:
-            test_code (str): The test code to adjust indentation for.
-
-        Returns:
-            str: The indented test code.
-        """
-        needed_indent = self.test_headers_indentation
-        test_code_indented = test_code
-        if needed_indent:
-            # Calculate the delta indent needed
-            initial_indent = len(test_code) - len(test_code.lstrip())
-            delta_indent = int(needed_indent) - initial_indent
-            if delta_indent > 0:
-                # Apply the indentation adjustment
-                test_code_indented = "\n".join(
-                    [delta_indent * " " + line for line in test_code.split("\n")]
-                )
-        return "\n" + test_code_indented.strip("\n") + "\n"
-
-    def append_generated_test(self, test_code_indented, additional_imports):
-        """
-        Append the generated test to the relevant line in the test file.
-
-        Parameters:
-            test_code_indented (str): The indented test code.
-            additional_imports (str): Additional imports required by the test code.
-
-        Returns:
-            str: The original content of the test file before modification.
-        """
-        # Read the original content of the test file
-        with open(self.test_file_path, "r") as test_file:
-            original_content = test_file.read()
-        original_content_lines = original_content.split("\n")
-        test_code_lines = test_code_indented.split("\n")
-        # Insert the test code at the relevant line
-        processed_test_lines = (
-            original_content_lines[: self.relevant_line_number_to_insert_tests_after]
-            + test_code_lines
-            + original_content_lines[self.relevant_line_number_to_insert_tests_after :]
-        )
-        if (
-            self.relevant_line_number_to_insert_imports_after
-            and additional_imports
-            and additional_imports not in processed_test_lines
-        ):
-            additional_imports_lines = additional_imports.split("\n")
-            # Insert the additional imports at the relevant line
-            processed_test_lines = (
-                processed_test_lines[
-                    : self.relevant_line_number_to_insert_imports_after
-                ]
-                + additional_imports_lines
-                + processed_test_lines[
-                    self.relevant_line_number_to_insert_imports_after :
-                ]
-            )
-            self.relevant_line_number_to_insert_tests_after += len(
-                additional_imports_lines
-            )
-        # Write the processed test lines back to the test file
-        with open(self.test_file_path, "w") as test_file:
-            test_file.write("\n".join(processed_test_lines))
-        return original_content
-
-    def run_test(self):
-        """
-        Run the test using the Runner class.
-
-        Returns:
-            tuple: A tuple containing stdout, stderr, exit code, and the time of the test command.
-        """
-        self.logger.info(
-            f'Running test with the following command: "{self.test_command}"'
-        )
-        # Run the command using Runner and capture the output
-        return Runner.run_command(command=self.test_command, cwd=self.test_command_dir)
-
-    def handle_test_failure(
-        self, original_content, generated_test, stderr, stdout, exit_code
-    ):
-        """
-        Handle the case when a test fails.
-
-        Parameters:
-            original_content (str): The original content of the test file.
-            generated_test (dict): The generated test that failed.
-            stderr (str): The standard error output from the test run.
-            stdout (str): The standard output from the test run.
-            exit_code (int): The exit code from the test run.
-
-        Returns:
-            dict: A dictionary containing the details of the failed test.
-        """
-        # Rollback to the original content of the test file
-        with open(self.test_file_path, "w") as test_file:
-            test_file.write(original_content)
-        self.logger.info(f"Skipping a generated test that failed")
-        # Extract error message from stdout
-        error_message = extract_error_message_python(stdout)
-        # Create and log failure details
-        fail_details = self.create_fail_response(
-            generated_test, "Test failed", stderr, stdout, exit_code, error_message
-        )
-        self.failed_test_runs.append(fail_details)
-        self.log_failure(
-            test_name=generated_test.get("test_name"),
-            prompt=self.prompt,
-            error=fail_details["reason"],
-            stack_trace=stderr,
-            generated_code=generated_test.get("test_code"),
-            input_data=generated_test.get("input_data"),
-            env_details=self.get_environment_details(),
-        )
-        self.log_wandb_failure(fail_details)
-        return fail_details
-
-    def check_coverage_increase(self, time_of_test_command):
-        """
-        Check if the code coverage has increased.
-
-        Parameters:
-            time_of_test_command (datetime): The time the test command was run.
-
-        Returns:
-            float: The new percentage of code coverage.
-        """
-        # Process the coverage report to check for coverage increase
-        new_coverage_processor = CoverageProcessor(
-            file_path=self.code_coverage_report_path,
-            src_file_path=self.source_file_path,
-            coverage_type=self.coverage_type,
-        )
-        _, _, new_percentage_covered = new_coverage_processor.process_coverage_report(
-            time_of_test_command=time_of_test_command
-        )
-        return new_percentage_covered
-
-    def handle_coverage_failure(
-        self, original_content, generated_test, stderr, stdout, exit_code
-    ):
-        """
-        Handle the case when the coverage does not increase.
-
-        Parameters:
-            original_content (str): The original content of the test file.
-            generated_test (dict): The generated test that did not increase coverage.
-            stderr (str): The standard error output from the test run.
-            stdout (str): The standard output from the test run.
-            exit_code (int): The exit code from the test run.
-
-        Returns:
-            dict: A dictionary containing the details of the failed test due to coverage not increasing.
-        """
-        # Rollback to the original content of the test file
-        with open(self.test_file_path, "w") as test_file:
-            test_file.write(original_content)
-        self.logger.info("Test did not increase coverage. Rolling back.")
-        # Create and log failure details
-        fail_details = self.create_fail_response(
-            generated_test,
-            "Coverage did not increase",
-            stderr,
-            stdout,
-            exit_code,
-            "did not increase code coverage",
-        )
-        self.failed_test_runs.append(fail_details)
-        self.log_failure(
-            test_name=generated_test.get("test_name"),
-            prompt=self.prompt,
-            error=fail_details["reason"],
-            stack_trace=stderr,
-            generated_code=generated_test.get("test_code"),
-            input_data=generated_test.get("input_data"),
-            env_details=self.get_environment_details(),
-        )
-        self.log_wandb_failure(fail_details)
-        return fail_details
-
-    def handle_runtime_error(
-        self, original_content, generated_test, stderr, stdout, exit_code, exception
-    ):
-        """
-        Handle runtime errors during coverage verification.
-
-        Parameters:
-            original_content (str): The original content of the test file.
-            generated_test (dict): The generated test that caused the runtime error.
-            stderr (str): The standard error output from the test run.
-            stdout (str): The standard output from the test run.
-            exit_code (int): The exit code from the test run.
-            exception (Exception): The exception that was raised.
-
-        Returns:
-            dict: A dictionary containing the details of the runtime error.
-        """
-        self.logger.error(f"Error during coverage verification: {exception}")
-        # Rollback to the original content of the test file
-        with open(self.test_file_path, "w") as test_file:
-            test_file.write(original_content)
-        # Create and log failure details
-        fail_details = self.create_fail_response(
-            generated_test,
-            "Runtime error",
-            stderr,
-            stdout,
-            exit_code,
-            "coverage verification error",
-        )
-        self.failed_test_runs.append(fail_details)
-        self.log_failure(
-            test_name=generated_test.get("test_name"),
-            prompt=self.prompt,
-            error=fail_details["reason"],
-            stack_trace=stderr,
-            generated_code=generated_test.get("test_code"),
-            input_data=generated_test.get("input_data"),
-            env_details=self.get_environment_details(),
-        )
-        return fail_details
-
-    def create_pass_response(self, generated_test, stderr, stdout, exit_code):
-        """
-        Create a response dictionary for a passing test.
-
-        Parameters:
-            generated_test (dict): The generated test that passed.
-            stderr (str): The standard error output from the test run.
-            stdout (str): The standard output from the test run.
-            exit_code (int): The exit code from the test run.
-
-        Returns:
-            dict: A dictionary containing the details of the passed test.
-        """
-        return {
-            "status": "PASS",
-            "reason": "",
-            "exit_code": exit_code,
-            "stderr": stderr,
-            "stdout": stdout,
-            "test": generated_test,
-        }
-
-    def create_fail_response(
-        self,
-        generated_test,
-        reason,
-        stderr=None,
-        stdout=None,
-        exit_code=None,
-        error_message=None,
-    ):
-        """
-        Create a response dictionary for a failed test.
-
-        Parameters:
-            generated_test (dict): The generated test that failed.
-            reason (str): The reason for the failure.
-            stderr (str, optional): The standard error output from the test run. Defaults to None.
-            stdout (str, optional): The standard output from the test run. Defaults to None.
-            exit_code (int, optional): The exit code from the test run. Defaults to None.
-            error_message (str, optional): The error message from the failure. Defaults to None.
-
-        Returns:
-            dict: A dictionary containing the details of the failed test.
-        """
-        return {
-            "status": "FAIL",
-            "reason": reason,
-            "exit_code": exit_code,
-            "stderr": stderr,
-            "stdout": stdout,
-            "test": generated_test,
-            "error_message": error_message,
-        }
-
-    def log_wandb_failure(self, fail_details):
-        """
-        Log failure details to WandB if the API key is present.
-
-        Parameters:
-            fail_details (dict): The details of the failed test.
-        """
-        if "WANDB_API_KEY" in os.environ:
-            # Log the failure details to WandB
-            root_span = Trace(
-                name="fail_details_"
-                + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                kind="llm",
-                inputs={"test_code": fail_details["test"]},
-                outputs=fail_details,
-            )
-            root_span.log(name="inference")
+            return {
+                "status": "FAIL",
+                "reason": f"Error validating test: {e}",
+                "exit_code": None,
+                "stderr": str(e),
+                "stdout": "",
+                "test": generated_test,
+            }
 
 
 def extract_error_message_python(fail_message):
