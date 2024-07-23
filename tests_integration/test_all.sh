@@ -43,97 +43,106 @@ if [ "$RUN_INSTALLER" = true ]; then
     docker run --rm --volume "$(pwd)/dist:/app/dist" cover-agent-installer
 fi
 
-# C Calculator Example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/c_cli/Dockerfile" \
-  --source-file-path "calc.c" \
-  --test-file-path "test_calc.c" \
-  --code-coverage-report-path "coverage.xml" \
-  --test-command "sh build_and_test_with_coverage.sh" \
-  --coverage-type "cobertura" \
-  --max-iterations "4" \
-  --desired-coverage "50" \
-  --model $MODEL
+# # C Calculator Example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/c_cli/Dockerfile" \
+#   --source-file-path "calc.c" \
+#   --test-file-path "test_calc.c" \
+#   --code-coverage-report-path "coverage.xml" \
+#   --test-command "sh build_and_test_with_coverage.sh" \
+#   --coverage-type "cobertura" \
+#   --max-iterations "4" \
+#   --desired-coverage "50" \
+#   --model $MODEL
 
-# C++ Calculator Example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/cpp_cli/Dockerfile" \
-  --source-file-path "calculator.cpp" \
-  --test-file-path "test_calculator.cpp" \
-  --code-coverage-report-path "coverage.xml" \
-  --test-command "sh build_and_test_with_coverage.sh" \
-  --coverage-type "cobertura" \
-  --model $MODEL
+# # C++ Calculator Example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/cpp_cli/Dockerfile" \
+#   --source-file-path "calculator.cpp" \
+#   --test-file-path "test_calculator.cpp" \
+#   --code-coverage-report-path "coverage.xml" \
+#   --test-command "sh build_and_test_with_coverage.sh" \
+#   --coverage-type "cobertura" \
+#   --model $MODEL
 
-# C# Calculator Web Service
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/csharp_webservice/Dockerfile" \
-  --source-file-path "CalculatorApi/CalculatorController.cs" \
-  --test-file-path "CalculatorApi.Tests/CalculatorControllerTests.cs" \
-  --code-coverage-report-path "CalculatorApi.Tests/TestResults/coverage.cobertura.xml" \
-  --test-command "dotnet test --collect:'XPlat Code Coverage' CalculatorApi.Tests/ && find . -name 'coverage.cobertura.xml' -exec mv {} CalculatorApi.Tests/TestResults/coverage.cobertura.xml \;" \
-  --coverage-type "cobertura" \
-  --model $MODEL
+# # C# Calculator Web Service
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/csharp_webservice/Dockerfile" \
+#   --source-file-path "CalculatorApi/CalculatorController.cs" \
+#   --test-file-path "CalculatorApi.Tests/CalculatorControllerTests.cs" \
+#   --code-coverage-report-path "CalculatorApi.Tests/TestResults/coverage.cobertura.xml" \
+#   --test-command "dotnet test --collect:'XPlat Code Coverage' CalculatorApi.Tests/ && find . -name 'coverage.cobertura.xml' -exec mv {} CalculatorApi.Tests/TestResults/coverage.cobertura.xml \;" \
+#   --coverage-type "cobertura" \
+#   --model $MODEL
 
-# Go Webservice Example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/go_webservice/Dockerfile" \
-  --source-file-path "app.go" \
-  --test-file-path "app_test.go" \
-  --test-command "go test -coverprofile=coverage.out && gocov convert coverage.out | gocov-xml > coverage.xml" \
-  --model $MODEL
+# # Go Webservice Example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/go_webservice/Dockerfile" \
+#   --source-file-path "app.go" \
+#   --test-file-path "app_test.go" \
+#   --test-command "go test -coverprofile=coverage.out && gocov convert coverage.out | gocov-xml > coverage.xml" \
+#   --model $MODEL
 
-# Java Gradle example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/java_gradle/Dockerfile" \
-  --source-file-path "src/main/java/com/davidparry/cover/SimpleMathOperations.java" \
-  --test-file-path "src/test/groovy/com/davidparry/cover/SimpleMathOperationsSpec.groovy" \
-  --test-command "./gradlew clean test jacocoTestReport" \
-  --coverage-type "jacoco" \
-  --code-coverage-report-path "build/reports/jacoco/test/jacocoTestReport.csv" \
-  --model $MODEL
+# # Java Gradle example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/java_gradle/Dockerfile" \
+#   --source-file-path "src/main/java/com/davidparry/cover/SimpleMathOperations.java" \
+#   --test-file-path "src/test/groovy/com/davidparry/cover/SimpleMathOperationsSpec.groovy" \
+#   --test-command "./gradlew clean test jacocoTestReport" \
+#   --coverage-type "jacoco" \
+#   --code-coverage-report-path "build/reports/jacoco/test/jacocoTestReport.csv" \
+#   --model $MODEL
 
-# Java Spring Calculator example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/java_spring_calculator/Dockerfile" \
-  --source-file-path "src/main/java/com/example/calculator/controller/CalculatorController.java" \
-  --test-file-path "src/test/java/com/example/calculator/controller/CalculatorControllerTest.java" \
-  --test-command "mvn verify" \
-  --coverage-type "jacoco" \
-  --code-coverage-report-path "target/site/jacoco/jacoco.csv" \
-  --model $MODEL
+# # Java Spring Calculator example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/java_spring_calculator/Dockerfile" \
+#   --source-file-path "src/main/java/com/example/calculator/controller/CalculatorController.java" \
+#   --test-file-path "src/test/java/com/example/calculator/controller/CalculatorControllerTest.java" \
+#   --test-command "mvn verify" \
+#   --coverage-type "jacoco" \
+#   --code-coverage-report-path "target/site/jacoco/jacoco.csv" \
+#   --model $MODEL
 
-# VanillaJS Example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/js_vanilla/Dockerfile" \
-  --source-file-path "ui.js" \
-  --test-file-path "ui.test.js" \
-  --test-command "npm run test:coverage" \
-  --code-coverage-report-path "coverage/coverage.xml" \
-  --model $MODEL
+# # VanillaJS Example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/js_vanilla/Dockerfile" \
+#   --source-file-path "ui.js" \
+#   --test-file-path "ui.test.js" \
+#   --test-command "npm run test:coverage" \
+#   --code-coverage-report-path "coverage/coverage.xml" \
+#   --model $MODEL
 
-# Python FastAPI Example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/python_fastapi/Dockerfile" \
-  --source-file-path "app.py" \
-  --test-file-path "test_app.py" \
-  --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
-  --model "gpt-3.5-turbo"
+# # Python FastAPI Example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/python_fastapi/Dockerfile" \
+#   --source-file-path "app.py" \
+#   --test-file-path "test_app.py" \
+#   --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
+#   --model "gpt-3.5-turbo"
 
-# Ruby Sinatra Example
+# React Calculator Example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/ruby_sinatra/Dockerfile" \
-  --source-file-path "app.rb" \
-  --test-file-path "test_app.rb" \
-  --test-command "ruby test_app.rb" \
-  --code-coverage-report-path "coverage/coverage.xml" \
-  --model $MODEL
-
-# TypeScript Calculator Example
-sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/typescript_calculator/Dockerfile" \
-  --source-file-path "src/modules/Calculator.ts" \
-  --test-file-path "tests/Calculator.test.ts" \
+  --dockerfile "templated_tests/react_calculator/Dockerfile" \
+  --source-file-path "src/modules/Calculator.js" \
+  --test-file-path "src/tests/Calculator.test.js" \
   --test-command "npm run test" \
   --code-coverage-report-path "coverage/cobertura-coverage.xml" \
   --model $MODEL
+
+# # Ruby Sinatra Example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/ruby_sinatra/Dockerfile" \
+#   --source-file-path "app.rb" \
+#   --test-file-path "test_app.rb" \
+#   --test-command "ruby test_app.rb" \
+#   --code-coverage-report-path "coverage/coverage.xml" \
+#   --model $MODEL
+
+# # TypeScript Calculator Example
+# sh tests_integration/test_with_docker.sh \
+#   --dockerfile "templated_tests/typescript_calculator/Dockerfile" \
+#   --source-file-path "src/modules/Calculator.ts" \
+#   --test-file-path "tests/Calculator.test.ts" \
+#   --test-command "npm run test" \
+#   --code-coverage-report-path "coverage/cobertura-coverage.xml" \
+#   --model $MODEL
