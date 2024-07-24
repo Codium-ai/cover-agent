@@ -114,14 +114,6 @@ class TestCoverageProcessor:
         ):
             processor.parse_coverage_report()
 
-    def test_parse_coverage_report_not_implemented(self):
-        processor = CoverageProcessor("fake_path", "app.py", "lcov")
-        with pytest.raises(
-            NotImplementedError,
-            match="Parsing for lcov coverage reports is not implemented yet.",
-        ):
-            processor.parse_coverage_report()
-
     def test_extract_package_and_class_java_file_error(self, mocker):
         mocker.patch("builtins.open", side_effect=FileNotFoundError("File not found"))
         processor = CoverageProcessor("fake_path", "path/to/MyClass.java", "jacoco")
@@ -201,3 +193,57 @@ class TestCoverageProcessor:
 
         with pytest.raises(KeyError):
             processor.parse_missed_covered_lines_jacoco("com.example", "MyClass")
+
+    def test_parse_coverage_report_lcov_no_coverage_data(self, mocker):
+        """
+        Test parse_coverage_report_lcov returns empty lists and 0 coverage when the lcov report contains no relevant data.
+        """
+        mocker.patch("builtins.open", mocker.mock_open(read_data=""))
+        processor = CoverageProcessor("empty_report.lcov", "app.py", "lcov")
+        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report_lcov()
+        assert covered_lines == [], "Expected no covered lines"
+        assert missed_lines == [], "Expected no missed lines"
+        assert coverage_pct == 0, "Expected 0% coverage"
+
+    def test_parse_coverage_report_lcov_with_coverage_data(self, mocker):
+        """
+        Test parse_coverage_report_lcov correctly parses coverage data from an lcov report.
+        """
+        lcov_data = """
+        SF:app.py
+        DA:1,1
+        DA:2,0
+        DA:3,1
+        end_of_record
+        """
+        mocker.patch("builtins.open", mocker.mock_open(read_data=lcov_data))
+        processor = CoverageProcessor("report.lcov", "app.py", "lcov")
+        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report_lcov()
+        assert covered_lines == [1, 3], "Expected lines 1 and 3 to be covered"
+        assert missed_lines == [2], "Expected line 2 to be missed"
+        assert coverage_pct == 2/3, "Expected 66.67% coverage"
+
+    def test_parse_coverage_report_lcov_with_multiple_files(self, mocker):
+        """
+        Test parse_coverage_report_lcov correctly parses coverage data for the target file among multiple files in the lcov report.
+        """
+        lcov_data = """
+        SF:other.py
+        DA:1,1
+        DA:2,0
+        end_of_record
+        SF:app.py
+        DA:1,1
+        DA:2,0
+        DA:3,1
+        end_of_record
+        SF:another.py
+        DA:1,1
+        end_of_record
+        """
+        mocker.patch("builtins.open", mocker.mock_open(read_data=lcov_data))
+        processor = CoverageProcessor("report.lcov", "app.py", "lcov")
+        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report_lcov()
+        assert covered_lines == [1, 3], "Expected lines 1 and 3 to be covered for app.py"
+        assert missed_lines == [2], "Expected line 2 to be missed for app.py"
+        assert coverage_pct == 2/3, "Expected 66.67% coverage for app.py"

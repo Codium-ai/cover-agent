@@ -48,9 +48,9 @@ sh tests_integration/test_with_docker.sh \
   --dockerfile "templated_tests/c_cli/Dockerfile" \
   --source-file-path "calc.c" \
   --test-file-path "test_calc.c" \
-  --code-coverage-report-path "coverage.xml" \
+  --code-coverage-report-path "coverage_filtered.info" \
   --test-command "sh build_and_test_with_coverage.sh" \
-  --coverage-type "cobertura" \
+  --coverage-type "lcov" \
   --max-iterations "4" \
   --desired-coverage "50" \
   --model $MODEL
