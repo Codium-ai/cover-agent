@@ -13,7 +13,7 @@ TEST_FILE_PATH=""
 TEST_COMMAND=""
 COVERAGE_TYPE="cobertura"
 CODE_COVERAGE_REPORT_PATH="coverage.xml"
-MAX_ITERATIONS=2  # Default value
+MAX_ITERATIONS=3  # Default value
 DESIRED_COVERAGE=70  # Default value
 
 # Function to clean up Docker container
