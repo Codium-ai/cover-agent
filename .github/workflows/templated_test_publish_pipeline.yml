@@ -4,15 +4,11 @@ on:
   pull_request:
     paths:
       - 'templated_tests/**'
-    paths-ignore:
-      - 'templated_tests/README.md'
   push:
     branches:
       - main
     paths:
       - 'templated_tests/**'
-    paths-ignore:
-      - 'templated_tests/README.md'
 
 jobs:
   changed-files:
@@ -31,7 +27,7 @@ jobs:
           matrix: true
           dir_names: true
           files: |
-            templated_tests/**
+            templated_tests/**/*
 
   build-and-push-image:
     needs: changed-files
@@ -72,7 +68,6 @@ jobs:
       - name: Build and push Docker image to DockerHub
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.files }}  # Ensure this points to the correct subdirectory
-          file: ${{ matrix.files }}/Dockerfile  # Ensure Dockerfile path is correct
+          context: ${{ matrix.files }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
