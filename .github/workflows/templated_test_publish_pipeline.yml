@@ -27,7 +27,9 @@ jobs:
           matrix: true
           dir_names: true
           files: |
-            templated_tests/**/*
+            templated_tests/**
+          ignore: |
+            templated_tests/README.md
 
   build-and-push-image:
     needs: changed-files
