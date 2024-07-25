@@ -1,9 +1,7 @@
 # Calculator Program
-
 Simple command-line calculator for basic arithmetic operations.
 
 ## Prerequisites
-
 Install GCC, Ruby, lcov, lcov-cobertura (until lcov is natively supported), and clone the Unity test framework:
 
 ```bash
@@ -14,7 +12,6 @@ git clone https://github.com/ThrowTheSwitch/Unity.git
 ```
 
 ## Compile and Run
-
 Compile the calculator:
 
 ```bash
@@ -29,7 +26,6 @@ Run the calculator:
 ```
 
 ## Testing
-
 Generate the test runner using the Ruby script from Unity:
 
 ```bash
