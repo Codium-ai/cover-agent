@@ -45,7 +45,7 @@ fi
 
 # C Calculator Example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/c_cli/Dockerfile" \
+  --docker-image "embeddeddevops/c_cli:latest" \
   --source-file-path "calc.c" \
   --test-file-path "test_calc.c" \
   --code-coverage-report-path "coverage_filtered.info" \
