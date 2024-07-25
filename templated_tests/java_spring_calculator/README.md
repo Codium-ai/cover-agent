@@ -1,4 +1,3 @@
-
 # Calculator Application
 This project is a Spring Boot web application that provides a simple calculator with basic arithmetic operations.
 
