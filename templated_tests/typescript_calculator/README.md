@@ -3,7 +3,6 @@
 This project is a simple calculator implemented using TypeScript, HTML, SCSS, and Docker. The calculator supports basic arithmetic operations and is designed to run in a web browser.
 
 ## Project Structure
-
 | File                          | Description                                                                               |
 |-------------------------------|-------------------------------------------------------------------------------------------|
 | **tsconfig.json**             | TypeScript configuration file specifying compiler options and compatibility settings.     |
@@ -15,14 +14,11 @@ This project is a simple calculator implemented using TypeScript, HTML, SCSS, an
 | **tests/Calculator.test.ts**  | Mocha/Chai test suite for the `Calculator` class, ensuring correct functionality.         |
 
 ## Prerequisites
-
 - [Docker](https://www.docker.com/) installed on your system.
 - [Node.js](https://nodejs.org/) and npm installed if you want to run the project locally without Docker.
 
 ## Running the Project
-
 ### Using Docker
-
 1. **Build the Docker image**:
    ```sh
    docker build -t ts-calculator .
@@ -37,7 +33,6 @@ This project is a simple calculator implemented using TypeScript, HTML, SCSS, an
    Open your web browser and go to `http://localhost:3000` to see the calculator in action.
 
 ### Running Locally
-
 1. **Install dependencies**:
    ```sh
    npm install
@@ -57,7 +52,6 @@ This project is a simple calculator implemented using TypeScript, HTML, SCSS, an
    Open your web browser and go to `http://localhost:3000` to see the calculator in action.
 
 ## Testing
-
 The project includes unit tests for the `Calculator` class using Mocha and Chai. To run the tests:
 
 1. **Install dependencies**:
