@@ -1,15 +1,12 @@
 # Vanilla Javascript Application Example
-
 A simple vanilla js project to find github users and their repositories.
 
 ## Requirements
-
 ```
 npm install
 ```
 
 ## How to run
-
 `cd` into this directory and run:
 
 ```

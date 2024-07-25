@@ -2,15 +2,12 @@
 # Go Gin Web Application
 
 ## Building and Running the Application
-
 This guide describes how to build and run the Go web application using the Gin framework.
 
 ### Prerequisites
-
 Ensure you have Go installed on your machine. To check if Go is installed, run `go version`. It should display the Go version if it's correctly installed.
 
 ### Steps to Run the Application
-
 1. **Build the application:**
    Build the application by running:
    ```bash
@@ -25,11 +22,9 @@ Ensure you have Go installed on your machine. To check if Go is installed, run `
    This will start the server on `localhost:8080`.
 
 ## Testing
-
 This section provides instructions on how to run tests and generate a Cobertura coverage report for the application.
 
 ### Prerequisites for Testing
-
 - Install the required Go packages for testing and coverage report generation:
   ```bash
   go install github.com/stretchr/testify/assert
@@ -38,7 +33,6 @@ This section provides instructions on how to run tests and generate a Cobertura 
   ```
 
 ### Running Tests
-
 1. **Run unit tests:**
    Execute the following command to run the unit tests:
    ```bash
@@ -52,7 +46,6 @@ This section provides instructions on how to run tests and generate a Cobertura 
    ```
 
 ### Generating Cobertura Coverage Report
-
 1. **Generate coverage data:**
    First, generate the test coverage data:
    ```bash

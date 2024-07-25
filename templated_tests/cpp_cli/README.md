@@ -1,9 +1,7 @@
 # Calculator Program
-
 Simple command-line calculator for basic arithmetic operations.
 
 ## Prerequisites
-
 Install g++, make, gtest, lcov, lcov-cobertura (until lcov is natively supported):
 
 ```bash
@@ -22,7 +20,6 @@ sudo find . -type f -name "*.a" -exec cp {} /usr/lib \;
 ```
 
 ## Compile and Run
-
 Compile the calculator:
 
 ```bash
@@ -38,7 +35,6 @@ Run the calculator:
 ```
 
 ## Testing
-
 Compile the tests with coverage:
 
 ```bash

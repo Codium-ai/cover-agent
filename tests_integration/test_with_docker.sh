@@ -8,6 +8,7 @@ MODEL=""
 API_BASE=""
 OPENAI_API_KEY="${OPENAI_API_KEY:-}"
 DOCKERFILE=""
+DOCKER_IMAGE=""
 SOURCE_FILE_PATH=""
 TEST_FILE_PATH=""
 TEST_COMMAND=""
@@ -35,6 +36,7 @@ while [ "$#" -gt 0 ]; do
     --api-base) API_BASE="$2"; shift ;;
     --openai-api-key) OPENAI_API_KEY="$2"; shift ;;
     --dockerfile) DOCKERFILE="$2"; shift ;;
+    --docker-image) DOCKER_IMAGE="$2"; shift ;;
     --source-file-path) SOURCE_FILE_PATH="$2"; shift ;;
     --test-file-path) TEST_FILE_PATH="$2"; shift ;;
     --test-command) TEST_COMMAND="$2"; shift ;;
@@ -48,14 +50,26 @@ while [ "$#" -gt 0 ]; do
 done
 
 # Ensure mandatory arguments are provided
-if [ -z "$DOCKERFILE" ] || [ -z "$SOURCE_FILE_PATH" ] || [ -z "$TEST_FILE_PATH" ] || [ -z "$TEST_COMMAND" ]; then
-  echo "Missing required parameters: --dockerfile, --source-file-path, --test-file-path, or --test-command"
+if [ -z "$SOURCE_FILE_PATH" ] || [ -z "$TEST_FILE_PATH" ] || [ -z "$TEST_COMMAND" ]; then
+  echo "Missing required parameters: --source-file-path, --test-file-path, or --test-command"
   exit 1
 fi
 
-# Build the Docker image
-echo "Building the Docker image..."
-docker build -t cover-agent-image -f "$DOCKERFILE" "$(dirname "$DOCKERFILE")"
+# Ensure either DOCKERFILE or DOCKER_IMAGE is provided
+if [ -z "$DOCKERFILE" ] && [ -z "$DOCKER_IMAGE" ]; then
+  echo "Missing required parameters: either --dockerfile or --docker-image must be provided"
+  exit 1
+fi
+
+# Build or pull the Docker image
+if [ -n "$DOCKERFILE" ]; then
+  echo "Building the Docker image..."
+  docker build -t cover-agent-image -f "$DOCKERFILE" "$(dirname "$DOCKERFILE")"
+else
+  echo "Pulling the Docker image..."
+  docker pull "$DOCKER_IMAGE"
+  docker tag "$DOCKER_IMAGE" cover-agent-image
+fi
 
 # Start the container in detached mode with the environment variable if set
 echo "Starting the container..."
