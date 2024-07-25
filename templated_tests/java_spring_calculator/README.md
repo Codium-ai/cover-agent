@@ -1,19 +1,15 @@
 
 # Calculator Application
-
 This project is a Spring Boot web application that provides a simple calculator with basic arithmetic operations.
 
 ## Prerequisites
-
 In order to build, run, and test this service you will need:
 - Java 11 or later
 - [Apache Maven](https://maven.apache.org/)
 - Docker (optional, if you want to use the Docker setup)
 
 ## Compile and Run
-
 ### Using Maven
-
 To compile the project:
 ```bash
 mvn clean install
@@ -25,7 +21,6 @@ mvn spring-boot:run
 ```
 
 ### Using Docker
-
 To build and run the Docker container:
 ```bash
 docker build -t calculator-app .
@@ -33,7 +28,6 @@ docker run -p 8080:8080 calculator-app
 ```
 
 ## API Endpoints
-
 The calculator application provides the following endpoints:
 
 - `GET /add?a=number&b=number` - Adds two numbers
@@ -47,7 +41,6 @@ curl -X GET "http://localhost:8080/add?a=2&b=3"
 ```
 
 ## Testing
-
 To run the tests:
 ```bash
 mvn test
@@ -60,7 +53,6 @@ mvn verify
 This will generate a code coverage report in the `target/site/jacoco` directory.
 
 ## Project Structure
-
 - `.gitignore` - Specifies intentionally untracked files to ignore
 - `Dockerfile` - Contains the instructions to build the Docker image
 - `pom.xml` - Maven Project Object Model (POM) file with project dependencies and build configuration
@@ -73,7 +65,6 @@ This will generate a code coverage report in the `target/site/jacoco` directory.
   - `service/CalculatorServiceTest.java` - Test cases for the `CalculatorService`
 
 ## Additional Information
-
 - The application uses Spring Boot for rapid application development.
 - Maven is used for project management and build automation.
 - Docker is used to containerize the application for consistent and isolated execution environments.
