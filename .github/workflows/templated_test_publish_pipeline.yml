@@ -28,7 +28,7 @@ jobs:
           dir_names: true
           files: |
             templated_tests/**
-          ignore: |
+          files_ignore: |
             templated_tests/README.md
 
   build-and-push-image:
