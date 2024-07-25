@@ -84,10 +84,7 @@ class CoverageProcessor:
         if self.coverage_type == "cobertura":
             return self.parse_coverage_report_cobertura()
         elif self.coverage_type == "lcov":
-            # Placeholder for LCOV report parsing
-            raise NotImplementedError(
-                f"Parsing for {self.coverage_type} coverage reports is not implemented yet."
-            )
+            return self.parse_coverage_report_lcov()
         elif self.coverage_type == "jacoco":
             return self.parse_coverage_report_jacoco()
         else:
@@ -117,6 +114,39 @@ class CoverageProcessor:
                     else:
                         lines_missed.append(line_number)
                 break  # Assuming filename is unique, break after finding and processing it
+
+        total_lines = len(lines_covered) + len(lines_missed)
+        coverage_percentage = (
+            (len(lines_covered) / total_lines) if total_lines > 0 else 0
+        )
+
+        return lines_covered, lines_missed, coverage_percentage
+
+    def parse_coverage_report_lcov(self):
+
+        lines_covered, lines_missed = [], []
+        filename = os.path.basename(self.src_file_path)
+        try: 
+            with open(self.file_path, "r") as file:
+                for line in file:
+                    line = line.strip()
+                    if line.startswith("SF:"):
+                        if line.endswith(filename):
+                            for line in file:
+                                line = line.strip()
+                                if line.startswith("DA:"):
+                                    line_number = line.replace("DA:", "").split(",")[0]
+                                    hits = line.replace("DA:", "").split(",")[1]
+                                    if int(hits) > 0:
+                                        lines_covered.append(int(line_number))
+                                    else:
+                                        lines_missed.append(int(line_number))
+                                elif line.startswith("end_of_record"):
+                                    break
+
+        except (FileNotFoundError, IOError) as e:
+            self.logger.error(f"Error reading file {self.file_path}: {e}")
+            raise
 
         total_lines = len(lines_covered) + len(lines_missed)
         coverage_percentage = (
