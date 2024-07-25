@@ -57,7 +57,7 @@ sh tests_integration/test_with_docker.sh \
 
 # C++ Calculator Example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/cpp_cli/Dockerfile" \
+  --docker-image "embeddeddevops/cpp_cli:latest" \
   --source-file-path "calculator.cpp" \
   --test-file-path "test_calculator.cpp" \
   --code-coverage-report-path "coverage.xml" \
@@ -67,7 +67,7 @@ sh tests_integration/test_with_docker.sh \
 
 # C# Calculator Web Service
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/csharp_webservice/Dockerfile" \
+  --docker-image "embeddeddevops/csharp_webservice:latest" \
   --source-file-path "CalculatorApi/CalculatorController.cs" \
   --test-file-path "CalculatorApi.Tests/CalculatorControllerTests.cs" \
   --code-coverage-report-path "CalculatorApi.Tests/TestResults/coverage.cobertura.xml" \
@@ -77,7 +77,7 @@ sh tests_integration/test_with_docker.sh \
 
 # Go Webservice Example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/go_webservice/Dockerfile" \
+  --docker-image "embeddeddevops/go_webservice:latest" \
   --source-file-path "app.go" \
   --test-file-path "app_test.go" \
   --test-command "go test -coverprofile=coverage.out && gocov convert coverage.out | gocov-xml > coverage.xml" \
@@ -85,7 +85,7 @@ sh tests_integration/test_with_docker.sh \
 
 # Java Gradle example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/java_gradle/Dockerfile" \
+  --docker-image "embeddeddevops/java_gradle:latest" \
   --source-file-path "src/main/java/com/davidparry/cover/SimpleMathOperations.java" \
   --test-file-path "src/test/groovy/com/davidparry/cover/SimpleMathOperationsSpec.groovy" \
   --test-command "./gradlew clean test jacocoTestReport" \
@@ -95,7 +95,7 @@ sh tests_integration/test_with_docker.sh \
 
 # Java Spring Calculator example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/java_spring_calculator/Dockerfile" \
+  --docker-image "embeddeddevops/java_spring_calculator:latest" \
   --source-file-path "src/main/java/com/example/calculator/controller/CalculatorController.java" \
   --test-file-path "src/test/java/com/example/calculator/controller/CalculatorControllerTest.java" \
   --test-command "mvn verify" \
@@ -105,7 +105,7 @@ sh tests_integration/test_with_docker.sh \
 
 # VanillaJS Example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/js_vanilla/Dockerfile" \
+  --docker-image "embeddeddevops/js_vanilla:latest" \
   --source-file-path "ui.js" \
   --test-file-path "ui.test.js" \
   --test-command "npm run test:coverage" \
@@ -114,7 +114,7 @@ sh tests_integration/test_with_docker.sh \
 
 # Python FastAPI Example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/python_fastapi/Dockerfile" \
+  --docker-image "embeddeddevops/python_fastapi:latest" \
   --source-file-path "app.py" \
   --test-file-path "test_app.py" \
   --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
@@ -122,7 +122,7 @@ sh tests_integration/test_with_docker.sh \
 
 # React Calculator Example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/react_calculator/Dockerfile" \
+  --docker-image "embeddeddevops/react_calculator:latest" \
   --source-file-path "src/modules/Calculator.js" \
   --test-file-path "src/tests/Calculator.test.js" \
   --test-command "npm run test" \
@@ -132,7 +132,7 @@ sh tests_integration/test_with_docker.sh \
 
 # Ruby Sinatra Example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/ruby_sinatra/Dockerfile" \
+  --docker-image "embeddeddevops/ruby_sinatra:latest" \
   --source-file-path "app.rb" \
   --test-file-path "test_app.rb" \
   --test-command "ruby test_app.rb" \
@@ -141,7 +141,7 @@ sh tests_integration/test_with_docker.sh \
 
 # TypeScript Calculator Example
 sh tests_integration/test_with_docker.sh \
-  --dockerfile "templated_tests/typescript_calculator/Dockerfile" \
+  --docker-image "embeddeddevops/typescript_calculator:latest" \
   --source-file-path "src/modules/Calculator.ts" \
   --test-file-path "tests/Calculator.test.ts" \
   --test-command "npm run test" \
