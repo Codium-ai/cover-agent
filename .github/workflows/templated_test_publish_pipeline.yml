@@ -3,12 +3,12 @@ name: Update Docker Image Reference on PR
 on:
   pull_request:
     paths:
-      - 'templated_tests/**'
+      - 'templated_tests/*/**'  # Match files in subfolders
   push:
     branches:
       - main
     paths:
-      - 'templated_tests/**'
+      - 'templated_tests/*/**'  # Match files in subfolders
 
 jobs:
   changed-files:
@@ -27,7 +27,7 @@ jobs:
           matrix: true
           dir_names: true
           files: |
-            templated_tests/**/*
+            templated_tests/*/**  # Match files in subfolders
 
   build-and-push-image:
     needs: changed-files
