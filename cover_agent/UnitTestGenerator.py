@@ -29,6 +29,7 @@ class UnitTestGenerator:
         coverage_type="cobertura",
         desired_coverage: int = 90,  # Default to 90% coverage if not specified
         additional_instructions: str = "",
+        use_report_coverage_feature_flag: bool = False,
     ):
         """
         Initialize the UnitTestGenerator class with the provided parameters.
@@ -45,6 +46,9 @@ class UnitTestGenerator:
             coverage_type (str, optional): The type of coverage report. Defaults to "cobertura".
             desired_coverage (int, optional): The desired coverage percentage. Defaults to 90.
             additional_instructions (str, optional): Additional instructions for test generation. Defaults to an empty string.
+            use_report_coverage_feature_flag (bool, optional): Setting this to True considers the coverage of all the files in the coverage report. 
+                                                               This means we consider a test as good if it increases coverage for a different 
+                                                               file other than the source file. Defaults to False.
 
         Returns:
             None
@@ -60,6 +64,8 @@ class UnitTestGenerator:
         self.desired_coverage = desired_coverage
         self.additional_instructions = additional_instructions
         self.language = self.get_code_language(source_file_path)
+        self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
+        self.last_coverage_percentages = {}
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
@@ -138,15 +144,47 @@ class UnitTestGenerator:
             file_path=self.code_coverage_report_path,
             src_file_path=self.source_file_path,
             coverage_type=self.coverage_type,
+            use_report_coverage_feature_flag=self.use_report_coverage_feature_flag
         )
 
         # Use the process_coverage_report method of CoverageProcessor, passing in the time the test command was executed
         try:
-            lines_covered, lines_missed, percentage_covered = (
-                coverage_processor.process_coverage_report(
+            if self.use_report_coverage_feature_flag:
+                self.logger.info(
+                    "Using the report coverage feature flag to process the coverage report"
+                )
+                file_coverage_dict = coverage_processor.process_coverage_report(
                     time_of_test_command=time_of_test_command
                 )
-            )
+                total_lines_covered = 0
+                total_lines_missed = 0
+                total_lines = 0
+                for key in file_coverage_dict:
+                    lines_covered, lines_missed, percentage_covered = (
+                        file_coverage_dict[key]
+                    )
+                    total_lines_covered += len(lines_covered)
+                    total_lines_missed += len(lines_missed)
+                    total_lines += len(lines_covered) + len(lines_missed)
+                    if key == self.source_file_path:
+                        self.last_source_file_coverage = percentage_covered
+                    if key not in self.last_coverage_percentages:
+                        self.last_coverage_percentages[key] =  0
+                    self.last_coverage_percentages[key] = percentage_covered
+                percentage_covered = total_lines_covered / total_lines
+
+                self.logger.info(
+                    f"Total lines covered: {total_lines_covered}, Total lines missed: {total_lines_missed}, Total lines: {total_lines}"
+                )
+                self.logger.info(    
+                    f"coverage: Percentage {round(percentage_covered * 100, 2)}%"
+                )
+            else:
+                lines_covered, lines_missed, percentage_covered = (
+                    coverage_processor.process_coverage_report(
+                        time_of_test_command=time_of_test_command
+                    )
+                )
 
             # Process the extracted coverage metrics
             self.current_coverage = percentage_covered
@@ -538,12 +576,38 @@ class UnitTestGenerator:
                         file_path=self.code_coverage_report_path,
                         src_file_path=self.source_file_path,
                         coverage_type=self.coverage_type,
+                        use_report_coverage_feature_flag=self.use_report_coverage_feature_flag,
                     )
-                    _, _, new_percentage_covered = (
-                        new_coverage_processor.process_coverage_report(
+                    coverage_percentages = {}
+
+                    if self.use_report_coverage_feature_flag:
+                        self.logger.info(
+                            "Using the report coverage feature flag to process the coverage report"
+                        )
+                        file_coverage_dict = new_coverage_processor.process_coverage_report(
                             time_of_test_command=time_of_test_command
                         )
-                    )
+                        total_lines_covered = 0
+                        total_lines_missed = 0
+                        total_lines = 0
+                        for key in file_coverage_dict:
+                            lines_covered, lines_missed, percentage_covered = (
+                                file_coverage_dict[key]
+                            )
+                            total_lines_covered += len(lines_covered)
+                            total_lines_missed += len(lines_missed)
+                            total_lines += len(lines_covered) + len(lines_missed)
+                            if key not in coverage_percentages:
+                                coverage_percentages[key] = 0
+                            coverage_percentages[key] = percentage_covered
+
+                        new_percentage_covered = total_lines_covered / total_lines
+                    else:
+                        _, _, new_percentage_covered = (
+                            new_coverage_processor.process_coverage_report(
+                                time_of_test_command=time_of_test_command
+                            )
+                        )
 
                     if new_percentage_covered <= self.current_coverage:
                         # Coverage has not increased, rollback the test by removing it from the test file
@@ -610,6 +674,21 @@ class UnitTestGenerator:
                 )  # this is important, otherwise the next test will be inserted at the wrong line
 
                 self.current_coverage = new_percentage_covered
+
+
+                for key in coverage_percentages:
+                    if key not in self.last_coverage_percentages:
+                        self.last_coverage_percentages[key] = 0
+                    if coverage_percentages[key] > self.last_coverage_percentages[key] and key == self.source_file_path.split("/")[-1]:
+                        self.logger.info(
+                            f"Coverage for provided source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(coverage_percentages[key] * 100, 2)}"
+                        )
+                    elif coverage_percentages[key] > self.last_coverage_percentages[key]:
+                        self.logger.info(
+                            f"Coverage for non-source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(coverage_percentages[key] * 100, 2)}"
+                        )
+                    self.last_coverage_percentages[key] = coverage_percentages[key]
+
                 self.logger.info(
                     f"Test passed and coverage increased. Current coverage: {round(new_percentage_covered * 100, 2)}%"
                 )
