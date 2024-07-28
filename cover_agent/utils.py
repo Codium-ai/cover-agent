@@ -31,7 +31,7 @@ def load_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         )
         data = try_fix_yaml(response_text, keys_fix_yaml=keys_fix_yaml)
         if not data:
-            logging.info(f"Failed to parse AI prediction after fixing YAML formatting.")
+            logging.info("Failed to parse AI prediction after fixing YAML formatting.")
     return data
 
 
