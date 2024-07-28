@@ -72,7 +72,7 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
                 )
     try:
         data = yaml.safe_load("\n".join(response_text_lines_copy))
-        logging.info(f"Successfully parsed AI prediction after adding |-\n")
+        logging.info("Successfully parsed AI prediction after adding |-\n")
         return data
     except:
         pass
