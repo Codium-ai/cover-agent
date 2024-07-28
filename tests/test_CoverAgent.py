@@ -57,10 +57,9 @@ class TestCoverAgent:
         parse_args = lambda: args
         mock_isfile.return_value = False
 
-        with patch("cover_agent.main.parse_args", parse_args):
-            with pytest.raises(FileNotFoundError) as exc_info:
-                agent = CoverAgent(args)
-
+        with patch("cover_agent.main.parse_args", parse_args), pytest.raises(FileNotFoundError) as exc_info:
+             agent = CoverAgent(args)
+            
         assert (
             str(exc_info.value) == f"Source file not found at {args.source_file_path}"
         )
@@ -91,8 +90,7 @@ class TestCoverAgent:
         mock_isfile.side_effect = [True, False]
         mock_exists.return_value = True
 
-        with patch("cover_agent.main.parse_args", parse_args):
-            with pytest.raises(FileNotFoundError) as exc_info:
-                agent = CoverAgent(args)
-
+        with patch("cover_agent.main.parse_args", parse_args), pytest.raises(FileNotFoundError) as exc_info:
+             agent = CoverAgent(args)
+            
         assert str(exc_info.value) == f"Test file not found at {args.test_file_path}"
