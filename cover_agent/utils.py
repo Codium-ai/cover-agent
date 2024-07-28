@@ -85,7 +85,7 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         try:
             data = yaml.safe_load(snippet_text.removeprefix("```yaml").rstrip("`"))
             logging.info(
-                f"Successfully parsed AI prediction after extracting yaml snippet"
+                "Successfully parsed AI prediction after extracting yaml snippet"
             )
             return data
         except:
@@ -97,7 +97,7 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
     )
     try:
         data = yaml.safe_load(response_text_copy)
-        logging.info(f"Successfully parsed AI prediction after removing curly brackets")
+        logging.info("Successfully parsed AI prediction after removing curly brackets")
         return data
     except:
         pass
@@ -136,7 +136,7 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         try:
             data = yaml.safe_load(response_text_copy)
             logging.info(
-                f"Successfully parsed AI prediction when using the language: key as a starting point"
+                "Successfully parsed AI prediction when using the language: key as a starting point"
             )
             return data
         except:
