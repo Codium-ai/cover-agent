@@ -497,7 +497,7 @@ class UnitTestGenerator:
                     # Test failed, roll back the test file to its original content
                     with open(self.test_file_path, "w") as test_file:
                         test_file.write(original_content)
-                    self.logger.info(f"Skipping a generated test that failed")
+                    self.logger.info("Skipping a generated test that failed")
                     fail_details = {
                         "status": "FAIL",
                         "reason": "Test failed",
