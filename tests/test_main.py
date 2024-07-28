@@ -88,8 +88,7 @@ class TestMain:
         mock_isfile.side_effect = [True, False]
         mock_exists.return_value = True
 
-        with patch("cover_agent.main.parse_args", parse_args):
-            with pytest.raises(FileNotFoundError) as exc_info:
-                main()
+        with patch("cover_agent.main.parse_args", parse_args), pytest.raises(FileNotFoundError) as exc_info:
+             main()
 
         assert str(exc_info.value) == f"Test file not found at {args.test_file_path}"
