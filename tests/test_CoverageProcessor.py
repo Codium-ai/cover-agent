@@ -71,7 +71,7 @@ class TestCoverageProcessor:
         )
 
         # Action
-        missed, covered = processor.parse_missed_covered_lines_jacoco(
+        missed, covered = processor.parse_missed_covered_lines_jacoco_csv(
             "com.example", "MyClass"
         )
 
@@ -86,7 +86,7 @@ class TestCoverageProcessor:
             return_value=("com.example", "Example"),
         )
         mocker.patch(
-            "cover_agent.CoverageProcessor.CoverageProcessor.parse_missed_covered_lines_jacoco",
+            "cover_agent.CoverageProcessor.CoverageProcessor.parse_missed_covered_lines_jacoco_xml",
             return_value=(0, 0),
         )
 
@@ -173,7 +173,7 @@ class TestCoverageProcessor:
         mock_parse.assert_called_once()
         assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
 
-    def test_parse_missed_covered_lines_jacoco_key_error(self, mocker):
+    def test_parse_missed_covered_lines_jacoco_csv_key_error(self, mocker):
         mock_open = mocker.patch(
             "builtins.open",
             mocker.mock_open(
@@ -192,7 +192,7 @@ class TestCoverageProcessor:
         )
 
         with pytest.raises(KeyError):
-            processor.parse_missed_covered_lines_jacoco("com.example", "MyClass")
+            processor.parse_missed_covered_lines_jacoco_csv("com.example", "MyClass")
 
     def test_parse_coverage_report_lcov_no_coverage_data(self, mocker):
         """
