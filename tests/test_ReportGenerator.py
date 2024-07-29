@@ -34,7 +34,7 @@ class TestReportGeneration:
         report_path = tmp_path / "test_report.html"
         ReportGenerator.generate_report(sample_results, str(report_path))
 
-        with open(report_path, "r") as file:
+        with open(report_path, "r", encoding="utf-8") as file:
             content = file.read()
 
         # Verify that the expected pieces are present in the output

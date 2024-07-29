@@ -22,7 +22,7 @@ def get_version():
     version_file_path = os.path.join(base_path, "version.txt")
 
     # Open and read the version file
-    with open(version_file_path, "r") as file:
+    with open(version_file_path, "r", encoding="utf-8") as file:
         version = file.read().strip()
 
     return version

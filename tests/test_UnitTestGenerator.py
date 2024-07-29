@@ -32,7 +32,7 @@ class TestUnitTestGenerator:
         TEST_FILE = f"{REPO_ROOT}/templated_tests/python_fastapi/test_app.py"
 
         # Read in file contents of sample test file so we can roll it back later
-        with open(TEST_FILE, "r") as f:
+        with open(TEST_FILE, "r", encoding="utf-8") as f:
             original_file_contents = f.read()
 
         # Instantiate a UnitTestGenerator with the test parameters
@@ -63,7 +63,7 @@ class TestUnitTestGenerator:
         ReportGenerator.generate_report(results_list, "test_results.html")
 
         # Write back sample test file contents
-        with open(TEST_FILE, "w") as f:
+        with open(TEST_FILE, "w", encoding="utf-8") as f:
             f.write(original_file_contents)
 
     def test_end_to_end2(self):
@@ -90,7 +90,7 @@ class TestUnitTestGenerator:
         TEST_FILE = f"{REPO_ROOT}/templated_tests/python_fastapi/test_app.py"
 
         # Read in file contents of sample test file so we can roll it back later
-        with open(TEST_FILE, "r") as f:
+        with open(TEST_FILE, "r", encoding="utf-8") as f:
             original_file_contents = f.read()
 
         # Instantiate a UnitTestGenerator with the test parameters
@@ -121,7 +121,7 @@ class TestUnitTestGenerator:
         ReportGenerator.generate_report(results_list, "test_results.html")
 
         # Write back sample test file contents
-        with open(TEST_FILE, "w") as f:
+        with open(TEST_FILE, "w", encoding="utf-8") as f:
             f.write(original_file_contents)
 
     def test_get_included_files_mixed_paths(self):

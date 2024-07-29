@@ -38,7 +38,7 @@ class FilePreprocessor:
         Check if the file contains a Python class definition using the ast module.
         """
         try:
-            with open(self.path_to_file, "r") as file:
+            with open(self.path_to_file, "r", encoding="utf-8") as file:
                 content = file.read()
             parsed_ast = ast.parse(content)
             for node in ast.walk(parsed_ast):
