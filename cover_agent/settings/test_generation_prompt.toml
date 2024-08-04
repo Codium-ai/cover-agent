@@ -108,12 +108,6 @@ new_tests:
 Use block scalar('|') to format each YAML output.
 
 
-{%- if additional_instructions_text|trim  %}
-
-{{ additional_instructions_text|trim }}
-{% endif %}
-
-
 Response (should be a valid YAML, and nothing else):
 ```yaml
 """

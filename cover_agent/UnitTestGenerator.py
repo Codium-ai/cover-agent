@@ -443,10 +443,10 @@ class UnitTestGenerator:
                         [delta_indent * " " + line for line in test_code.split("\n")]
                     )
             test_code_indented = "\n" + test_code_indented.strip("\n") + "\n"
-
             if test_code_indented and relevant_line_number_to_insert_tests_after:
 
-                # Step 1: Append the generated test to the relevant line in the test file
+                # Step 1: Insert the generated test to the relevant line in the test file
+                additional_imports_lines = ""
                 with open(self.test_file_path, "r") as test_file:
                     original_content = test_file.read()  # Store original content
                 original_content_lines = original_content.split("\n")
@@ -476,13 +476,10 @@ class UnitTestGenerator:
                             relevant_line_number_to_insert_imports_after:
                         ]
                     )
-                    self.relevant_line_number_to_insert_tests_after += len(
-                        additional_imports_lines
-                    )  # this is important, otherwise the next test will be inserted at the wrong line
                 processed_test = "\n".join(processed_test_lines)
-
                 with open(self.test_file_path, "w") as test_file:
                     test_file.write(processed_test)
+                    test_file.flush()
 
                 # Step 2: Run the test using the Runner class
                 self.logger.info(
@@ -546,6 +543,7 @@ class UnitTestGenerator:
                         # Coverage has not increased, rollback the test by removing it from the test file
                         with open(self.test_file_path, "w") as test_file:
                             test_file.write(original_content)
+                            test_file.flush()
                         self.logger.info(
                             "Test did not increase coverage. Rolling back."
                         )
@@ -578,9 +576,11 @@ class UnitTestGenerator:
                 except Exception as e:
                     # Handle errors gracefully
                     self.logger.error(f"Error during coverage verification: {e}")
-                    # Optionally, roll back even in case of error
+                    # roll back even in case of error
                     with open(self.test_file_path, "w") as test_file:
                         test_file.write(original_content)
+                        test_file.flush()
+
                     fail_details = {
                         "status": "FAIL",
                         "reason": "Runtime error",
@@ -597,7 +597,12 @@ class UnitTestGenerator:
                     )  # Append failure details to the list
                     return fail_details
 
-                # If everything passed and coverage increased, update current coverage and log success
+                # If we got here, everything passed and coverage increased - update current coverage and log success,
+                # and increase 'relevant_line_number_to_insert_tests_after' by the number of imports lines added
+                self.relevant_line_number_to_insert_tests_after += len(
+                    additional_imports_lines
+                )  # this is important, otherwise the next test will be inserted at the wrong line
+
                 self.current_coverage = new_percentage_covered
                 self.logger.info(
                     f"Test passed and coverage increased. Current coverage: {round(new_percentage_covered * 100, 2)}%"
