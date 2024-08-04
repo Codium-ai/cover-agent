@@ -107,7 +107,6 @@ new_tests:
 
 Use block scalar('|') to format each YAML output.
 
-
 Response (should be a valid YAML, and nothing else):
 ```yaml
 """
