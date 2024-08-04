@@ -255,8 +255,4 @@ class CoverageProcessor:
 
     def get_file_extension(self, filename: str) -> str | None:
         """Get the file extension from a given filename."""
-        match = re.search(r'\.(\w+)$', filename)
-        if match:
-            return match.group(1)
-        else:
-            return None
+        return os.path.splitext(filename)[1].lstrip(".")
