@@ -25,3 +25,11 @@ class TestGetVersion:
     @patch("builtins.open", new_callable=mock_open, read_data="   ")
     def test_get_version_empty_or_whitespace_file(self, mock_file):
         assert get_version() == ""
+
+    @patch("cover_agent.version.sys")
+    @patch("builtins.open", new_callable=mock_open, read_data="1.2.3")
+    def test_get_version_frozen_application(self, mock_open, mock_sys):
+        mock_sys.frozen = True
+        mock_sys._MEIPASS = os.path.dirname(__file__)
+        assert get_version() == "1.2.3"
+
