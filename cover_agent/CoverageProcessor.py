@@ -1,10 +1,9 @@
-from typing import Literal, Tuple
-import os
-import time
-import re
-import csv
-import xml.etree.ElementTree as ET
 from cover_agent.CustomLogger import CustomLogger
+from typing import Literal, Tuple, Union
+import csv
+import os
+import re
+import xml.etree.ElementTree as ET
 
 
 class CoverageProcessor:
@@ -13,6 +12,7 @@ class CoverageProcessor:
         file_path: str,
         src_file_path: str,
         coverage_type: Literal["cobertura", "lcov", "jacoco"],
+        use_report_coverage_feature_flag: bool = False,
     ):
         """
         Initializes a CoverageProcessor object.
@@ -35,6 +35,7 @@ class CoverageProcessor:
         self.src_file_path = src_file_path
         self.coverage_type = coverage_type
         self.logger = CustomLogger.get_logger(__name__)
+        self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
 
     def process_coverage_report(
         self, time_of_test_command: int
@@ -74,51 +75,89 @@ class CoverageProcessor:
         ), f"Fatal: The coverage report file was not updated after the test command. file_mod_time_ms: {file_mod_time_ms}, time_of_test_command: {time_of_test_command}. {file_mod_time_ms > time_of_test_command}"
 
     def parse_coverage_report(self) -> Tuple[list, list, float]:
+            """
+            Parses a code coverage report to extract covered and missed line numbers for a specific file,
+            and calculates the coverage percentage, based on the specified coverage report type.
+    
+            Returns:
+                Tuple[list, list, float]: A tuple containing lists of covered and missed line numbers, and the coverage percentage.
+            """
+            if self.use_report_coverage_feature_flag:
+                if self.coverage_type == "cobertura":
+                    return self.parse_coverage_report_cobertura()
+                elif self.coverage_type == "lcov":
+                    return self.parse_coverage_report_lcov()
+                elif self.coverage_type == "jacoco":
+                    return self.parse_coverage_report_jacoco()
+                else:
+                    raise ValueError(f"Unsupported coverage report type: {self.coverage_type}")
+            else:
+                if self.coverage_type == "cobertura":
+                    # Default behavior is to parse out a single file from the report
+                    return self.parse_coverage_report_cobertura(filename=os.path.basename(self.src_file_path))
+                elif self.coverage_type == "lcov":
+                    return self.parse_coverage_report_lcov()
+                elif self.coverage_type == "jacoco":
+                    return self.parse_coverage_report_jacoco()
+                else:
+                    raise ValueError(f"Unsupported coverage report type: {self.coverage_type}")
+
+    def parse_coverage_report_cobertura(self, filename: str = None) -> Union[Tuple[list, list, float], dict]:
         """
-        Parses a code coverage report to extract covered and missed line numbers for a specific file,
-        and calculates the coverage percentage, based on the specified coverage report type.
+        Parses a Cobertura XML code coverage report to extract covered and missed line numbers for a specific file
+        or all files, and calculates the coverage percentage.
+
+        Args:
+            filename (str, optional): The name of the file to process. If None, processes all files.
 
         Returns:
-            Tuple[list, list, float]: A tuple containing lists of covered and missed line numbers, and the coverage percentage.
-        """
-        if self.coverage_type == "cobertura":
-            return self.parse_coverage_report_cobertura()
-        elif self.coverage_type == "lcov":
-            return self.parse_coverage_report_lcov()
-        elif self.coverage_type == "jacoco":
-            return self.parse_coverage_report_jacoco()
-        else:
-            raise ValueError(f"Unsupported coverage report type: {self.coverage_type}")
-
-    def parse_coverage_report_cobertura(self) -> Tuple[list, list, float]:
-        """
-        Parses a Cobertura XML code coverage report to extract covered and missed line numbers for a specific file,
-        and calculates the coverage percentage.
-
-        Returns:
-            Tuple[list, list, float]: A tuple containing lists of covered and missed line numbers, and the coverage percentage.
+            Union[Tuple[list, list, float], dict]: If filename is provided, returns a tuple 
+                containing lists of covered and missed line numbers, and the coverage percentage. 
+                If filename is None, returns a dictionary with filenames as keys and a tuple 
+                containing lists of covered and missed line numbers, and the coverage percentage 
+                as values.
         """
         tree = ET.parse(self.file_path)
         root = tree.getroot()
-        lines_covered, lines_missed = [], []
-        filename = os.path.basename(self.src_file_path)
 
-        for cls in root.findall(".//class"):
-            name_attr = cls.get("filename")
-            if name_attr and name_attr.endswith(filename):
-                for line in cls.findall(".//line"):
-                    line_number = int(line.get("number"))
-                    hits = int(line.get("hits"))
-                    if hits > 0:
-                        lines_covered.append(line_number)
-                    else:
-                        lines_missed.append(line_number)
-                break  # Assuming filename is unique, break after finding and processing it
+        if filename:
+            for cls in root.findall(".//class"):
+                name_attr = cls.get("filename")
+                if name_attr and name_attr.endswith(filename):
+                    return self.parse_coverage_data_for_class(cls)
+            return [], [], 0.0  # Return empty lists if the file is not found
+        else:
+            coverage_data = {}
+            for cls in root.findall(".//class"):
+                cls_filename = cls.get("filename")
+                if cls_filename:
+                    lines_covered, lines_missed, coverage_percentage = self.parse_coverage_data_for_class(cls)
+                    coverage_data[cls_filename] = (lines_covered, lines_missed, coverage_percentage)
+            return coverage_data
+
+    def parse_coverage_data_for_class(self, cls) -> Tuple[list, list, float]:
+        """
+        Parses coverage data for a single class.
+
+        Args:
+            cls (Element): XML element representing the class.
+
+        Returns:
+            Tuple[list, list, float]: A tuple containing lists of covered and missed line numbers, 
+                                    and the coverage percentage.
+        """
+        lines_covered, lines_missed = [], []
+
+        for line in cls.findall(".//line"):
+            line_number = int(line.get("number"))
+            hits = int(line.get("hits"))
+            if hits > 0:
+                lines_covered.append(line_number)
+            else:
+                lines_missed.append(line_number)
 
         total_lines = len(lines_covered) + len(lines_missed)
-        coverage_percentage = (
-            (len(lines_covered) / total_lines) if total_lines > 0 else 0
-        )
+        coverage_percentage = (len(lines_covered) / total_lines) if total_lines > 0 else 0
 
         return lines_covered, lines_missed, coverage_percentage
 
