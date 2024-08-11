@@ -39,6 +39,8 @@ class CoverAgent:
             llm_model=args.model,
             api_base=args.api_base,
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
+            diff_coverage=args.diff_coverage,
+            comparasion_branch=args.branch,
         )
 
     def _validate_paths(self):
@@ -180,3 +182,29 @@ class CoverAgent:
         # Finish the Weights & Biases run if it was initialized
         if "WANDB_API_KEY" in os.environ:
             wandb.finish()
+
+    def _run_diff_coverage(self):
+        self.logger.info("Running diff coverage.")
+        self.test_gen.run_diff_coverage()
+
+        ReportGenerator.generate_report(
+            self.test_gen.test_results_list, self.args.report_filepath
+        )
+
+        if "WANDB_API_KEY" in os.environ:
+            wandb.finish()
+
+
+    def run(self):
+        if "WANDB_API_KEY" in os.environ:
+            wandb.login(key=os.environ["WANDB_API_KEY"])
+            time_and_date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            run_name = f"{self.args.model}_" + time_and_date
+            wandb.init(project="cover-agent", name=run_name)
+
+        self.test_gen.initial_test_suite_analysis()
+
+        if self.args.diff_coverage:
+            self._run_diff_coverage()
+        else:
+            self._run_full_coverage()

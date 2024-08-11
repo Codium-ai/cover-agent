@@ -123,3 +123,11 @@ async def echo(message: str):
     Returns the same message that is sent to it.
     """
     return {"message": message}
+
+
+@app.get("/time")
+async def get_time():
+    """
+    Get the current time in ISO format.
+    """
+    return {"time": datetime.now().isoformat()}

@@ -101,6 +101,18 @@ def parse_args():
         default="",
         help="Path to optional log database. Default: %(default)s.",
     )
+    parser.add_argument(
+        "--diff-coverage",
+        action="store_true",
+        help="If set, Cover-Agent will only generate tests based on the diff between branches. Default: False.",
+    )
+    parser.add_argument( 
+        "--branch",
+        type=str,
+        default="main",
+        help="The branch to compare against when using --diff-coverage. Default: %(default)s.",
+    )
+
     return parser.parse_args()
 
 
