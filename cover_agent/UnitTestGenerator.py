@@ -383,13 +383,14 @@ class UnitTestGenerator:
 
         return tests_dict
 
-    def validate_test(self, generated_test: dict, generated_tests_dict: dict):
+    def validate_test(self, generated_test: dict, generated_tests_dict: dict, num_attempts=1):
         """
         Validate a generated test by inserting it into the test file, running the test, and checking for pass/fail.
 
         Parameters:
             generated_test (dict): The generated test to validate, containing test code and additional imports.
             generated_tests_dict (dict): A dictionary containing information about the generated tests.
+            num_attempts (int, optional): The number of attempts to run the test. Defaults to 1.
 
         Returns:
             dict: A dictionary containing the status of the test validation, including pass/fail status, exit code, stderr, stdout, and the test details.
@@ -482,12 +483,17 @@ class UnitTestGenerator:
                     test_file.flush()
 
                 # Step 2: Run the test using the Runner class
-                self.logger.info(
-                    f'Running test with the following command: "{self.test_command}"'
-                )
-                stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
-                    command=self.test_command, cwd=self.test_command_dir
-                )
+                # Run the test command multiple times if num_attempts > 1
+                for i in range(num_attempts):
+                    self.logger.info(
+                        f'Running test with the following command: "{self.test_command}"'
+                    )
+                    stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
+                        command=self.test_command, cwd=self.test_command_dir
+                    )
+                    if exit_code != 0:
+                        break
+                
 
                 # Step 3: Check for pass/fail from the Runner object
                 if exit_code != 0:
