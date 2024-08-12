@@ -229,7 +229,7 @@ Below is the roadmap of planned features, with the current implementation status
   - [x] Being able to generate tests for different programming languages
   - [ ] Being able to deal with a large variety of testing scenarios
   - [ ] Generate a behavior analysis for the code under test, and generate tests accordingly
-  - [ ] Check test flakiness, e.g. by running 5 times as suggested by TestGen-LLM
+  - [x] Check test flakiness, e.g. by running 5 times as suggested by TestGen-LLM
 - [ ] Cover more test generation pains
   - [ ] Generate new tests that are focused on the PR changeset
   - [ ] Run over an entire repo/code-base and attempt to enhance all existing test suites
