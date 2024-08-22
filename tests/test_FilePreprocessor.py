@@ -62,4 +62,3 @@ class TestFilePreprocessor:
             assert (
                 processed_text == input_text
             ), "Python file with syntax error should not alter the text and handle the exception gracefully."
-

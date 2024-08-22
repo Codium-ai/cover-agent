@@ -1,5 +1,5 @@
 # Java Math Application
-A simple Java application for code coverage generation testing
+A simple Java application for code coverage generation testing.
 
 ## Requirements
 - You must have java installed on your machine and JAVA_HOME set to your jdk.

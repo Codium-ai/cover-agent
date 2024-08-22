@@ -8,11 +8,14 @@ MODEL=""
 API_BASE=""
 OPENAI_API_KEY="${OPENAI_API_KEY:-}"
 DOCKERFILE=""
+DOCKER_IMAGE=""
 SOURCE_FILE_PATH=""
 TEST_FILE_PATH=""
 TEST_COMMAND=""
 COVERAGE_TYPE="cobertura"
 CODE_COVERAGE_REPORT_PATH="coverage.xml"
+MAX_ITERATIONS=3  # Default value
+DESIRED_COVERAGE=70  # Default value
 
 # Function to clean up Docker container
 cleanup() {
@@ -33,25 +36,40 @@ while [ "$#" -gt 0 ]; do
     --api-base) API_BASE="$2"; shift ;;
     --openai-api-key) OPENAI_API_KEY="$2"; shift ;;
     --dockerfile) DOCKERFILE="$2"; shift ;;
+    --docker-image) DOCKER_IMAGE="$2"; shift ;;
     --source-file-path) SOURCE_FILE_PATH="$2"; shift ;;
     --test-file-path) TEST_FILE_PATH="$2"; shift ;;
     --test-command) TEST_COMMAND="$2"; shift ;;
     --coverage-type) COVERAGE_TYPE="$2"; shift ;;
     --code-coverage-report-path) CODE_COVERAGE_REPORT_PATH="$2"; shift ;;
+    --max-iterations) MAX_ITERATIONS="$2"; shift ;;
+    --desired-coverage) DESIRED_COVERAGE="$2"; shift ;;
     *) echo "Unknown parameter passed: $1"; exit 1 ;;
   esac
   shift
 done
 
 # Ensure mandatory arguments are provided
-if [ -z "$DOCKERFILE" ] || [ -z "$SOURCE_FILE_PATH" ] || [ -z "$TEST_FILE_PATH" ] || [ -z "$TEST_COMMAND" ]; then
-  echo "Missing required parameters: --dockerfile, --source-file-path, --test-file-path, or --test-command"
+if [ -z "$SOURCE_FILE_PATH" ] || [ -z "$TEST_FILE_PATH" ] || [ -z "$TEST_COMMAND" ]; then
+  echo "Missing required parameters: --source-file-path, --test-file-path, or --test-command"
   exit 1
 fi
 
-# Build the Docker image
-echo "Building the Docker image..."
-docker build -t cover-agent-image -f "$DOCKERFILE" "$(dirname "$DOCKERFILE")"
+# Ensure either DOCKERFILE or DOCKER_IMAGE is provided
+if [ -z "$DOCKERFILE" ] && [ -z "$DOCKER_IMAGE" ]; then
+  echo "Missing required parameters: either --dockerfile or --docker-image must be provided"
+  exit 1
+fi
+
+# Build or pull the Docker image
+if [ -n "$DOCKERFILE" ]; then
+  echo "Building the Docker image..."
+  docker build -t cover-agent-image -f "$DOCKERFILE" "$(dirname "$DOCKERFILE")"
+else
+  echo "Pulling the Docker image..."
+  docker pull "$DOCKER_IMAGE"
+  docker tag "$DOCKER_IMAGE" cover-agent-image
+fi
 
 # Start the container in detached mode with the environment variable if set
 echo "Starting the container..."
@@ -79,8 +97,8 @@ COMMAND="/usr/local/bin/cover-agent \
   --code-coverage-report-path \"$CODE_COVERAGE_REPORT_PATH\" \
   --test-command \"$TEST_COMMAND\" \
   --coverage-type \"$COVERAGE_TYPE\" \
-  --desired-coverage 70 \
-  --max-iterations 2 \
+  --desired-coverage $DESIRED_COVERAGE \
+  --max-iterations $MAX_ITERATIONS \
   --strict-coverage"
 
 if [ -n "$MODEL" ]; then

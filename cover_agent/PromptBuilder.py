@@ -1,6 +1,8 @@
 import logging
+import os
 
 from jinja2 import Environment, StrictUndefined
+
 from cover_agent.settings.config_loader import get_settings
 
 MAX_TESTS_PER_RUN = 4
@@ -31,7 +33,6 @@ Below is a list of failed tests that you generated in previous iterations. Do no
 
 
 class PromptBuilder:
-
     def __init__(
         self,
         source_file_path: str,
@@ -65,8 +66,8 @@ class PromptBuilder:
             build_prompt(self)
                 Replaces placeholders with the actual content of files read during initialization and returns the formatted prompt string.
         """
-        self.source_file_name = source_file_path.split("/")[-1]
-        self.test_file_name = test_file_path.split("/")[-1]
+        self.source_file_name = os.path.basename(source_file_path)
+        self.test_file_name = os.path.basename(test_file_path)
         self.source_file = self._read_file(source_file_path)
         self.test_file = self._read_file(test_file_path)
         self.code_coverage_report = code_coverage_report

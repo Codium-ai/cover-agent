@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Calculator</title>
+  <link rel="stylesheet" href="./styles.scss">
+</head>
+
+<body>
+  <section class="calculator">
+    <p id="display" class="display onDisplay">0</p>
+    <button class="calcButton calcButton16 operator" data-value="clear" data-type="operator"><span>C</span></button>
+    <div class="buttons">
+      <div class="numbers">
+        <button class="calcButton calcButton1 number" data-value="1" data-type="number"><span>1</span></button>
+        <button class="calcButton calcButton2 number" data-value="2" data-type="number"><span>2</span></button>
+        <button class="calcButton calcButton3 number" data-value="3" data-type="number"><span>3</span></button>
+        <button class="calcButton calcButton4 number" data-value="4" data-type="number"><span>4</span></button>
+        <button class="calcButton calcButton5 number" data-value="5" data-type="number"><span>5</span></button>
+        <button class="calcButton calcButton6 number" data-value="6" data-type="number"><span>6</span></button>
+        <button class="calcButton calcButton7 number" data-value="7" data-type="number"><span>7</span></button>
+        <button class="calcButton calcButton8 number" data-value="8" data-type="number"><span>8</span></button>
+        <button class="calcButton calcButton9 number" data-value="9" data-type="number"><span>9</span></button>
+        <button class="calcButton calcButton0 number" data-value="0" data-type="number"><span>0</span></button>
+        <button class="calcButton calcButton10 operator" data-value="." data-type="operator"><span>.</span></button>
+        <div class="operators">
+          <button style="border-top: none; border-right: none;" class="calcButton calcButton11 operator" data-value="^"
+            data-type="operator"><span>^</span></button>
+        </div>
+      </div>
+      <div class="operators">
+        <button class="calcButton calcButton12 operator" data-value="+"
+          data-type="operator"><span>&plus;</span></button>
+        <button class="calcButton calcButton13 operator" data-value="-"
+          data-type="operator"><span>&minus;</span></button>
+        <button class="calcButton calcButton14 operator" data-value="*"
+          data-type="operator"><span>&times;</span></button>
+        <button class="calcButton calcButton15 operator" data-value="/"
+          data-type="operator"><span>&divide;</span></button>
+      </div>
+    </div>
+    <div class="other">
+      <button class="calcButton calcButton17 operator" data-value="evaluate"
+        data-type="operator"><span>=</span></button>
+      <button class="calcButton calcButton18 operator" data-value="switchPolarity"
+        data-type="operator"><span>-/+</span></button>
+    </div>
+
+  </section>
+  <script type="module" src="./index.ts"></script>
+</body>
+
+</html>

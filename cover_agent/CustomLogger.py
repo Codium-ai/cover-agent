@@ -57,4 +57,7 @@ class CustomLogger:
             stream_handler.setFormatter(stream_formatter)
             logger.addHandler(stream_handler)
 
+            # Prevent log messages from being propagated to the root logger
+            logger.propagate = False
+
         return logger

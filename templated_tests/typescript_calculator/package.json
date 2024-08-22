@@ -1,0 +1,46 @@
+{
+  "name": "calculator",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "parcel build ./src/index.html",
+    "start": "parcel ./src/index.html --port 3000",
+    "test": "nyc --reporter=cobertura mocha -r ts-node/register tests/**/*.test.ts"
+  },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "**/*.d.ts",
+      "dist/",
+      "tests/",
+      "src/index.ts"
+    ],
+    "reporter": [
+      "text",
+      "html"
+    ],
+    "sourceMap": false,
+    "all": true
+  },
+  "devDependencies": {
+    "@parcel/transformer-sass": "^2.8.3",
+    "@types/chai": "^4.1.5",
+    "@types/mocha": "^5.2.5",
+    "@types/sinon": "^5.0.4",
+    "chai": "^4.1.2",
+    "eslint": "^5.6.0",
+    "mocha": "^10.2.0",
+    "mocha-junit-reporter": "^2.0.0",
+    "nyc": "^15.1.0",
+    "parcel": "^2.8.3",
+    "sinon": "^6.3.5",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.0.3"
+  },
+  "dependencies": {
+    "normalize-scss": "^7.0.1"
+  }
+}
