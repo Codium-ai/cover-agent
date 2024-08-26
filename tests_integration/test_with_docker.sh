@@ -16,6 +16,7 @@ COVERAGE_TYPE="cobertura"
 CODE_COVERAGE_REPORT_PATH="coverage.xml"
 MAX_ITERATIONS=3  # Default value
 DESIRED_COVERAGE=70  # Default value
+LOG_DB_PATH=""
 
 # Function to clean up Docker container
 cleanup() {
@@ -44,6 +45,7 @@ while [ "$#" -gt 0 ]; do
     --code-coverage-report-path) CODE_COVERAGE_REPORT_PATH="$2"; shift ;;
     --max-iterations) MAX_ITERATIONS="$2"; shift ;;
     --desired-coverage) DESIRED_COVERAGE="$2"; shift ;;
+    --log-db-path) LOG_DB_PATH="$2"; shift ;;
     *) echo "Unknown parameter passed: $1"; exit 1 ;;
   esac
   shift

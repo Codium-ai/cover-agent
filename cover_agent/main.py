@@ -96,6 +96,11 @@ def parse_args():
         action="store_true",
         help="Setting this to True considers the coverage of all the files in the coverage report. This means we consider a test as good if it increases coverage for a different file other than the source file. Default: False.",
     )
+    parser.add_argument(
+        "--log-db-path",
+        default="",
+        help="Path to optional log database. Default: %(default)s.",
+    )
     return parser.parse_args()
 
 
