@@ -74,7 +74,3 @@ class UnitTestDB:
                 return result
             except NoResultFound:
                 return None
-
-# Usage example:
-# db = UnitTestDB('sqlite:///test_runs.db')
-# db.insert_attempt(datetime.utcnow(), {"model": "gpt-4"}, {"prompt": "test"}, "generated_test

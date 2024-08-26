@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime, timedelta
 from cover_agent.UnitTestDB import UnitTestDB, UnitTestGenerationAttempt
 
-DATABASE_URL = 'sqlite:///cover_agent.db'
+DATABASE_URL = 'sqlite:///unit_test_runs.db'
 
 @pytest.fixture(scope='module')
 def unit_test_db():
