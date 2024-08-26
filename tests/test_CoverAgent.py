@@ -115,7 +115,8 @@ class TestCoverAgent:
             additional_instructions="",
             model="openai/test-model",
             api_base="openai/test-api",
-            use_report_coverage_feature_flag=False
+            use_report_coverage_feature_flag=False,
+            log_db_path="sqlite:///unit_test_runs.db"
         )
 
         with pytest.raises(AssertionError) as exc_info:
@@ -142,7 +143,8 @@ class TestCoverAgent:
             additional_instructions="",
             model="openai/test-model",
             api_base="openai/test-api",
-            use_report_coverage_feature_flag=False
+            use_report_coverage_feature_flag=False,
+            log_db_path="sqlite:///unit_test_runs.db"
         )
 
         with pytest.raises(AssertionError) as exc_info:

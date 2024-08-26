@@ -31,6 +31,7 @@ class UnitTestGenerator:
         desired_coverage: int = 90,  # Default to 90% coverage if not specified
         additional_instructions: str = "",
         use_report_coverage_feature_flag: bool = False,
+        test_db_connection_string: str = "",
     ):
         """
         Initialize the UnitTestGenerator class with the provided parameters.
@@ -68,7 +69,7 @@ class UnitTestGenerator:
         self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
         self.last_coverage_percentages = {}
         self.llm_model = llm_model
-        self.test_db = UnitTestDB(db_connection_string="sqlite:///cover_agent.db")
+        self.test_db = UnitTestDB(db_connection_string=test_db_connection_string)
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
