@@ -101,6 +101,7 @@ COMMAND="/usr/local/bin/cover-agent \
   --coverage-type \"$COVERAGE_TYPE\" \
   --desired-coverage $DESIRED_COVERAGE \
   --max-iterations $MAX_ITERATIONS \
+  --log-db-path $LOG_DB_PATH \
   --strict-coverage"
 
 if [ -n "$MODEL" ]; then
