@@ -16,7 +16,7 @@ COVERAGE_TYPE="cobertura"
 CODE_COVERAGE_REPORT_PATH="coverage.xml"
 MAX_ITERATIONS=3  # Default value
 DESIRED_COVERAGE=70  # Default value
-LOG_DB_PATH=""
+LOG_DB_PATH="${LOG_DB_PATH:-}"
 
 # Function to clean up Docker container
 cleanup() {
@@ -73,13 +73,19 @@ else
   docker tag "$DOCKER_IMAGE" cover-agent-image
 fi
 
+ARGS=""
+if [ -n "$OPENAI_API_KEY" ]; then
+  ARGS="$ARGS -e OPENAI_API_KEY=$OPENAI_API_KEY"
+fi
+
+if [ -n "$LOG_DB_PATH" ]; then
+  LOG_DB_NAME=$(basename "$LOG_DB_PATH")
+  ARGS="$ARGS --volume $LOG_DB_PATH:/$LOG_DB_NAME"
+fi
+
 # Start the container in detached mode with the environment variable if set
 echo "Starting the container..."
-if [ -z "$OPENAI_API_KEY" ]; then
-  CONTAINER_ID=$(docker run -d cover-agent-image tail -f /dev/null)
-else
-  CONTAINER_ID=$(docker run -d -e OPENAI_API_KEY="$OPENAI_API_KEY" cover-agent-image tail -f /dev/null)
-fi
+CONTAINER_ID=$(sh -c "docker run -d $ARGS cover-agent-image tail -f /dev/null")
 
 # Ensure the container started successfully
 if [ -z "$CONTAINER_ID" ]; then
@@ -101,7 +107,6 @@ COMMAND="/usr/local/bin/cover-agent \
   --coverage-type \"$COVERAGE_TYPE\" \
   --desired-coverage $DESIRED_COVERAGE \
   --max-iterations $MAX_ITERATIONS \
-  --log-db-path $LOG_DB_PATH \
   --strict-coverage"
 
 if [ -n "$MODEL" ]; then
@@ -110,6 +115,10 @@ fi
 
 if [ -n "$API_BASE" ]; then
   COMMAND="$COMMAND --api-base \"$API_BASE\""
+fi
+
+if [ -n "$LOG_DB_PATH" ]; then
+  COMMAND="$COMMAND --log-db-path \"/$LOG_DB_NAME\""
 fi
 
 if [ -n "$OPENAI_API_KEY" ]; then

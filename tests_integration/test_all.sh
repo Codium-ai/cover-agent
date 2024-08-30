@@ -33,14 +33,18 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-# Conditional Docker commands
+# Build the installer within a Docker container if requested
 if [ "$RUN_INSTALLER" = true ]; then
-    # Build the installer within a Docker container
     docker build -t cover-agent-installer -f Dockerfile .
 
-    # Run the Docker container with the current user's ID and group ID
     mkdir -p dist
     docker run --rm --volume "$(pwd)/dist:/app/dist" cover-agent-installer
+fi
+
+# Set the log_db_arg variable if LOG_DB_PATH is set
+log_db_arg=""
+if [ -n "$LOG_DB_PATH" ]; then
+    log_db_arg="--log-db-path $LOG_DB_PATH"
 fi
 
 # C Calculator Example
@@ -53,7 +57,8 @@ sh tests_integration/test_with_docker.sh \
   --coverage-type "lcov" \
   --max-iterations "4" \
   --desired-coverage "50" \
-  --model $MODEL
+  --model $MODEL \
+  $log_db_arg
 
 # C++ Calculator Example
 sh tests_integration/test_with_docker.sh \
@@ -63,7 +68,8 @@ sh tests_integration/test_with_docker.sh \
   --code-coverage-report-path "coverage.xml" \
   --test-command "sh build_and_test_with_coverage.sh" \
   --coverage-type "cobertura" \
-  --model $MODEL
+  --model $MODEL \
+  $log_db_arg
 
 # C# Calculator Web Service
 sh tests_integration/test_with_docker.sh \
@@ -73,7 +79,8 @@ sh tests_integration/test_with_docker.sh \
   --code-coverage-report-path "CalculatorApi.Tests/TestResults/coverage.cobertura.xml" \
   --test-command "dotnet test --collect:'XPlat Code Coverage' CalculatorApi.Tests/ && find . -name 'coverage.cobertura.xml' -exec mv {} CalculatorApi.Tests/TestResults/coverage.cobertura.xml \;" \
   --coverage-type "cobertura" \
-  --model $MODEL
+  --model $MODEL \
+  $log_db_arg
 
 # Go Webservice Example
 sh tests_integration/test_with_docker.sh \
@@ -81,7 +88,8 @@ sh tests_integration/test_with_docker.sh \
   --source-file-path "app.go" \
   --test-file-path "app_test.go" \
   --test-command "go test -coverprofile=coverage.out && gocov convert coverage.out | gocov-xml > coverage.xml" \
-  --model $MODEL
+  --model $MODEL \
+  $log_db_arg
 
 # Java Gradle example
 sh tests_integration/test_with_docker.sh \
@@ -91,7 +99,8 @@ sh tests_integration/test_with_docker.sh \
   --test-command "./gradlew clean test jacocoTestReport" \
   --coverage-type "jacoco" \
   --code-coverage-report-path "build/reports/jacoco/test/jacocoTestReport.csv" \
-  --model $MODEL
+  --model $MODEL \
+  $log_db_arg
 
 # Java Spring Calculator example
 sh tests_integration/test_with_docker.sh \
@@ -101,7 +110,8 @@ sh tests_integration/test_with_docker.sh \
   --test-command "mvn verify" \
   --coverage-type "jacoco" \
   --code-coverage-report-path "target/site/jacoco/jacoco.csv" \
-  --model $MODEL
+  --model $MODEL \
+  $log_db_arg
 
 # VanillaJS Example
 sh tests_integration/test_with_docker.sh \
@@ -110,7 +120,8 @@ sh tests_integration/test_with_docker.sh \
   --test-file-path "ui.test.js" \
   --test-command "npm run test:coverage" \
   --code-coverage-report-path "coverage/coverage.xml" \
-  --model $MODEL
+  --model $MODEL \
+  $log_db_arg
 
 # Python FastAPI Example
 sh tests_integration/test_with_docker.sh \
@@ -118,7 +129,8 @@ sh tests_integration/test_with_docker.sh \
   --source-file-path "app.py" \
   --test-file-path "test_app.py" \
   --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
-  --model "gpt-3.5-turbo"
+  --model "gpt-3.5-turbo" \
+  $log_db_arg
 
 # React Calculator Example
 sh tests_integration/test_with_docker.sh \
@@ -128,7 +140,8 @@ sh tests_integration/test_with_docker.sh \
   --test-command "npm run test" \
   --code-coverage-report-path "coverage/cobertura-coverage.xml" \
   --desired-coverage "55" \
-  --model $MODEL
+  --model $MODEL \
+  $log_db_arg
 
 # Ruby Sinatra Example
 sh tests_integration/test_with_docker.sh \
@@ -137,7 +150,8 @@ sh tests_integration/test_with_docker.sh \
   --test-file-path "test_app.rb" \
   --test-command "ruby test_app.rb" \
   --code-coverage-report-path "coverage/coverage.xml" \
-  --model $MODEL
+  --model $MODEL \
+  $log_db_arg
 
 # TypeScript Calculator Example
 sh tests_integration/test_with_docker.sh \
@@ -146,4 +160,5 @@ sh tests_integration/test_with_docker.sh \
   --test-file-path "tests/Calculator.test.ts" \
   --test-command "npm run test" \
   --code-coverage-report-path "coverage/cobertura-coverage.xml" \
-  --model $MODEL
+  --model $MODEL \
+  $log_db_arg

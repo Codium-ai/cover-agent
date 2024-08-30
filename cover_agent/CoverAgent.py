@@ -30,7 +30,7 @@ class CoverAgent:
             llm_model=args.model,
             api_base=args.api_base,
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
-            test_db_connection_string=args.log_db_path,
+            test_db_connection_string=f"sqlite:///{args.log_db_path}",
         )
 
     def _validate_paths(self):
@@ -41,6 +41,10 @@ class CoverAgent:
         if not os.path.isfile(self.args.test_file_path):
             raise FileNotFoundError(
                 f"Test file not found at {self.args.test_file_path}"
+            )
+        if not os.path.isfile(self.args.log_db_path):
+            raise FileNotFoundError(
+                f"DB file not found at {self.args.log_db_path}"
             )
 
     def _duplicate_test_file(self):
