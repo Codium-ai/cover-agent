@@ -43,8 +43,7 @@ class TestUnitTestGenerator:
             llm_model=GPT35_TURBO,
             test_command="pytest --cov=. --cov-report=xml",
             test_command_dir=f"{REPO_ROOT}/templated_tests/python_fastapi",
-            included_files=None,
-            test_db_connection_string="sqlite:///unit_test_runs.sqlite",
+            included_files=None
         )
         test_gen.relevant_line_number_to_insert_tests_after = 10
         test_gen.test_headers_indentation = 4
@@ -102,8 +101,7 @@ class TestUnitTestGenerator:
             llm_model=GPT35_TURBO,
             test_command="pytest --cov=. --cov-report=xml",
             test_command_dir=f"{REPO_ROOT}/templated_tests/python_fastapi",
-            included_files=None,
-            test_db_connection_string="sqlite:///unit_test_runs.sqlite",
+            included_files=None
         )
         test_gen.relevant_line_number_to_insert_tests_after = 10
         test_gen.test_headers_indentation = 4

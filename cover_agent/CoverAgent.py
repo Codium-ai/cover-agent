@@ -7,7 +7,7 @@ import wandb
 from cover_agent.CustomLogger import CustomLogger
 from cover_agent.ReportGenerator import ReportGenerator
 from cover_agent.UnitTestGenerator import UnitTestGenerator
-
+from cover_agent.UnitTestDB import UnitTestDB
 
 class CoverAgent:
     def __init__(self, args):
@@ -16,6 +16,8 @@ class CoverAgent:
 
         self._validate_paths()
         self._duplicate_test_file()
+
+        self.test_db = UnitTestDB(db_connection_string=f"sqlite:///{args.log_db_path}")
 
         self.test_gen = UnitTestGenerator(
             source_file_path=args.source_file_path,
@@ -30,7 +32,6 @@ class CoverAgent:
             llm_model=args.model,
             api_base=args.api_base,
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
-            test_db_connection_string=f"sqlite:///{args.log_db_path}",
         )
 
     def _validate_paths(self):
@@ -81,6 +82,9 @@ class CoverAgent:
                     generated_test, generated_tests_dict, self.args.run_tests_multiple_times
                 )
                 test_results_list.append(test_result)
+
+                # Insert the test result into the database
+                self.test_db.insert_attempt(test_result)
 
             iteration_count += 1
 

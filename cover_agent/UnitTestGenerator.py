@@ -13,7 +13,6 @@ from cover_agent.AICaller import AICaller
 from cover_agent.FilePreprocessor import FilePreprocessor
 from cover_agent.utils import load_yaml
 from cover_agent.settings.config_loader import get_settings
-from cover_agent.UnitTestDB import UnitTestDB
 
 
 class UnitTestGenerator:
@@ -31,7 +30,6 @@ class UnitTestGenerator:
         desired_coverage: int = 90,  # Default to 90% coverage if not specified
         additional_instructions: str = "",
         use_report_coverage_feature_flag: bool = False,
-        test_db_connection_string: str = "",
     ):
         """
         Initialize the UnitTestGenerator class with the provided parameters.
@@ -69,7 +67,6 @@ class UnitTestGenerator:
         self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
         self.last_coverage_percentages = {}
         self.llm_model = llm_model
-        self.test_db = UnitTestDB(db_connection_string=test_db_connection_string)
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
@@ -570,17 +567,6 @@ class UnitTestGenerator:
                             outputs=fail_details,
                         )
                         root_span.log(name="inference")
-
-                    # insert the failed test to the database
-                    self.test_db.insert_attempt(
-                        run_time=datetime.datetime.now(),
-                        llm_info=self.to_json(),
-                        prompt=json.dumps(self.prompt),
-                        generated_test=test_code,
-                        imports=additional_imports,
-                        stdout=stdout,
-                        stderr=stderr,
-                    )
 
                     return fail_details
 
