@@ -3,7 +3,6 @@ from fastapi.testclient import TestClient
 from app import app
 from datetime import date
 
-import math
 client = TestClient(app)
 
 def test_root():
