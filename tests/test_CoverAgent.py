@@ -5,7 +5,6 @@ import pytest
 from cover_agent.CoverAgent import CoverAgent
 from cover_agent.main import parse_args
 
-
 class TestCoverAgent:
     def test_parse_args(self):
         with patch(
