@@ -17,11 +17,6 @@ class CoverAgent:
         self._validate_paths()
         self._duplicate_test_file()
 
-        if not args.log_db_path:
-            # Create default DB file if not provided
-            args.log_db_path = "cover_agent_unit_test_runs.db"
-        self.test_db = UnitTestDB(db_connection_string=f"sqlite:///{args.log_db_path}")
-
         self.test_gen = UnitTestGenerator(
             source_file_path=args.source_file_path,
             test_file_path=args.test_file_output_path,
@@ -46,10 +41,10 @@ class CoverAgent:
             raise FileNotFoundError(
                 f"Test file not found at {self.args.test_file_path}"
             )
-        if not os.path.isfile(self.args.log_db_path):
-            raise FileNotFoundError(
-                f"DB file not found at {self.args.log_db_path}"
-            )
+        if not self.args.log_db_path:
+            # Create default DB file if not provided
+            self.args.log_db_path = "cover_agent_unit_test_runs.db"
+        self.test_db = UnitTestDB(db_connection_string=f"sqlite:///{self.args.log_db_path}")
 
     def _duplicate_test_file(self):
         if self.args.test_file_output_path != "":
