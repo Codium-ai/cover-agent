@@ -17,6 +17,9 @@ class CoverAgent:
         self._validate_paths()
         self._duplicate_test_file()
 
+        if not args.log_db_path:
+            # Create default DB file if not provided
+            args.log_db_path = "cover_agent_unit_test_runs.db"
         self.test_db = UnitTestDB(db_connection_string=f"sqlite:///{args.log_db_path}")
 
         self.test_gen = UnitTestGenerator(
