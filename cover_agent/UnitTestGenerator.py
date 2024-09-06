@@ -422,13 +422,12 @@ class UnitTestGenerator:
 
         return tests_dict
 
-    def validate_test(self, generated_test: dict, generated_tests_dict: dict, num_attempts=1):
+    def validate_test(self, generated_test: dict, num_attempts=1):
         """
         Validate a generated test by inserting it into the test file, running the test, and checking for pass/fail.
 
         Parameters:
             generated_test (dict): The generated test to validate, containing test code and additional imports.
-            generated_tests_dict (dict): A dictionary containing information about the generated tests.
             num_attempts (int, optional): The number of attempts to run the test. Defaults to 1.
 
         Returns:
@@ -450,6 +449,10 @@ class UnitTestGenerator:
             12. Handle any exceptions that occur during the validation process, log the errors, and roll back the test file if necessary.
             13. Log additional details and error messages for failed tests, and optionally, use the Trace class for detailed logging if 'WANDB_API_KEY' is present in the environment variables.
         """
+        # Store original content of the test file
+        with open(self.test_file_path, "r") as test_file:
+            original_content = test_file.read()
+
         try:
             # Step 0: no pre-process.
             # We asked the model that each generated test should be a self-contained independent test
@@ -483,12 +486,10 @@ class UnitTestGenerator:
                         [delta_indent * " " + line for line in test_code.split("\n")]
                     )
             test_code_indented = "\n" + test_code_indented.strip("\n") + "\n"
-            if test_code_indented and relevant_line_number_to_insert_tests_after:
 
+            if test_code_indented and relevant_line_number_to_insert_tests_after:
                 # Step 1: Insert the generated test to the relevant line in the test file
                 additional_imports_lines = ""
-                with open(self.test_file_path, "r") as test_file:
-                    original_content = test_file.read()  # Store original content
                 original_content_lines = original_content.split("\n")
                 test_code_lines = test_code_indented.split("\n")
                 # insert the test code at the relevant line
@@ -547,6 +548,8 @@ class UnitTestGenerator:
                         "stderr": stderr,
                         "stdout": stdout,
                         "test": generated_test,
+                        "original_test_file": original_content,
+                        "processed_test_file": processed_test,
                     }
 
                     error_message = extract_error_message_python(fail_details["stdout"])
@@ -625,6 +628,8 @@ class UnitTestGenerator:
                             "stderr": stderr,
                             "stdout": stdout,
                             "test": generated_test,
+                            "original_test_file": original_content,
+                            "processed_test_file": processed_test,
                         }
                         self.failed_test_runs.append(
                             {
@@ -659,6 +664,8 @@ class UnitTestGenerator:
                         "stderr": stderr,
                         "stdout": stdout,
                         "test": generated_test,
+                        "original_test_file": original_content,
+                        "processed_test_file": processed_test,
                     }
                     self.failed_test_runs.append(
                         {
@@ -675,7 +682,6 @@ class UnitTestGenerator:
                 )  # this is important, otherwise the next test will be inserted at the wrong line
 
                 self.current_coverage = new_percentage_covered
-
 
                 for key in coverage_percentages:
                     if key not in self.last_coverage_percentages:
@@ -700,6 +706,8 @@ class UnitTestGenerator:
                     "stderr": stderr,
                     "stdout": stdout,
                     "test": generated_test,
+                    "original_test_file": original_content,
+                    "processed_test_file": processed_test,
                 }
         except Exception as e:
             self.logger.error(f"Error validating test: {e}")
@@ -710,6 +718,8 @@ class UnitTestGenerator:
                 "stderr": str(e),
                 "stdout": "",
                 "test": generated_test,
+                "original_test_file": original_content,
+                "processed_test_file": "N/A",
             }
 
     def to_dict(self):

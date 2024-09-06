@@ -17,6 +17,8 @@ class UnitTestGenerationAttempt(Base):
     stdout = Column(Text)
     test_code = Column(Text)
     imports = Column(Text)
+    original_test_file = Column(Text)
+    processed_test_file = Column(Text)
 
 class UnitTestDB:
     def __init__(self, db_connection_string):
@@ -35,6 +37,8 @@ class UnitTestDB:
                 stdout=test_result.get("stdout"),
                 test_code=test_result.get("test", {}).get("test_code", ""),
                 imports=test_result.get("test", {}).get("new_imports_code", ""),
+                original_test_file=test_result.get("original_test_file"),
+                processed_test_file=test_result.get("processed_test_file"),
             )
             session.add(new_attempt)
             session.commit()
@@ -72,6 +76,8 @@ class UnitTestDB:
                         UnitTestGenerationAttempt.stdout,
                         UnitTestGenerationAttempt.test_code,
                         UnitTestGenerationAttempt.imports,
+                        UnitTestGenerationAttempt.original_test_file,
+                        UnitTestGenerationAttempt.processed_test_file,
                     )
                 ).one().__dict__
                 return result
