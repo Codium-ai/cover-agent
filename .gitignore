@@ -21,6 +21,7 @@ __pycache__
 generated_prompt.md
 test_results.html
 run.log
+*.db
 
 # PyInstaller Generated files
 /build/

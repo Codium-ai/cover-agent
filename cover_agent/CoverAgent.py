@@ -7,7 +7,7 @@ import wandb
 from cover_agent.CustomLogger import CustomLogger
 from cover_agent.ReportGenerator import ReportGenerator
 from cover_agent.UnitTestGenerator import UnitTestGenerator
-
+from cover_agent.UnitTestDB import UnitTestDB
 
 class CoverAgent:
     def __init__(self, args):
@@ -41,6 +41,10 @@ class CoverAgent:
             raise FileNotFoundError(
                 f"Test file not found at {self.args.test_file_path}"
             )
+        if not self.args.log_db_path:
+            # Create default DB file if not provided
+            self.args.log_db_path = "cover_agent_unit_test_runs.db"
+        self.test_db = UnitTestDB(db_connection_string=f"sqlite:///{self.args.log_db_path}")
 
     def _duplicate_test_file(self):
         if self.args.test_file_output_path != "":
@@ -73,9 +77,12 @@ class CoverAgent:
 
             for generated_test in generated_tests_dict.get("new_tests", []):
                 test_result = self.test_gen.validate_test(
-                    generated_test, generated_tests_dict, self.args.run_tests_multiple_times
+                    generated_test, self.args.run_tests_multiple_times
                 )
                 test_results_list.append(test_result)
+
+                # Insert the test result into the database
+                self.test_db.insert_attempt(test_result)
 
             iteration_count += 1
 
