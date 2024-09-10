@@ -115,6 +115,7 @@ class CoverAgent:
         test_results_list = []
 
         # Run initial test suite analysis
+        self.test_gen.get_coverage_and_build_prompt()
         self.test_gen.initial_test_suite_analysis()
 
         # Loop until desired coverage is reached or maximum iterations are met

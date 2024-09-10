@@ -80,6 +80,13 @@ class UnitTestGenerator:
         self.total_input_token_count = 0
         self.total_output_token_count = 0
 
+    def get_coverage_and_build_prompt(self):
+        """
+        Run code coverage and build the prompt to be used for generating tests.
+
+        Returns:
+            None
+        """
         # Run coverage and build the prompt
         self.run_coverage()
         self.prompt = self.build_prompt()

@@ -120,6 +120,7 @@ class TestCoverAgent:
 
         with pytest.raises(AssertionError) as exc_info:
             agent = CoverAgent(args)
+            agent.test_gen.get_coverage_and_build_prompt()
             agent._duplicate_test_file()
 
         assert "Fatal: Coverage report" in str(exc_info.value)
@@ -148,6 +149,7 @@ class TestCoverAgent:
 
         with pytest.raises(AssertionError) as exc_info:
             agent = CoverAgent(args)
+            agent.test_gen.get_coverage_and_build_prompt()
             agent._duplicate_test_file()
 
         assert "Fatal: Coverage report" in str(exc_info.value)
