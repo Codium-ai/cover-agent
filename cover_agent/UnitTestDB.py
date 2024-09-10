@@ -6,8 +6,9 @@ from sqlalchemy.orm.exc import NoResultFound
 
 Base = declarative_base()
 
+
 class UnitTestGenerationAttempt(Base):
-    __tablename__ = 'unit_test_generation_attempts'
+    __tablename__ = "unit_test_generation_attempts"
     id = Column(Integer, primary_key=True)
     run_time = Column(DateTime, default=datetime.now)  # Use local time
     status = Column(String)
@@ -19,6 +20,7 @@ class UnitTestGenerationAttempt(Base):
     imports = Column(Text)
     original_test_file = Column(Text)
     processed_test_file = Column(Text)
+
 
 class UnitTestDB:
     def __init__(self, db_connection_string):
@@ -51,35 +53,49 @@ class UnitTestDB:
     def select_attempt(self, attempt_id):
         with self.Session() as session:
             try:
-                return session.query(UnitTestGenerationAttempt).filter_by(id=attempt_id).one()
+                return (
+                    session.query(UnitTestGenerationAttempt)
+                    .filter_by(id=attempt_id)
+                    .one()
+                )
             except NoResultFound:
                 return None
 
     def select_attempt_in_range(self, start: datetime, end: datetime):
         with self.Session() as session:
-            return session.query(UnitTestGenerationAttempt).filter(
-                UnitTestGenerationAttempt.run_time >= start,
-                UnitTestGenerationAttempt.run_time <= end
-            ).all()
+            return (
+                session.query(UnitTestGenerationAttempt)
+                .filter(
+                    UnitTestGenerationAttempt.run_time >= start,
+                    UnitTestGenerationAttempt.run_time <= end,
+                )
+                .all()
+            )
 
     def select_attempt_flat(self, attempt_id):
         with self.Session() as session:
             try:
-                result = session.query(UnitTestGenerationAttempt).filter_by(id=attempt_id).options(
-                    load_only(
-                        UnitTestGenerationAttempt.id,
-                        UnitTestGenerationAttempt.run_time,
-                        UnitTestGenerationAttempt.status,
-                        UnitTestGenerationAttempt.reason,
-                        UnitTestGenerationAttempt.exit_code,
-                        UnitTestGenerationAttempt.stderr,
-                        UnitTestGenerationAttempt.stdout,
-                        UnitTestGenerationAttempt.test_code,
-                        UnitTestGenerationAttempt.imports,
-                        UnitTestGenerationAttempt.original_test_file,
-                        UnitTestGenerationAttempt.processed_test_file,
+                result = (
+                    session.query(UnitTestGenerationAttempt)
+                    .filter_by(id=attempt_id)
+                    .options(
+                        load_only(
+                            UnitTestGenerationAttempt.id,
+                            UnitTestGenerationAttempt.run_time,
+                            UnitTestGenerationAttempt.status,
+                            UnitTestGenerationAttempt.reason,
+                            UnitTestGenerationAttempt.exit_code,
+                            UnitTestGenerationAttempt.stderr,
+                            UnitTestGenerationAttempt.stdout,
+                            UnitTestGenerationAttempt.test_code,
+                            UnitTestGenerationAttempt.imports,
+                            UnitTestGenerationAttempt.original_test_file,
+                            UnitTestGenerationAttempt.processed_test_file,
+                        )
                     )
-                ).one().__dict__
+                    .one()
+                    .__dict__
+                )
                 return result
             except NoResultFound:
                 return None

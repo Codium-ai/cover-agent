@@ -5,6 +5,7 @@ import pytest
 from cover_agent.CoverAgent import CoverAgent
 from cover_agent.main import parse_args
 
+
 class TestCoverAgent:
     def test_parse_args(self):
         with patch(
@@ -115,7 +116,7 @@ class TestCoverAgent:
             model="openai/test-model",
             api_base="openai/test-api",
             use_report_coverage_feature_flag=False,
-            log_db_path=""
+            log_db_path="",
         )
 
         with pytest.raises(AssertionError) as exc_info:
@@ -123,7 +124,9 @@ class TestCoverAgent:
             agent._duplicate_test_file()
 
         assert "Fatal: Coverage report" in str(exc_info.value)
-        mock_copy.assert_called_once_with(args.test_file_path, args.test_file_output_path)
+        mock_copy.assert_called_once_with(
+            args.test_file_path, args.test_file_output_path
+        )
 
     @patch("cover_agent.CoverAgent.os.path.isfile", return_value=True)
     def test_duplicate_test_file_without_output_path(self, mock_isfile):
@@ -143,7 +146,7 @@ class TestCoverAgent:
             model="openai/test-model",
             api_base="openai/test-api",
             use_report_coverage_feature_flag=False,
-            log_db_path=""
+            log_db_path="",
         )
 
         with pytest.raises(AssertionError) as exc_info:
@@ -152,4 +155,3 @@ class TestCoverAgent:
 
         assert "Fatal: Coverage report" in str(exc_info.value)
         assert args.test_file_output_path == args.test_file_path
-

@@ -6,6 +6,7 @@ from cover_agent.UnitTestDB import UnitTestDB, UnitTestGenerationAttempt
 DB_NAME = "unit_test_runs.db"
 DATABASE_URL = f"sqlite:///{DB_NAME}"
 
+
 @pytest.fixture(scope="class")
 def unit_test_db():
     # Create an empty DB file for testing
@@ -21,6 +22,7 @@ def unit_test_db():
     # Delete the db file
     os.remove(DB_NAME)
 
+
 @pytest.mark.usefixtures("unit_test_db")
 class TestUnitTestDB:
 
@@ -33,7 +35,7 @@ class TestUnitTestDB:
             "stdout": "Test passed",
             "test": {
                 "test_code": "def test_example(): pass",
-                "new_imports_code": "import pytest"
+                "new_imports_code": "import pytest",
             },
             "original_test_file": "sample test code",
             "processed_test_file": "sample new test code",
@@ -41,7 +43,9 @@ class TestUnitTestDB:
 
         attempt_id = unit_test_db.insert_attempt(test_result)
         with unit_test_db.Session() as session:
-            attempt = session.query(UnitTestGenerationAttempt).filter_by(id=attempt_id).one()
+            attempt = (
+                session.query(UnitTestGenerationAttempt).filter_by(id=attempt_id).one()
+            )
 
         assert attempt.id == attempt_id
         assert attempt.status == "success"
@@ -63,7 +67,7 @@ class TestUnitTestDB:
             "stdout": "Test passed",
             "test": {
                 "test_code": "def test_example(): pass",
-                "new_imports_code": "import pytest"
+                "new_imports_code": "import pytest",
             },
             "original_test_file": "sample test code",
             "processed_test_file": "sample new test code",
@@ -87,7 +91,7 @@ class TestUnitTestDB:
             "stdout": "Test passed",
             "test": {
                 "test_code": "def test_example(): pass",
-                "new_imports_code": "import pytest"
+                "new_imports_code": "import pytest",
             },
             "original_test_file": "sample test code",
             "processed_test_file": "sample new test code",
@@ -113,7 +117,7 @@ class TestUnitTestDB:
             "stdout": "Test passed",
             "test": {
                 "test_code": "def test_example(): pass",
-                "new_imports_code": "import pytest"
+                "new_imports_code": "import pytest",
             },
             "original_test_file": "sample test code",
             "processed_test_file": "sample new test code",
@@ -138,7 +142,7 @@ class TestUnitTestDB:
             "stdout": "Test passed",
             "test": {
                 "test_code": "def test_example(): pass",
-                "new_imports_code": "import pytest"
+                "new_imports_code": "import pytest",
             },
             "original_test_file": "sample test code",
             "processed_test_file": "sample new test code",

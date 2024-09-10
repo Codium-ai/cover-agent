@@ -9,6 +9,7 @@ from cover_agent.ReportGenerator import ReportGenerator
 from cover_agent.UnitTestGenerator import UnitTestGenerator
 from cover_agent.UnitTestDB import UnitTestDB
 
+
 class CoverAgent:
     def __init__(self, args):
         self.args = args
@@ -44,7 +45,9 @@ class CoverAgent:
         if not self.args.log_db_path:
             # Create default DB file if not provided
             self.args.log_db_path = "cover_agent_unit_test_runs.db"
-        self.test_db = UnitTestDB(db_connection_string=f"sqlite:///{self.args.log_db_path}")
+        self.test_db = UnitTestDB(
+            db_connection_string=f"sqlite:///{self.args.log_db_path}"
+        )
 
     def _duplicate_test_file(self):
         if self.args.test_file_output_path != "":

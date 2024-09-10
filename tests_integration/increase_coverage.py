@@ -9,7 +9,7 @@ from cover_agent.CoverAgent import CoverAgent
 # List of source/test files to iterate over:
 SOURCE_TEST_FILE_LIST = [
     # ["cover_agent/AICaller.py", "tests/test_AICaller.py"],
-    ["cover_agent/CoverAgent.py",               "tests/test_CoverAgent.py"],
+    ["cover_agent/CoverAgent.py", "tests/test_CoverAgent.py"],
     # ["cover_agent/CoverageProcessor.py", "tests/test_CoverageProcessor.py"],
     # ["cover_agent/FilePreprocessor.py", "tests/test_FilePreprocessor.py"],
     # ["cover_agent/PromptBuilder.py", "tests/test_PromptBuilder.py"],
