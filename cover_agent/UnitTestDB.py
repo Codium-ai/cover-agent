@@ -17,6 +17,7 @@ class UnitTestGenerationAttempt(Base):
     stdout = Column(Text)
     test_code = Column(Text)
     imports = Column(Text)
+    language = Column(String)
     source_file = Column(Text)
     original_test_file = Column(Text)
     processed_test_file = Column(Text)
@@ -38,6 +39,7 @@ class UnitTestDB:
                 stdout=test_result.get("stdout"),
                 test_code=test_result.get("test", {}).get("test_code", ""),
                 imports=test_result.get("test", {}).get("new_imports_code", ""),
+                language=test_result.get("language"),
                 source_file=test_result.get("source_file"),
                 original_test_file=test_result.get("original_test_file"),
                 processed_test_file=test_result.get("processed_test_file"),
@@ -78,6 +80,7 @@ class UnitTestDB:
                         UnitTestGenerationAttempt.stdout,
                         UnitTestGenerationAttempt.test_code,
                         UnitTestGenerationAttempt.imports,
+                        UnitTestGenerationAttempt.language,
                         UnitTestGenerationAttempt.source_file,
                         UnitTestGenerationAttempt.original_test_file,
                         UnitTestGenerationAttempt.processed_test_file,
