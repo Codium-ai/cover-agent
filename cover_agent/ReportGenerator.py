@@ -2,7 +2,7 @@ from jinja2 import Template
 
 
 class ReportGenerator:
-    # Enhanced HTML template with additional styling
+    # HTML template with collapsible details for all content
     HTML_TEMPLATE = """
     <!DOCTYPE html>
     <html lang="en">
@@ -71,15 +71,30 @@ class ReportGenerator:
                 <td>{{ result.reason }}</td>
                 <td>{{ result.exit_code }}</td>
                 <td>{{ result.language }}</td>
-                <td>{{ result.source_file }}</td>
-                <td>{{ result.original_test_file }}</td>
-                <td>{{ result.processed_test_file }}</td>
                 <td>
                     <details>
                         <summary>View More</summary>
-                        <div><strong>STDERR:</strong> <pre><code class="language-{{ result.language|lower }}">{{ result.stderr[:300] }}{% if result.stderr|length > 300 %}...{% endif %}</code></pre></div>
-                        <div><strong>STDOUT:</strong> <pre><code class="language-{{ result.language|lower }}">{{ result.stdout[:300] }}{% if result.stdout|length > 300 %}...{% endif %}</code></pre></div>
-                        <div><strong>Test Code:</strong> <pre><code class="language-{{ result.language|lower }}">{{ result.test_code[:300] }}{% if result.test_code|length > 300 %}...{% endif %}</code></pre></div>
+                        <pre><code class="language-{{ result.language|lower }}">{{ result.source_file }}</code></pre>
+                    </details>
+                </td>
+                <td>
+                    <details>
+                        <summary>View More</summary>
+                        <pre><code class="language-{{ result.language|lower }}">{{ result.original_test_file }}</code></pre>
+                    </details>
+                </td>
+                <td>
+                    <details>
+                        <summary>View More</summary>
+                        <pre><code class="language-{{ result.language|lower }}">{{ result.processed_test_file }}</code></pre>
+                    </details>
+                </td>
+                <td>
+                    <details>
+                        <summary>View More</summary>
+                        <div><strong>STDERR:</strong> <pre><code class="language-{{ result.language|lower }}">{{ result.stderr }}</code></pre></div>
+                        <div><strong>STDOUT:</strong> <pre><code class="language-{{ result.language|lower }}">{{ result.stdout }}</code></pre></div>
+                        <div><strong>Test Code:</strong> <pre><code class="language-{{ result.language|lower }}">{{ result.test_code }}</code></pre></div>
                         <div><strong>Imports:</strong> <pre><code class="language-{{ result.language|lower }}">{{ result.imports }}</code></pre></div>
                     </details>
                 </td>

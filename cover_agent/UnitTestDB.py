@@ -77,3 +77,8 @@ class UnitTestDB:
 
         # Use the ReportGenerator to generate the HTML report
         ReportGenerator.generate_report(test_results_list, report_filepath)
+
+# For debugging. Run in Poetry shell.
+# if __name__ == "__main__":
+#     unittest_db = UnitTestDB("sqlite:///cover_agent_unit_test_runs.db")
+#     unittest_db.dump_to_report("test_results.html")
