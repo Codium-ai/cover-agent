@@ -80,6 +80,10 @@ class UnitTestGenerator:
         self.total_input_token_count = 0
         self.total_output_token_count = 0
 
+        # Read self.source_file_path into a string
+        with open(self.source_file_path, "r") as f:
+            self.source_code = f.read()
+
     def get_coverage_and_build_prompt(self):
         """
         Run code coverage and build the prompt to be used for generating tests.
@@ -555,6 +559,7 @@ class UnitTestGenerator:
                         "stderr": stderr,
                         "stdout": stdout,
                         "test": generated_test,
+                        "source_file": self.source_code,
                         "original_test_file": original_content,
                         "processed_test_file": processed_test,
                     }
@@ -635,6 +640,7 @@ class UnitTestGenerator:
                             "stderr": stderr,
                             "stdout": stdout,
                             "test": generated_test,
+                            "source_file": self.source_code,
                             "original_test_file": original_content,
                             "processed_test_file": processed_test,
                         }
@@ -671,6 +677,7 @@ class UnitTestGenerator:
                         "stderr": stderr,
                         "stdout": stdout,
                         "test": generated_test,
+                        "source_file": self.source_code,
                         "original_test_file": original_content,
                         "processed_test_file": processed_test,
                     }
@@ -713,6 +720,7 @@ class UnitTestGenerator:
                     "stderr": stderr,
                     "stdout": stdout,
                     "test": generated_test,
+                    "source_file": self.source_code,
                     "original_test_file": original_content,
                     "processed_test_file": processed_test,
                 }
@@ -725,6 +733,7 @@ class UnitTestGenerator:
                 "stderr": str(e),
                 "stdout": "",
                 "test": generated_test,
+                "source_file": self.source_code,
                 "original_test_file": original_content,
                 "processed_test_file": "N/A",
             }
