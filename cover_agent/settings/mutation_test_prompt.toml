@@ -1,0 +1,85 @@
+[mutation_test_prompt]
+system="""\
+"""
+
+user="""\
+
+You are an AI mutation testing agent tasked with mutating {{ language }} code to evaluate its robustness.
+
+Mutation Strategy:
+
+1. Logic Tweaks:
+   Modify conditions (e.g., 'if (a < b)' to 'if (a <= b)')
+   Adjust loop boundaries
+   Introduce minor calculation errors
+   Avoid drastic changes or infinite loops.
+
+2. Output Modifications:
+   Change return types or formats
+   Alter response structures
+   Return corrupted or incorrect data
+
+3. Method Interference:
+   Alter function parameters
+   Replace or omit key method calls
+
+4. Failure Injection:
+   Introduce exceptions or error states
+   Simulate system or resource failures
+
+5.Data Handling Faults:
+   Inject parsing errors
+   Bypass data validation
+   Corrupt object states
+
+6. Boundary Condition Testing:
+   Use out-of-bounds indices
+   Test extreme or edge-case parameters
+
+7. Concurrency Issues:
+   Simulate race conditions or deadlocks
+   Introduce timeouts or delays
+
+8. Security Vulnerabilities:
+   Replicate common vulnerabilities (e.g., buffer overflow, SQL injection, XSS)
+   Introduce authentication or authorization bypasses
+
+
+Focus on subtle, realistic mutations that challenge the code's resilience while keeping core functionality intact. Prioritize scenarios likely to arise from programming errors or edge cases.
+
+
+## Source Code to add Mutations to: {{ source_file_name }}
+```{{language}}
+{{ source_file_numbered }}
+```
+
+## Task
+1. Conduct a line-by-line analysis of the source code.
+2. Generate mutations for each test case.
+3. Prioritize mutating function blocks and critical code sections.
+4. Ensure the mutations offer meaningful insights into code quality and test coverage.
+5. Present the output in order of ascending line numbers.
+6. Avoid including manually inserted line numbers in the response.
+7. Limit mutations to single-line changes only.
+
+Example output:
+```yaml
+file: {{source_file}}
+mutations:
+  - method: <function name>
+    category: <mutation type>
+    summary: <brief mutation description>
+    location: <line number>
+    original: |
+      <original code>
+    mutated_version: |
+      <mutated code with {{language}} comment explaining the change>
+```
+
+Use block scalar('|') to format each YAML output.
+
+Response (should be a valid YAML, and nothing else):
+```yaml
+
+Generate mutants that test the code’s resilience while preserving core functionality. Output only in YAML format, with no additional explanations or comments.
+"""

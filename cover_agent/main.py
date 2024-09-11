@@ -101,6 +101,16 @@ def parse_args():
         default="",
         help="Path to optional log database. Default: %(default)s.",
     )
+    parser.add_argument(
+        "--mutation-testing",
+        action="store_true",
+        help="Setting this to True enables mutation testing. Default: False.",
+    )
+    parser.add_argument(
+        "--more-mutation-logging",
+        action="store_true",
+        help="Setting this to True enables more logging. Default: False.",
+    )
     return parser.parse_args()
 
 
