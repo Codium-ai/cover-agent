@@ -381,7 +381,7 @@ class UnitTestGenerator:
             self.logger.error(f"Error during initial test suite analysis: {e}")
             raise Exception("Error during initial test suite analysis")
 
-    def generate_tests(self, max_tokens=4096, dry_run=False):
+    def generate_tests(self, max_tokens=4096):
         """
         Generate tests using the AI model based on the constructed prompt.
 
@@ -392,7 +392,6 @@ class UnitTestGenerator:
 
         Parameters:
             max_tokens (int, optional): The maximum number of tokens to use for generating tests. Defaults to 4096.
-            dry_run (bool, optional): A flag indicating whether to perform a dry run without calling the AI model. Defaults to False.
 
         Returns:
             dict: A dictionary containing the generated tests with test tags, test code, test name, and test behavior. If an error occurs during test generation, an empty dictionary is returned.
@@ -402,14 +401,11 @@ class UnitTestGenerator:
         """
         self.prompt = self.build_prompt()
 
-        if dry_run:
-            response = "```def test_something():\n    pass```\n```def test_something_else():\n    pass```\n```def test_something_different():\n    pass```"
-        else:
-            response, prompt_token_count, response_token_count = (
-                self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
-            )
-            self.total_input_token_count += prompt_token_count
-            self.total_output_token_count += response_token_count
+        response, prompt_token_count, response_token_count = (
+            self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+        )
+        self.total_input_token_count += prompt_token_count
+        self.total_output_token_count += response_token_count
         try:
             tests_dict = load_yaml(
                 response,

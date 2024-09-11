@@ -58,10 +58,10 @@ class TestUnitTestDB:
         assert attempt.original_test_file == "sample test code"
         assert attempt.processed_test_file == "sample new test code"
 
-    def test_select_all_attempts(self, unit_test_db):
+    def test_dump_to_report(self, unit_test_db, tmp_path):
         test_result = {
             "status": "success",
-            "reason": "",
+            "reason": "Test passed successfully",
             "exit_code": 0,
             "stderr": "",
             "stdout": "Test passed",
@@ -76,102 +76,19 @@ class TestUnitTestDB:
         }
 
         unit_test_db.insert_attempt(test_result)
-        attempts = unit_test_db.select_all_attempts()
-        assert len(attempts) > 0
 
-        # Validate the new fields in the first attempt
-        first_attempt = attempts[0]
-        assert first_attempt.source_file == "sample source code"
-        assert first_attempt.original_test_file == "sample test code"
-        assert first_attempt.processed_test_file == "sample new test code"
-        assert first_attempt.language == "python"
+        # Generate the report and save it to a temporary file
+        report_filepath = tmp_path / "unit_test_report.html"
+        unit_test_db.dump_to_report(str(report_filepath))
 
-    def test_select_attempt(self, unit_test_db):
-        test_result = {
-            "status": "success",
-            "reason": "",
-            "exit_code": 0,
-            "stderr": "",
-            "stdout": "Test passed",
-            "test": {
-                "test_code": "def test_example(): pass",
-                "new_imports_code": "import pytest"
-            },
-            "language": "python",
-            "source_file": "sample source code",
-            "original_test_file": "sample test code",
-            "processed_test_file": "sample new test code",
-        }
+        # Check if the report was generated successfully
+        assert os.path.exists(report_filepath)
 
-        attempt_id = unit_test_db.insert_attempt(test_result)
-        attempt = unit_test_db.select_attempt(attempt_id)
+        # Verify the report content
+        with open(report_filepath, "r") as file:
+            content = file.read()
 
-        assert attempt is not None
-        assert attempt.id == attempt_id
-        assert attempt.source_file == "sample source code"
-        assert attempt.original_test_file == "sample test code"
-        assert attempt.processed_test_file == "sample new test code"
-        assert attempt.language == "python"
-
-    def test_select_attempt_in_range(self, unit_test_db):
-        start_time = datetime.now() - timedelta(days=1)
-        end_time = datetime.now() + timedelta(days=1)
-
-        test_result = {
-            "status": "success",
-            "reason": "",
-            "exit_code": 0,
-            "stderr": "",
-            "stdout": "Test passed",
-            "test": {
-                "test_code": "def test_example(): pass",
-                "new_imports_code": "import pytest"
-            },
-            "language": "python",
-            "source_file": "sample source code",
-            "original_test_file": "sample test code",
-            "processed_test_file": "sample new test code",
-        }
-
-        unit_test_db.insert_attempt(test_result)
-        attempts = unit_test_db.select_attempt_in_range(start_time, end_time)
-
-        assert len(attempts) > 0
-
-        # Validate the new fields in the first attempt
-        first_attempt = attempts[0]
-        assert first_attempt.source_file == "sample source code"
-        assert first_attempt.original_test_file == "sample test code"
-        assert first_attempt.processed_test_file == "sample new test code"
-        assert first_attempt.language == "python"
-
-    def test_select_attempt_flat(self, unit_test_db):
-        test_result = {
-            "status": "success",
-            "reason": "",
-            "exit_code": 0,
-            "stderr": "",
-            "stdout": "Test passed",
-            "test": {
-                "test_code": "def test_example(): pass",
-                "new_imports_code": "import pytest"
-            },
-            "language": "python",
-            "source_file": "sample source code",
-            "original_test_file": "sample test code",
-            "processed_test_file": "sample new test code",
-        }
-
-        attempt_id = unit_test_db.insert_attempt(test_result)
-        flat_attempt = unit_test_db.select_attempt_flat(attempt_id)
-
-        print(f"FLAT ATTEMPT: {flat_attempt}")
-
-        assert flat_attempt is not None
-        assert flat_attempt["id"] == attempt_id
-        assert flat_attempt["status"] == "success"
-        assert flat_attempt["stdout"] == "Test passed"
-        assert flat_attempt["source_file"] == "sample source code"
-        assert flat_attempt["original_test_file"] == "sample test code"
-        assert flat_attempt["processed_test_file"] == "sample new test code"
-        assert flat_attempt["language"] == "python"
+        assert "sample source code" in content
+        assert "sample test code" in content
+        assert "sample new test code" in content
+        assert "def test_example(): pass" in content

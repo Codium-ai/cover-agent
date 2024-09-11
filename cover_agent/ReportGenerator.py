@@ -44,6 +44,13 @@ class ReportGenerator:
                 padding: 5px;
                 border-radius: 5px;
             }
+            details summary {
+                cursor: pointer;
+                font-weight: bold;
+            }
+            details summary::-webkit-details-marker {
+                display: none;
+            }
         </style>
     </head>
     <body>
@@ -52,18 +59,30 @@ class ReportGenerator:
                 <th>Status</th>
                 <th>Reason</th>
                 <th>Exit Code</th>
-                <th>Stderr</th>
-                <th>Stdout</th>
-                <th>Test</th>
+                <th>Language</th>
+                <th>Source File</th>
+                <th>Original Test File</th>
+                <th>Processed Test File</th>
+                <th>Details</th>
             </tr>
             {% for result in results %}
             <tr>
                 <td class="status-{{ result.status }}">{{ result.status }}</td>
                 <td>{{ result.reason }}</td>
                 <td>{{ result.exit_code }}</td>
-                <td>{% if result.stderr %}<pre><code class="language-shell">{{ result.stderr }}</code></pre>{% else %}&nbsp;{% endif %}</td>
-                <td>{% if result.stdout %}<pre><code class="language-shell">{{ result.stdout }}</code></pre>{% else %}&nbsp;{% endif %}</td>
-                <td>{% if result.test %}<pre><code class="language-python">{{ result.test }}</code></pre>{% else %}&nbsp;{% endif %}</td>
+                <td>{{ result.language }}</td>
+                <td>{{ result.source_file }}</td>
+                <td>{{ result.original_test_file }}</td>
+                <td>{{ result.processed_test_file }}</td>
+                <td>
+                    <details>
+                        <summary>View More</summary>
+                        <div><strong>STDERR:</strong> <pre><code class="language-{{ result.language|lower }}">{{ result.stderr[:300] }}{% if result.stderr|length > 300 %}...{% endif %}</code></pre></div>
+                        <div><strong>STDOUT:</strong> <pre><code class="language-{{ result.language|lower }}">{{ result.stdout[:300] }}{% if result.stdout|length > 300 %}...{% endif %}</code></pre></div>
+                        <div><strong>Test Code:</strong> <pre><code class="language-{{ result.language|lower }}">{{ result.test_code[:300] }}{% if result.test_code|length > 300 %}...{% endif %}</code></pre></div>
+                        <div><strong>Imports:</strong> <pre><code class="language-{{ result.language|lower }}">{{ result.imports }}</code></pre></div>
+                    </details>
+                </td>
             </tr>
             {% endfor %}
         </table>

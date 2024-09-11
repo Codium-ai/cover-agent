@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session, load_only
-from sqlalchemy.orm.exc import NoResultFound
+from cover_agent.ReportGenerator import ReportGenerator
 
 Base = declarative_base()
 
@@ -48,44 +48,32 @@ class UnitTestDB:
             session.commit()
             return new_attempt.id
 
-    def select_all_attempts(self):
-        with self.Session() as session:
-            return session.query(UnitTestGenerationAttempt).all()
+    def dump_to_report(self, report_filepath):
+        """
+        Generates an HTML report for all attempts in the database and writes to the specified file path.
 
-    def select_attempt(self, attempt_id):
+        :param report_filepath: Path to the HTML file where the report will be written.
+        """
         with self.Session() as session:
-            try:
-                return session.query(UnitTestGenerationAttempt).filter_by(id=attempt_id).one()
-            except NoResultFound:
-                return None
+            attempts = session.query(UnitTestGenerationAttempt).all()
 
-    def select_attempt_in_range(self, start: datetime, end: datetime):
-        with self.Session() as session:
-            return session.query(UnitTestGenerationAttempt).filter(
-                UnitTestGenerationAttempt.run_time >= start,
-                UnitTestGenerationAttempt.run_time <= end
-            ).all()
+        # Prepare data in the format required by the ReportGenerator
+        test_results_list = [
+            {
+                "status": attempt.status,
+                "reason": attempt.reason,
+                "exit_code": attempt.exit_code,
+                "stderr": attempt.stderr or "",
+                "stdout": attempt.stdout or "",
+                "test_code": attempt.test_code or "",
+                "imports": attempt.imports or "",
+                "language": attempt.language,
+                "source_file": attempt.source_file,
+                "original_test_file": attempt.original_test_file,
+                "processed_test_file": attempt.processed_test_file,
+            }
+            for attempt in attempts
+        ]
 
-    def select_attempt_flat(self, attempt_id):
-        with self.Session() as session:
-            try:
-                result = session.query(UnitTestGenerationAttempt).filter_by(id=attempt_id).options(
-                    load_only(
-                        UnitTestGenerationAttempt.id,
-                        UnitTestGenerationAttempt.run_time,
-                        UnitTestGenerationAttempt.status,
-                        UnitTestGenerationAttempt.reason,
-                        UnitTestGenerationAttempt.exit_code,
-                        UnitTestGenerationAttempt.stderr,
-                        UnitTestGenerationAttempt.stdout,
-                        UnitTestGenerationAttempt.test_code,
-                        UnitTestGenerationAttempt.imports,
-                        UnitTestGenerationAttempt.language,
-                        UnitTestGenerationAttempt.source_file,
-                        UnitTestGenerationAttempt.original_test_file,
-                        UnitTestGenerationAttempt.processed_test_file,
-                    )
-                ).one().__dict__
-                return result
-            except NoResultFound:
-                return None
+        # Use the ReportGenerator to generate the HTML report
+        ReportGenerator.generate_report(test_results_list, report_filepath)
