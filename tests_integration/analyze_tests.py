@@ -48,7 +48,7 @@ def analayze_test_results(db_connection_string, response_file_path="test_results
     # Analyze the test results using the LLM
     for test_result in test_results:
         # Only analyze failed test results
-        if test_result['status'] != "FAIL":
+        if test_result['status'] == "FAIL":
             # Print banner for each test result
             print("============================================================")
             print(f"Test Result ID: {test_result['id']}")
