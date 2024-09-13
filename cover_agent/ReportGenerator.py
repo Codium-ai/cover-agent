@@ -1,8 +1,9 @@
+import difflib
 from jinja2 import Template
 
 
 class ReportGenerator:
-    # HTML template with collapsible details for all content
+    # HTML template with fixed code formatting and dark background for the code block
     HTML_TEMPLATE = """
     <!DOCTYPE html>
     <html lang="en">
@@ -39,17 +40,14 @@ class ReportGenerator:
                 color: red;
             }
             pre {
-                background-color: #000000 !important;
+                background-color: #282c34 !important;
                 color: #ffffff !important;
-                padding: 5px;
+                padding: 10px;
                 border-radius: 5px;
-            }
-            details summary {
-                cursor: pointer;
-                font-weight: bold;
-            }
-            details summary::-webkit-details-marker {
-                display: none;
+                overflow-x: auto;
+                white-space: pre-wrap;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 1.1em;  /* Slightly larger font size */
             }
         </style>
     </head>
@@ -60,9 +58,7 @@ class ReportGenerator:
                 <th>Reason</th>
                 <th>Exit Code</th>
                 <th>Language</th>
-                <th>Source File</th>
-                <th>Original Test File</th>
-                <th>Processed Test File</th>
+                <th>Modified Test File</th>
                 <th>Details</th>
             </tr>
             {% for result in results %}
@@ -73,20 +69,8 @@ class ReportGenerator:
                 <td>{{ result.language }}</td>
                 <td>
                     <details>
-                        <summary>View More</summary>
-                        <pre><code class="language-{{ result.language|lower }}">{{ result.source_file }}</code></pre>
-                    </details>
-                </td>
-                <td>
-                    <details>
-                        <summary>View More</summary>
-                        <pre><code class="language-{{ result.language|lower }}">{{ result.original_test_file }}</code></pre>
-                    </details>
-                </td>
-                <td>
-                    <details>
-                        <summary>View More</summary>
-                        <pre><code class="language-{{ result.language|lower }}">{{ result.processed_test_file }}</code></pre>
+                        <summary>View Full Code</summary>
+                        <pre><code>{{ result.full_diff | safe }}</code></pre>
                     </details>
                 </td>
                 <td>
@@ -107,6 +91,28 @@ class ReportGenerator:
     """
 
     @classmethod
+    def generate_full_diff(cls, original, processed):
+        """
+        Generates a full view of both the original and processed test files, 
+        highlighting added, removed, and unchanged lines, showing the full code.
+
+        :param original: String content of the original test file.
+        :param processed: String content of the processed test file.
+        :return: Full diff string formatted for HTML display, highlighting added, removed, and unchanged lines.
+        """
+        diff = difflib.ndiff(original.splitlines(), processed.splitlines())
+
+        diff_html = []
+        for line in diff:
+            if line.startswith('+'):
+                diff_html.append(f'<span class="diff-added">{line}</span>')
+            elif line.startswith('-'):
+                diff_html.append(f'<span class="diff-removed">{line}</span>')
+            else:
+                diff_html.append(f'<span class="diff-unchanged">{line}</span>')
+        return '\n'.join(diff_html)
+
+    @classmethod
     def generate_report(cls, results, file_path):
         """
         Renders the HTML report with given results and writes to a file.
@@ -114,6 +120,10 @@ class ReportGenerator:
         :param results: List of dictionaries with test results.
         :param file_path: Path to the HTML file where the report will be written.
         """
+        # Generate the full diff for each result
+        for result in results:
+            result['full_diff'] = cls.generate_full_diff(result['original_test_file'], result['processed_test_file'])
+
         template = Template(cls.HTML_TEMPLATE)
         html_content = template.render(results=results)
 

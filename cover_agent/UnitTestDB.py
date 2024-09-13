@@ -1,3 +1,4 @@
+import argparse
 from datetime import datetime
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
 from sqlalchemy.ext.declarative import declarative_base
@@ -78,7 +79,23 @@ class UnitTestDB:
         # Use the ReportGenerator to generate the HTML report
         ReportGenerator.generate_report(test_results_list, report_filepath)
 
-# For debugging. Run in Poetry shell.
-# if __name__ == "__main__":
-#     unittest_db = UnitTestDB("sqlite:///cover_agent_unit_test_runs.db")
-#     unittest_db.dump_to_report("test_results.html")
+def dump_to_report(path_to_db="cover_agent_unit_test_runs.db", report_filepath="test_results.html"):
+    unittest_db = UnitTestDB(f"sqlite:///{path_to_db}")
+    unittest_db.dump_to_report(report_filepath)
+
+def dump_to_report_cli():
+    parser = argparse.ArgumentParser(description="Generate a unit test report.")
+    parser.add_argument(
+        "--path-to-db",
+        type=str,
+        default="cover_agent_unit_test_runs.db",
+        help="Path to the SQLite database file."
+    )
+    parser.add_argument(
+        "--report-filepath",
+        type=str,
+        default="test_results.html",
+        help="Path to the HTML report file."
+    )
+    args = parser.parse_args()
+    dump_to_report(path_to_db=args.path_to_db, report_filepath=args.report_filepath)
