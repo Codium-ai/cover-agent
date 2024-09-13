@@ -1,18 +1,18 @@
+from wandb.sdk.data_types.trace_tree import Trace
 import datetime
+import json
 import logging
 import os
 import re
-import json
-from wandb.sdk.data_types.trace_tree import Trace
 
-from cover_agent.Runner import Runner
+from cover_agent.AICaller import AICaller
 from cover_agent.CoverageProcessor import CoverageProcessor
 from cover_agent.CustomLogger import CustomLogger
-from cover_agent.PromptBuilder import PromptBuilder
-from cover_agent.AICaller import AICaller
 from cover_agent.FilePreprocessor import FilePreprocessor
-from cover_agent.utils import load_yaml
+from cover_agent.PromptBuilder import PromptBuilder
+from cover_agent.Runner import Runner
 from cover_agent.settings.config_loader import get_settings
+from cover_agent.utils import load_yaml
 
 
 class UnitTestGenerator:
@@ -556,6 +556,7 @@ class UnitTestGenerator:
                         "stdout": stdout,
                         "test": generated_test,
                         "language": self.language,
+                        "prompt": self.prompt["user"],
                         "source_file": self.source_code,
                         "original_test_file": original_content,
                         "processed_test_file": processed_test,
@@ -638,6 +639,7 @@ class UnitTestGenerator:
                             "stdout": stdout,
                             "test": generated_test,
                             "language": self.language,
+                            "prompt": self.prompt["user"],
                             "source_file": self.source_code,
                             "original_test_file": original_content,
                             "processed_test_file": processed_test,
@@ -676,6 +678,7 @@ class UnitTestGenerator:
                         "stdout": stdout,
                         "test": generated_test,
                         "language": self.language,
+                        "prompt": self.prompt["user"],
                         "source_file": self.source_code,
                         "original_test_file": original_content,
                         "processed_test_file": processed_test,
@@ -720,6 +723,7 @@ class UnitTestGenerator:
                     "stdout": stdout,
                     "test": generated_test,
                     "language": self.language,
+                    "prompt": self.prompt["user"],
                     "source_file": self.source_code,
                     "original_test_file": original_content,
                     "processed_test_file": processed_test,
@@ -734,6 +738,7 @@ class UnitTestGenerator:
                 "stdout": "",
                 "test": generated_test,
                 "language": self.language,
+                "prompt": self.prompt["user"],
                 "source_file": self.source_code,
                 "original_test_file": original_content,
                 "processed_test_file": "N/A",

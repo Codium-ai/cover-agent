@@ -19,6 +19,7 @@ class UnitTestGenerationAttempt(Base):
     test_code = Column(Text)
     imports = Column(Text)
     language = Column(String)
+    prompt = Column(Text)
     source_file = Column(Text)
     original_test_file = Column(Text)
     processed_test_file = Column(Text)
@@ -41,6 +42,7 @@ class UnitTestDB:
                 test_code=test_result.get("test", {}).get("test_code", ""),
                 imports=test_result.get("test", {}).get("new_imports_code", ""),
                 language=test_result.get("language"),
+                prompt=test_result.get("prompt"),
                 source_file=test_result.get("source_file"),
                 original_test_file=test_result.get("original_test_file"),
                 processed_test_file=test_result.get("processed_test_file"),
@@ -62,6 +64,7 @@ class UnitTestDB:
         # Prepare data in the format required by the ReportGenerator
         test_results_list = [
             {
+                "id": attempt.id,
                 "status": attempt.status,
                 "reason": attempt.reason,
                 "exit_code": attempt.exit_code,
@@ -70,6 +73,7 @@ class UnitTestDB:
                 "test_code": attempt.test_code or "",
                 "imports": attempt.imports or "",
                 "language": attempt.language,
+                "prompt": attempt.prompt,
                 "source_file": attempt.source_file,
                 "original_test_file": attempt.original_test_file,
                 "processed_test_file": attempt.processed_test_file,

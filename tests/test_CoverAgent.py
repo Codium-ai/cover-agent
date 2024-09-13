@@ -6,6 +6,7 @@ import os
 import pytest
 import tempfile
 
+import unittest
 class TestCoverAgent:
     def test_parse_args(self):
         with patch(
