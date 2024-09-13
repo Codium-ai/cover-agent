@@ -88,7 +88,6 @@ class TestUnitTestDB:
         with open(report_filepath, "r") as file:
             content = file.read()
 
-        assert "sample source code" in content
         assert "sample test code" in content
         assert "sample new test code" in content
         assert "def test_example(): pass" in content

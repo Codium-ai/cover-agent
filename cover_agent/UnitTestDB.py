@@ -48,13 +48,14 @@ class UnitTestDB:
             session.add(new_attempt)
             session.commit()
             return new_attempt.id
+        
+    def get_all_attempts(self):
+        '''
+        Retrieve all unit test generation attempts from the database.
 
-    def dump_to_report(self, report_filepath):
-        """
-        Generates an HTML report for all attempts in the database and writes to the specified file path.
-
-        :param report_filepath: Path to the HTML file where the report will be written.
-        """
+        Returns:
+            list: A list of dictionaries containing details of each attempt in the format required by the ReportGenerator.
+        '''
         with self.Session() as session:
             attempts = session.query(UnitTestGenerationAttempt).all()
 
@@ -76,8 +77,16 @@ class UnitTestDB:
             for attempt in attempts
         ]
 
+        return test_results_list
+
+    def dump_to_report(self, report_filepath):
+        """
+        Generates an HTML report for all attempts in the database and writes to the specified file path.
+
+        :param report_filepath: Path to the HTML file where the report will be written.
+        """
         # Use the ReportGenerator to generate the HTML report
-        ReportGenerator.generate_report(test_results_list, report_filepath)
+        ReportGenerator.generate_report(self.get_all_attempts(), report_filepath)
 
 def dump_to_report(path_to_db="cover_agent_unit_test_runs.db", report_filepath="test_results.html"):
     unittest_db = UnitTestDB(f"sqlite:///{path_to_db}")

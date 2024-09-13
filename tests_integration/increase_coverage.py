@@ -15,6 +15,7 @@ SOURCE_TEST_FILE_LIST = [
     # ["cover_agent/PromptBuilder.py", "tests/test_PromptBuilder.py"],
     # ["cover_agent/ReportGenerator.py", "tests/test_ReportGenerator.py"],
     # ["cover_agent/Runner.py", "tests/test_Runner.py"],
+    ["cover_agent/UnitTestDB.py", "tests/test_UnitTestDB.py"],
     # ["cover_agent/UnitTestGenerator.py", "tests/test_UnitTestGenerator.py"],
     # ["cover_agent/version.py", "tests/test_version.py"],
     # ["cover_agent/utils.py", "tests/test_load_yaml.py"],
@@ -41,6 +42,9 @@ class Args:
         self.api_base = "http://localhost:11434"
         self.prompt_only = False
         self.strict_coverage = False
+        self.run_tests_multiple_times = 1
+        self.use_report_coverage_feature_flag=False
+        self.log_db_path="increase_project_coverage.db"
 
 
 if __name__ == "__main__":
