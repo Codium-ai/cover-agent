@@ -43,6 +43,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry.scripts]
 cover-agent = "cover_agent.main:main"
+generate-report = "cover_agent.UnitTestDB:dump_to_report_cli"
 
 [tool.poetry-dynamic-versioning]
 enable = true

@@ -100,3 +100,10 @@ poetry install
 poetry shell
 python tests_integration/increase_coverage.py
 ```
+
+# Analyzing failures
+After Cover Agent runs we store the run results in a database (see `docs/database_usage.md` for more details). 
+
+The `analyze_tests.py` script extracts out the metadata from each run and, with the help of an LLM (currently hardcoded to OpenAI's GPT-4o), it analyzes each failed tests and provides feedback on the failure. This report (i.e. what the LLM streams to the command line) is then written to a file (currently hardcoded as `test_results_analysis.md`).
+
+You can then take the report (`test_results_analysis.md`) and either review it or pass it back to an LLM for further analysis (e.g. looking for repeating errors, bad imports, etc.).

@@ -1,18 +1,18 @@
+from wandb.sdk.data_types.trace_tree import Trace
 import datetime
+import json
 import logging
 import os
 import re
-import json
-from wandb.sdk.data_types.trace_tree import Trace
 
-from cover_agent.Runner import Runner
+from cover_agent.AICaller import AICaller
 from cover_agent.CoverageProcessor import CoverageProcessor
 from cover_agent.CustomLogger import CustomLogger
-from cover_agent.PromptBuilder import PromptBuilder
-from cover_agent.AICaller import AICaller
 from cover_agent.FilePreprocessor import FilePreprocessor
-from cover_agent.utils import load_yaml
+from cover_agent.PromptBuilder import PromptBuilder
+from cover_agent.Runner import Runner
 from cover_agent.settings.config_loader import get_settings
+from cover_agent.utils import load_yaml
 
 
 class UnitTestGenerator:
@@ -80,6 +80,17 @@ class UnitTestGenerator:
         self.total_input_token_count = 0
         self.total_output_token_count = 0
 
+        # Read self.source_file_path into a string
+        with open(self.source_file_path, "r") as f:
+            self.source_code = f.read()
+
+    def get_coverage_and_build_prompt(self):
+        """
+        Run code coverage and build the prompt to be used for generating tests.
+
+        Returns:
+            None
+        """
         # Run coverage and build the prompt
         self.run_coverage()
         self.prompt = self.build_prompt()
@@ -370,7 +381,7 @@ class UnitTestGenerator:
             self.logger.error(f"Error during initial test suite analysis: {e}")
             raise Exception("Error during initial test suite analysis")
 
-    def generate_tests(self, max_tokens=4096, dry_run=False):
+    def generate_tests(self, max_tokens=4096):
         """
         Generate tests using the AI model based on the constructed prompt.
 
@@ -381,7 +392,6 @@ class UnitTestGenerator:
 
         Parameters:
             max_tokens (int, optional): The maximum number of tokens to use for generating tests. Defaults to 4096.
-            dry_run (bool, optional): A flag indicating whether to perform a dry run without calling the AI model. Defaults to False.
 
         Returns:
             dict: A dictionary containing the generated tests with test tags, test code, test name, and test behavior. If an error occurs during test generation, an empty dictionary is returned.
@@ -391,14 +401,11 @@ class UnitTestGenerator:
         """
         self.prompt = self.build_prompt()
 
-        if dry_run:
-            response = "```def test_something():\n    pass```\n```def test_something_else():\n    pass```\n```def test_something_different():\n    pass```"
-        else:
-            response, prompt_token_count, response_token_count = (
-                self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
-            )
-            self.total_input_token_count += prompt_token_count
-            self.total_output_token_count += response_token_count
+        response, prompt_token_count, response_token_count = (
+            self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+        )
+        self.total_input_token_count += prompt_token_count
+        self.total_output_token_count += response_token_count
         try:
             tests_dict = load_yaml(
                 response,
@@ -548,6 +555,9 @@ class UnitTestGenerator:
                         "stderr": stderr,
                         "stdout": stdout,
                         "test": generated_test,
+                        "language": self.language,
+                        "prompt": self.prompt["user"],
+                        "source_file": self.source_code,
                         "original_test_file": original_content,
                         "processed_test_file": processed_test,
                     }
@@ -628,6 +638,9 @@ class UnitTestGenerator:
                             "stderr": stderr,
                             "stdout": stdout,
                             "test": generated_test,
+                            "language": self.language,
+                            "prompt": self.prompt["user"],
+                            "source_file": self.source_code,
                             "original_test_file": original_content,
                             "processed_test_file": processed_test,
                         }
@@ -664,6 +677,9 @@ class UnitTestGenerator:
                         "stderr": stderr,
                         "stdout": stdout,
                         "test": generated_test,
+                        "language": self.language,
+                        "prompt": self.prompt["user"],
+                        "source_file": self.source_code,
                         "original_test_file": original_content,
                         "processed_test_file": processed_test,
                     }
@@ -706,6 +722,9 @@ class UnitTestGenerator:
                     "stderr": stderr,
                     "stdout": stdout,
                     "test": generated_test,
+                    "language": self.language,
+                    "prompt": self.prompt["user"],
+                    "source_file": self.source_code,
                     "original_test_file": original_content,
                     "processed_test_file": processed_test,
                 }
@@ -718,6 +737,9 @@ class UnitTestGenerator:
                 "stderr": str(e),
                 "stdout": "",
                 "test": generated_test,
+                "language": self.language,
+                "prompt": self.prompt["user"],
+                "source_file": self.source_code,
                 "original_test_file": original_content,
                 "processed_test_file": "N/A",
             }
