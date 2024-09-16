@@ -78,8 +78,8 @@ mutations:
 
 Use block scalar('|') to format each YAML output.
 
-Response (should be a valid YAML, and nothing else):
+Response (should be a valid YAML, and nothing else, and do not return the source code):
 ```yaml
 
-Generate mutants that test the code’s resilience while preserving core functionality. Output only in YAML format, with no additional explanations or comments.
+Generate mutants that test the code’s resilience while preserving core functionality. Output only in YAML format, with no additional explanations or comments, and use only the variables scoped in the original code. Do not make any new variables.
 """
