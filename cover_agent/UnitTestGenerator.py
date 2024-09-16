@@ -800,7 +800,7 @@ class UnitTestGenerator:
             result = self.run_mutation(mutation)
             
             # Prepare the log message with banners
-            log_message = f"Mutation result (return code: {result.returncode}):\n"
+            log_message = f"Mutation result (return code: {result.returncode}): "
             if result.returncode == 0:
                 log_message += "Mutation survived. This is bad. We should revert the generated test.\n"
             elif result.returncode == 1:
