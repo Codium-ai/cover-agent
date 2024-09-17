@@ -802,9 +802,9 @@ class UnitTestGenerator:
             # Prepare the log message with banners
             log_message = f"Mutation result (return code: {result.returncode}): "
             if result.returncode == 0:
-                log_message += "Mutation survived. This is bad. We should revert the generated test.\n"
+                log_message += "Mutation survived. We changed the source file but the test still passed. We should revert the generated test or fix it.\n"
             elif result.returncode == 1:
-                log_message += "Mutation caught. This means the test was written correctly.\n"
+                log_message += "Mutation caught. This means the test was written correctly because changing the source failed the directed test.\n"
             else:
                 self.logger.error(f"Mutation test failed with return code {result.returncode}")
             
