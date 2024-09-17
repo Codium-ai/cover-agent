@@ -4,6 +4,9 @@ import json
 import logging
 import os
 import re
+import json
+
+from wandb.sdk.data_types.trace_tree import Trace
 
 from cover_agent.AICaller import AICaller
 from cover_agent.CoverageProcessor import CoverageProcessor
@@ -13,6 +16,10 @@ from cover_agent.PromptBuilder import PromptBuilder
 from cover_agent.Runner import Runner
 from cover_agent.settings.config_loader import get_settings
 from cover_agent.utils import load_yaml
+
+import subprocess
+
+from shlex import split
 
 
 class UnitTestGenerator:
@@ -30,6 +37,8 @@ class UnitTestGenerator:
         desired_coverage: int = 90,  # Default to 90% coverage if not specified
         additional_instructions: str = "",
         use_report_coverage_feature_flag: bool = False,
+        mutation_testing: bool = False,
+        more_mutation_logging: bool = False,
     ):
         """
         Initialize the UnitTestGenerator class with the provided parameters.
@@ -65,6 +74,8 @@ class UnitTestGenerator:
         self.additional_instructions = additional_instructions
         self.language = self.get_code_language(source_file_path)
         self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
+        self.mutation_testing = mutation_testing
+        self.more_mutation_logging = more_mutation_logging
         self.last_coverage_percentages = {}
         self.llm_model = llm_model
 
@@ -213,7 +224,7 @@ class UnitTestGenerator:
                 "Will default to using the full coverage report. You will need to check coverage manually for each passing test."
             )
             with open(self.code_coverage_report_path, "r") as f:
-                self.code_coverage_report = f.read()
+                self.code_coverage_report = f.read()    
 
     @staticmethod
     def get_included_files(included_files):
@@ -761,6 +772,113 @@ class UnitTestGenerator:
     def to_json(self):
         return json.dumps(self.to_dict())
 
+    def run_mutations(self):
+        self.logger.info("Running mutation tests")
+
+        # Run mutation tests
+
+        mutation_prompt_builder = PromptBuilder(
+            source_file_path=self.source_file_path,
+            test_file_path=self.test_file_path,
+            code_coverage_report=self.code_coverage_report,
+            included_files=self.included_files,
+            additional_instructions=self.additional_instructions,
+            failed_test_runs=self.failed_test_runs,
+            language=self.language,
+            mutation_testing=True
+        )
+
+        mutation_prompt = mutation_prompt_builder.build_prompt()
+
+        response, prompt_token_count, response_token_count = (
+            self.ai_caller.call_model(prompt=mutation_prompt)
+        )
+
+        mutation_dict = load_yaml(response)
+
+        for mutation in mutation_dict["mutations"]:
+            result = self.run_mutation(mutation)
+            
+            # Prepare the log message with banners
+            log_message = f"Mutation result (return code: {result.returncode}): "
+            if result.returncode == 0:
+                log_message += "Mutation survived. We changed the source file but the test still passed. We should revert the generated test or fix it.\n"
+            elif result.returncode == 1:
+                log_message += "Mutation caught. This means the test was written correctly because changing the source failed the directed test.\n"
+            else:
+                self.logger.error(f"Mutation test failed with return code {result.returncode}")
+            
+            # Add STDOUT to the log message if it's not empty
+            if result.stdout.strip() and self.more_mutation_logging:
+                log_message += "\n" + "="*10 + " STDOUT " + "="*10 + "\n"
+                log_message += result.stdout
+            
+            # Add STDERR to the log message if it's not empty
+            if result.stderr.strip() and self.more_mutation_logging:
+                log_message += "\n" + "="*10 + " STDERR " + "="*10 + "\n"
+                log_message += result.stderr
+            
+
+            self.logger.info(log_message)
+
+        
+    def run_mutation(self, mutation):
+        mutated_code = mutation.get("mutated_version", None)
+        line_number = mutation.get("location", None)
+
+        if not mutated_code or not line_number:
+            self.logger.error("Mutation does not contain mutated code or line number")
+            self.logger.error(f"Mutation: {mutation}")
+            return None
+
+         
+        # Read the original content
+        with open(self.source_file_path, "r") as source_file:
+            original_content = source_file.readlines()
+
+        # Determine the indentation level of the line at line_number
+        indentation = len(original_content[line_number - 1]) - len(original_content[line_number - 1].lstrip())
+
+        # Adjust the indentation of the mutated code
+        adjusted_mutated_code = [
+            ' ' * indentation + line if line.strip() else line
+            for line in mutated_code.split("\n")
+        ]
+
+        # Insert the mutated code at the specified spot
+        modified_content = (
+            original_content[:line_number - 1]
+            + adjusted_mutated_code + ["\n"]
+            + original_content[line_number:]
+        )
+
+        # Write the modified content back to the file
+        with open(self.source_file_path, "w") as source_file:
+            source_file.writelines(modified_content)
+            source_file.flush()
+
+        # Step 2: Run the test using the Runner class
+        self.logger.info(
+            f'Running test with the following command: "{self.test_command}"'
+        )
+
+        try:
+            result = subprocess.run(
+                split(self.test_command),
+                text=True,
+                capture_output=True,
+                cwd=self.test_command_dir,
+                timeout=30,
+            )
+        except Exception as e:
+            logging.error(f"Error running test command: {e}")
+            result = None
+        finally:
+            # Write the modified content back to the file
+            with open(self.source_file_path, "w") as source_file:
+                source_file.writelines(original_content)
+                source_file.flush()
+        return result
 
 def extract_error_message_python(fail_message):
     """

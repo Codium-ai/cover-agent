@@ -42,6 +42,7 @@ class PromptBuilder:
         additional_instructions: str = "",
         failed_test_runs: str = "",
         language: str = "python",
+        mutation_testing: bool = False,
     ):
         """
         The `PromptBuilder` class is responsible for building a formatted prompt string by replacing placeholders with the actual content of files read during initialization. It takes in various paths and settings as parameters and provides a method to generate the prompt.
@@ -72,6 +73,7 @@ class PromptBuilder:
         self.test_file = self._read_file(test_file_path)
         self.code_coverage_report = code_coverage_report
         self.language = language
+        self.mutation_testing = mutation_testing
         # add line numbers to each line in 'source_file'. start from 1
         self.source_file_numbered = "\n".join(
             [f"{i + 1} {line}" for i, line in enumerate(self.source_file.split("\n"))]
@@ -141,12 +143,20 @@ class PromptBuilder:
         }
         environment = Environment(undefined=StrictUndefined)
         try:
-            system_prompt = environment.from_string(
-                get_settings().test_generation_prompt.system
-            ).render(variables)
-            user_prompt = environment.from_string(
-                get_settings().test_generation_prompt.user
-            ).render(variables)
+            if self.mutation_testing:
+                system_prompt = environment.from_string(
+                    get_settings().mutation_test_prompt.system
+                ).render(variables)
+                user_prompt = environment.from_string(
+                    get_settings().mutation_test_prompt.user
+                ).render(variables)
+            else:
+                system_prompt = environment.from_string(
+                    get_settings().test_generation_prompt.system
+                ).render(variables)
+                user_prompt = environment.from_string(
+                    get_settings().test_generation_prompt.user
+                ).render(variables)
         except Exception as e:
             logging.error(f"Error rendering prompt: {e}")
             return {"system": "", "user": ""}
