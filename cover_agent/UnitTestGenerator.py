@@ -270,10 +270,7 @@ class UnitTestGenerator:
                         continue
                     # dump dict to str
                     code = json.dumps(failed_test_dict)
-                    if "error_message" in failed_test:
-                        error_message = failed_test["error_message"]
-                    else:
-                        error_message = None
+                    error_message = failed_test.get("error_message", None)
                     failed_test_runs_value += f"Failed Test:\n```\n{code}\n```\n"
                     if error_message:
                         failed_test_runs_value += (
@@ -565,6 +562,7 @@ class UnitTestGenerator:
                         "processed_test_file": processed_test,
                     }
 
+                    # TODO: Get LLM to summarize the error by passing it the stdout and stderr
                     error_message = extract_error_message_python(fail_details["stdout"])
                     if error_message:
                         logging.error(f"Error message:\n{error_message}")
@@ -650,7 +648,7 @@ class UnitTestGenerator:
                         self.failed_test_runs.append(
                             {
                                 "code": fail_details["test"],
-                                "error_message": "did not increase code coverage",
+                                "error_message": "Code coverage did not increase",
                             }
                         )  # Append failure details to the list
 
@@ -689,7 +687,7 @@ class UnitTestGenerator:
                     self.failed_test_runs.append(
                         {
                             "code": fail_details["test"],
-                            "error_message": "coverage verification error",
+                            "error_message": "Coverage verification error",
                         }
                     )  # Append failure details to the list
                     return fail_details

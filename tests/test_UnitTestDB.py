@@ -91,3 +91,6 @@ class TestUnitTestDB:
         assert "sample test code" in content
         assert "sample new test code" in content
         assert "def test_example(): pass" in content
+
+    def test_failing_test(self):
+        assert False
