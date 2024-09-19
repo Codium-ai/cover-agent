@@ -36,7 +36,7 @@ class Args:
         self.coverage_type = "cobertura"
         self.report_filepath = "test_results.html"
         self.desired_coverage = 100
-        self.max_iterations = 5
+        self.max_iterations = 1
         self.additional_instructions = "Focus solely on the generate_partial_diff() function."
         self.model = "gpt-4o"
         self.api_base = "http://localhost:11434"

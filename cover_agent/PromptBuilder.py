@@ -42,6 +42,7 @@ class PromptBuilder:
         additional_instructions: str = "",
         failed_test_runs: str = "",
         language: str = "python",
+        testing_framework: str = "NOT KNOWN",
     ):
         """
         The `PromptBuilder` class is responsible for building a formatted prompt string by replacing placeholders with the actual content of files read during initialization. It takes in various paths and settings as parameters and provides a method to generate the prompt.
@@ -72,6 +73,8 @@ class PromptBuilder:
         self.test_file = self._read_file(test_file_path)
         self.code_coverage_report = code_coverage_report
         self.language = language
+        self.testing_framework = testing_framework
+
         # add line numbers to each line in 'source_file'. start from 1
         self.source_file_numbered = "\n".join(
             [f"{i + 1} {line}" for i, line in enumerate(self.source_file.split("\n"))]
@@ -138,6 +141,7 @@ class PromptBuilder:
             "additional_instructions_text": self.additional_instructions,
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
+            "testing_framework": self.testing_framework,
         }
         environment = Environment(undefined=StrictUndefined)
         try:
@@ -168,6 +172,7 @@ class PromptBuilder:
             "additional_instructions_text": self.additional_instructions,
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
+            "testing_framework": self.testing_framework,
         }
         environment = Environment(undefined=StrictUndefined)
         try:

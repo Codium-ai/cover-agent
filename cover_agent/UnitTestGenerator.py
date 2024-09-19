@@ -79,6 +79,7 @@ class UnitTestGenerator:
         self.failed_test_runs = []
         self.total_input_token_count = 0
         self.total_output_token_count = 0
+        self.testing_framework = "Unknown"
 
         # Read self.source_file_path into a string
         with open(self.source_file_path, "r") as f:
@@ -296,6 +297,7 @@ class UnitTestGenerator:
             additional_instructions=self.additional_instructions,
             failed_test_runs=failed_test_runs_value,
             language=self.language,
+            testing_framework=self.testing_framework,
         )
 
         return self.prompt_builder.build_prompt()
@@ -363,6 +365,7 @@ class UnitTestGenerator:
                 relevant_line_number_to_insert_imports_after = tests_dict.get(
                     "relevant_line_number_to_insert_imports_after", None
                 )
+                self.testing_framework = tests_dict.get("testing_framework", "Unknown")
                 counter_attempts += 1
 
             if not relevant_line_number_to_insert_tests_after:
