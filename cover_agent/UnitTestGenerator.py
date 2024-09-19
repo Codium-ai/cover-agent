@@ -563,6 +563,7 @@ class UnitTestGenerator:
                     }
 
                     # TODO: Get LLM to summarize the error by passing it the stdout and stderr
+                    #       Use `cover_agent/settings/analyze_test_run_failure.toml` template
                     error_message = extract_error_message_python(fail_details["stdout"])
                     if error_message:
                         logging.error(f"Error message:\n{error_message}")
