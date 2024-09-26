@@ -791,7 +791,7 @@ class UnitTestGenerator:
 
             # Run the analysis via LLM
             response, prompt_token_count, response_token_count = (
-                self.ai_caller.call_model(prompt=prompt_headers_indentation, stream=False
+                self.ai_caller.call_model(prompt=prompt_headers_indentation, stream=False)
             )
             self.total_input_token_count += prompt_token_count
             self.total_output_token_count += response_token_count
