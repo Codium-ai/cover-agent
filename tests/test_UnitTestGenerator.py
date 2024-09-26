@@ -1,8 +1,5 @@
 import pytest
-from cover_agent.UnitTestGenerator import (
-    UnitTestGenerator,
-    extract_error_message_python,
-)
+from cover_agent.UnitTestGenerator import UnitTestGenerator
 from cover_agent.ReportGenerator import ReportGenerator
 import os
 
@@ -31,17 +28,3 @@ class TestUnitTestGenerator:
                 result
                 == "file_path: `file1.txt`\ncontent:\n```\nfile content\n```\nfile_path: `file2.txt`\ncontent:\n```\nfile content\n```"
             )
-
-
-class TestExtractErrorMessage:
-    def test_extract_single_match(self):
-        fail_message = "=== FAILURES ===\\nError occurred here\\n=== END ==="
-        expected = "\\nError occurred here\\n"
-        result = extract_error_message_python(fail_message)
-        assert result == expected, f"Expected '{expected}', got '{result}'"
-
-    def test_extract_bad_match(self):
-        fail_message = 33
-        expected = ""
-        result = extract_error_message_python(fail_message)
-        assert result == expected, f"Expected '{expected}', got '{result}'"

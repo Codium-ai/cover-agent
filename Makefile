@@ -23,6 +23,7 @@ installer:
 		--add-data "cover_agent/settings/test_generation_prompt.toml:." \
 		--add-data "cover_agent/settings/analyze_suite_test_headers_indentation.toml:." \
 		--add-data "cover_agent/settings/analyze_suite_test_insert_line.toml:." \
+		--add-data "cover_agent/settings/analyze_test_run_failure.toml:." \
 		--add-data "$(SITE_PACKAGES)/vendor:wandb/vendor" \
 		--hidden-import=tiktoken_ext.openai_public \
 		--hidden-import=tiktoken_ext \

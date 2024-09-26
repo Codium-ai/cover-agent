@@ -18,7 +18,7 @@ class AICaller:
         self.model = model
         self.api_base = api_base
 
-    def call_model(self, prompt: dict, max_tokens=4096):
+    def call_model(self, prompt: dict, max_tokens=4096, stream=True):
         """
         Call the language model with the provided prompt and retrieve the response.
 
@@ -61,17 +61,17 @@ class AICaller:
         response = litellm.completion(**completion_params)
 
         chunks = []
-        print("Streaming results from LLM model...")
+        print("Streaming results from LLM model...") if stream else None
         try:
             for chunk in response:
-                print(chunk.choices[0].delta.content or "", end="", flush=True)
+                print(chunk.choices[0].delta.content or "", end="", flush=True) if stream else None
                 chunks.append(chunk)
                 time.sleep(
                     0.01
                 )  # Optional: Delay to simulate more 'natural' response pacing
         except Exception as e:
-            print(f"Error during streaming: {e}")
-        print("\n")
+            print(f"Error during streaming: {e}") if stream else None
+        print("\n") if stream else None
 
         model_response = litellm.stream_chunk_builder(chunks, messages=messages)
 
