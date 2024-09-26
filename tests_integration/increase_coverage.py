@@ -36,7 +36,7 @@ class Args:
         self.coverage_type = "cobertura"
         self.report_filepath = "test_results.html"
         self.desired_coverage = 100
-        self.max_iterations = 2
+        self.max_iterations = 4
         self.additional_instructions = ""
         self.model = "gpt-4o"
         self.api_base = "http://localhost:11434"

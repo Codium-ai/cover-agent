@@ -562,11 +562,9 @@ class UnitTestGenerator:
                         "processed_test_file": processed_test,
                     }
 
-                    # TODO: Get LLM to summarize the error by passing it the stdout and stderr
-                    #       Use `cover_agent/settings/analyze_test_run_failure.toml` template
-                    error_message = extract_error_message_python(fail_details["stdout"])
+                    error_message = self.extract_error_message(stderr=fail_details["stderr"], stdout=fail_details["stdout"])
                     if error_message:
-                        logging.error(f"Error message:\n{error_message}")
+                        logging.error(f"Error message summary:\n{error_message}")
 
                     self.failed_test_runs.append(
                         {"code": generated_test, "error_message": error_message}
@@ -764,30 +762,43 @@ class UnitTestGenerator:
         return json.dumps(self.to_dict())
 
 
-def extract_error_message_python(fail_message):
-    """
-    Extracts and returns the error message from the provided failure message.
+    def extract_error_message(self, stderr, stdout):
+        """
+        Extracts the error message from the provided stderr and stdout outputs.
 
-    Parameters:
-        fail_message (str): The failure message containing the error message to be extracted.
+        Updates the PromptBuilder object with the stderr and stdout, builds a custom prompt for analyzing test run failures,
+        calls the language model to analyze the prompt, and loads the response into a dictionary.
+        
+        Returns the error summary from the loaded YAML data or a default error message if unable to summarize.
+        Logs errors encountered during the process.
 
-    Returns:
-        str: The extracted error message from the failure message, or an empty string if no error message is found.
+        Parameters:
+            stderr (str): The standard error output from the test run.
+            stdout (str): The standard output from the test run.
 
-    """
-    try:
-        # Define a regular expression pattern to match the error message
-        MAX_LINES = 20
-        pattern = r"={3,} FAILURES ={3,}(.*?)(={3,}|$)"
-        match = re.search(pattern, fail_message, re.DOTALL)
-        if match:
-            err_str = match.group(1).strip("\n")
-            err_str_lines = err_str.split("\n")
-            if len(err_str_lines) > MAX_LINES:
-                # show last MAX_lines lines
-                err_str = "...\n" + "\n".join(err_str_lines[-MAX_LINES:])
-            return err_str
-        return ""
-    except Exception as e:
-        logging.error(f"Error extracting error message: {e}")
-        return ""
+        Returns:
+            str: The error summary extracted from the response or a default error message if extraction fails.
+        """
+        try:
+            # Update the PromptBuilder object with stderr and stdout
+            self.prompt_builder.stderr_from_run = stderr
+            self.prompt_builder.stdout_from_run = stdout
+
+            # Build the prompt
+            prompt_headers_indentation = self.prompt_builder.build_prompt_custom(
+                file="analyze_test_run_failure"
+            )
+
+            # Run the analysis via LLM
+            response, prompt_token_count, response_token_count = (
+                self.ai_caller.call_model(prompt=prompt_headers_indentation, stream=False
+            )
+            self.total_input_token_count += prompt_token_count
+            self.total_output_token_count += response_token_count
+            tests_dict = load_yaml(response)
+            
+            return tests_dict.get("error_summary", f"ERROR: Unable to summarize error message from inputs. STDERR: {stderr}\nSTDOUT: {stdout}.")
+        except Exception as e:
+            logging.error(f"ERROR: Unable to extract error message from inputs using LLM.\nSTDERR: {stderr}\nSTDOUT: {stdout}\n\n{response}")
+            logging.error(f"Error extracting error message: {e}")
+            return ""

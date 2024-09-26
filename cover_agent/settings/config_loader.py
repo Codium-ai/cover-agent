@@ -7,6 +7,7 @@ SETTINGS_FILES = [
     "language_extensions.toml",
     "analyze_suite_test_headers_indentation.toml",
     "analyze_suite_test_insert_line.toml",
+    "analyze_test_run_failure.toml",
 ]
 
 

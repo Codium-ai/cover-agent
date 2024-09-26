@@ -102,6 +102,9 @@ class PromptBuilder:
             else ""
         )
 
+        self.stdout_from_run = ""
+        self.stderr_from_run = ""
+
     def _read_file(self, file_path):
         """
         Helper method to read file contents.
@@ -142,6 +145,8 @@ class PromptBuilder:
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
             "testing_framework": self.testing_framework,
+            "stdout": self.stdout_from_run,
+            "stderr": self.stderr_from_run,
         }
         environment = Environment(undefined=StrictUndefined)
         try:
@@ -159,6 +164,15 @@ class PromptBuilder:
         return {"system": system_prompt, "user": user_prompt}
 
     def build_prompt_custom(self, file) -> dict:
+        """
+        Builds a custom prompt by replacing placeholders with actual content from files and settings.
+
+        Parameters:
+            file (str): The file to retrieve settings for building the prompt.
+
+        Returns:
+            dict: A dictionary containing the system and user prompts.
+        """
         variables = {
             "source_file_name": self.source_file_name,
             "test_file_name": self.test_file_name,
@@ -173,15 +187,19 @@ class PromptBuilder:
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
             "testing_framework": self.testing_framework,
+            "stdout": self.stdout_from_run,
+            "stderr": self.stderr_from_run,
         }
         environment = Environment(undefined=StrictUndefined)
         try:
-            system_prompt = environment.from_string(
-                get_settings().get(file).system
-            ).render(variables)
-            user_prompt = environment.from_string(get_settings().get(file).user).render(
-                variables
-            )
+            settings = get_settings().get(file)
+            if settings is None or not hasattr(settings, "system") or not hasattr(
+                settings, "user"
+            ):
+                logging.error(f"Could not find settings for prompt file: {file}")
+                return {"system": "", "user": ""}
+            system_prompt = environment.from_string(settings.system).render(variables)
+            user_prompt = environment.from_string(settings.user).render(variables)
         except Exception as e:
             logging.error(f"Error rendering prompt: {e}")
             return {"system": "", "user": ""}
