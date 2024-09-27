@@ -92,6 +92,7 @@ class AICaller:
             # Non-streaming response is a CompletionResponse object
             content = response.choices[0].message.content
             print(f"Printing results from LLM model...\n{content}")
+            print(f"[DEBUG] Full Response: {response}")
             usage = response.usage
             prompt_tokens = int(usage.prompt_tokens)
             completion_tokens = int(usage.completion_tokens)
