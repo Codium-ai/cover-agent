@@ -401,9 +401,11 @@ class UnitTestGenerator:
         """
         self.prompt = self.build_prompt()
 
+        self.ai_caller.model = "o1-preview"
         response, prompt_token_count, response_token_count = (
-            self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+            self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens, stream=False)
         )
+        self.ai_caller.model = self.llm_model
         self.total_input_token_count += prompt_token_count
         self.total_output_token_count += response_token_count
         try:

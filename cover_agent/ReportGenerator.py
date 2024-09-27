@@ -115,9 +115,15 @@ class ReportGenerator:
     @classmethod
     def generate_partial_diff(cls, original, processed, context_lines=3):
         """
-        Generates a partial diff of both the original and processed test files, 
+        Generates a partial diff of both the original and processed test files,
         showing only added, removed, or changed lines with a few lines of context.
-
+        
+        Note:
+        - The `difflib.unified_diff` function is used, which includes header lines (`---` and `+++`)
+          that indicate the original and modified file names or timestamps.
+        - It also includes context lines starting with `@@`, which show the range of lines affected.
+        - These lines are essential parts of the diff output and should be included in the expected outputs of tests.
+        
         :param original: String content of the original test file.
         :param processed: String content of the processed test file.
         :param context_lines: Number of context lines to include around changes.
