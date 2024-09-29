@@ -96,7 +96,6 @@ class UnitTestGenerator:
         Returns:
             None
         """
-        # Run coverage and build the prompt
         self.run_coverage()
         self.prompt = self.build_prompt()
 
@@ -239,41 +238,27 @@ class UnitTestGenerator:
         stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
             command=test_command, cwd=self.test_command_dir
         )
+        self.logger.info(f"Diff coverage report:\n{stdout}")
         assert (
             exit_code == 0
         ), f'Fatal: Error running test command. Are you sure the command is correct? "{self.test_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
 
-        # Instantiate CoverageProcessor and process the coverage report
         coverage_processor = CoverageProcessor(
             file_path=self.code_coverage_report_path,
             src_file_path=self.source_file_path,
             coverage_type=self.coverage_type,
+            use_report_coverage_feature_flag=self.use_report_coverage_feature_flag
         )
 
-        # Use the process_coverage_report method of CoverageProcessor, passing in the time the test command was executed
-        try:
-            lines_covered, lines_missed, percentage_covered = (
-                coverage_processor.process_coverage_report(
-                    time_of_test_command=time_of_test_command
-                )
-            )
+        lines_processed, lines_missed, diff_coverage_percentage = coverage_processor.parse_diff_coverage_report(
+            report_text=stdout
+        )
 
-            # Process the extracted coverage metrics
-            self.current_coverage = percentage_covered
-            self.code_coverage_report = f"Lines covered: {lines_covered}\nLines missed: {lines_missed}\nPercentage covered: {round(percentage_covered * 100, 2)}%"
-        except AssertionError as error:
-            # Handle the case where the coverage report does not exist or was not updated after the test command
-            self.logger.error(f"Error in coverage processing: {error}")
-            # Optionally, re-raise the error or handle it as deemed appropriate for your application
-            raise
-        except (ValueError, NotImplementedError) as e:
-            # Handle errors related to unsupported coverage report types or issues in parsing
-            self.logger.warning(f"Error parsing coverage report: {e}")
-            self.logger.info(
-                "Will default to using the full coverage report. You will need to check coverage manually for each passing test."
-            )
-            with open(self.code_coverage_report_path, "r") as f:
-                self.code_coverage_report = f.read()
+        self.logger.info(
+            f"Lines processed: {lines_processed}, Lines missed: {lines_missed}, Diff coverage: {diff_coverage_percentage}"
+        )
+
+        self.diff_coverage_percentage = diff_coverage_percentage
 
     @staticmethod
     def get_included_files(included_files):

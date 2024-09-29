@@ -74,6 +74,7 @@ class PromptBuilder:
         self.code_coverage_report = code_coverage_report
         self.language = language
         self.testing_framework = testing_framework
+        self.diff_coverage = True
 
         # add line numbers to each line in 'source_file'. start from 1
         self.source_file_numbered = "\n".join(

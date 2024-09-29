@@ -149,17 +149,27 @@ class CoverAgent:
             iteration_count += 1
 
             # Check if the desired coverage has been reached
-            if self.test_gen.current_coverage < (self.test_gen.desired_coverage / 100):
+            if self.test_gen.current_coverage < (self.test_gen.desired_coverage / 100) and self.args.diff_coverage:
+                # Run the coverage tool again if the desired coverage hasn't been reached
+                self.test_gen.run_diff_coverage()
+            elif self.test_gen.current_coverage < (self.test_gen.desired_coverage / 100):
                 # Run the coverage tool again if the desired coverage hasn't been reached
                 self.test_gen.run_coverage()
 
         # Log the final coverage
+        if self.args.diff_coverage and self.test_gen.diff_coverage_percentage >= (self.test_gen.desired_coverage / 100):
+            self.logger.info(
+                f"Reached above target diff coverage of {self.test_gen.desired_coverage}% (Current Coverage: {round(self.test_gen.diff_coverage_percentage * 100, 2)}%) in {iteration_count} iterations using diff coverage."
+            )
         if self.test_gen.current_coverage >= (self.test_gen.desired_coverage / 100):
             self.logger.info(
                 f"Reached above target coverage of {self.test_gen.desired_coverage}% (Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%) in {iteration_count} iterations."
             )
         elif iteration_count == self.args.max_iterations:
-            failure_message = f"Reached maximum iteration limit without achieving desired coverage. Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%"
+            if self.args.diff_coverage:
+                failure_message = f"Reached maximum iteration limit without achieving desired diff coverage. Current Coverage: {round(self.test_gen.diff_coverage_percentage * 100, 2)}%"
+            else:
+                failure_message = f"Reached maximum iteration limit without achieving desired coverage. Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%"
             if self.args.strict_coverage:
                 # User requested strict coverage (similar to "--cov-fail-under in pytest-cov"). Fail with exist code 2.
                 self.logger.error(failure_message)
@@ -182,29 +192,3 @@ class CoverAgent:
         # Finish the Weights & Biases run if it was initialized
         if "WANDB_API_KEY" in os.environ:
             wandb.finish()
-
-    def _run_diff_coverage(self):
-        self.logger.info("Running diff coverage.")
-        self.test_gen.run_diff_coverage()
-
-        ReportGenerator.generate_report(
-            self.test_gen.test_results_list, self.args.report_filepath
-        )
-
-        if "WANDB_API_KEY" in os.environ:
-            wandb.finish()
-
-
-    def run(self):
-        if "WANDB_API_KEY" in os.environ:
-            wandb.login(key=os.environ["WANDB_API_KEY"])
-            time_and_date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            run_name = f"{self.args.model}_" + time_and_date
-            wandb.init(project="cover-agent", name=run_name)
-
-        self.test_gen.initial_test_suite_analysis()
-
-        if self.args.diff_coverage:
-            self._run_diff_coverage()
-        else:
-            self._run_full_coverage()
