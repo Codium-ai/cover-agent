@@ -1,6 +1,8 @@
 import pytest
 import os
 from datetime import datetime, timedelta
+from cover_agent.UnitTestDB import dump_to_report_cli
+from cover_agent.UnitTestDB import dump_to_report
 from cover_agent.UnitTestDB import UnitTestDB, UnitTestGenerationAttempt
 
 DB_NAME = "unit_test_runs.db"
@@ -91,3 +93,21 @@ class TestUnitTestDB:
         assert "sample test code" in content
         assert "sample new test code" in content
         assert "def test_example(): pass" in content
+
+
+    def test_dump_to_report_cli_custom_args(self, unit_test_db, tmp_path, monkeypatch):
+        custom_db_path = str(tmp_path / "cli_custom_unit_test_runs.db")
+        custom_report_filepath = str(tmp_path / "cli_custom_report.html")
+        monkeypatch.setattr("sys.argv", [
+            "prog",
+            "--path-to-db", custom_db_path,
+            "--report-filepath", custom_report_filepath
+        ])
+        dump_to_report_cli()
+        assert os.path.exists(custom_report_filepath)
+
+
+    def test_dump_to_report_defaults(self, unit_test_db, tmp_path):
+        report_filepath = tmp_path / "default_report.html"
+        dump_to_report(report_filepath=str(report_filepath))
+        assert os.path.exists(report_filepath)

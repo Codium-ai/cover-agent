@@ -52,9 +52,9 @@ class AICaller:
         }
 
         # Model-specific adjustments
-        if self.model == "o1-preview":
+        if self.model in ["o1-preview", "o1-mini"]:
             completion_params["temperature"] = 1
-            completion_params["stream"] = False  # o1-preview doesn't support streaming
+            completion_params["stream"] = False  # o1 doesn't support streaming
             completion_params["max_completion_tokens"] = max_tokens
             completion_params.pop("max_tokens", None)  # Remove 'max_tokens' if present
             completion_params['messages'] = [msg for msg in completion_params['messages'] if msg['role'] != 'system'] # Popping off the system message
@@ -92,7 +92,6 @@ class AICaller:
             # Non-streaming response is a CompletionResponse object
             content = response.choices[0].message.content
             print(f"Printing results from LLM model...\n{content}")
-            print(f"[DEBUG] Full Response: {response}")
             usage = response.usage
             prompt_tokens = int(usage.prompt_tokens)
             completion_tokens = int(usage.completion_tokens)

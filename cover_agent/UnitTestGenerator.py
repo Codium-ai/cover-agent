@@ -330,9 +330,11 @@ class UnitTestGenerator:
                 prompt_headers_indentation = self.prompt_builder.build_prompt_custom(
                     file="analyze_suite_test_headers_indentation"
                 )
+                self.ai_caller.model = "gpt-4o" if self.llm_model in ["o1-preview", "o1-mini"] else self.llm_model # Exception for OpenAI's new reasoning engines
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_headers_indentation)
                 )
+                self.ai_caller.model = self.llm_model
                 self.total_input_token_count += prompt_token_count
                 self.total_output_token_count += response_token_count
                 tests_dict = load_yaml(response)
@@ -355,9 +357,11 @@ class UnitTestGenerator:
                 prompt_test_insert_line = self.prompt_builder.build_prompt_custom(
                     file="analyze_suite_test_insert_line"
                 )
+                self.ai_caller.model = "gpt-4o" if self.llm_model in ["o1-preview", "o1-mini"] else self.llm_model # Exception for OpenAI's new reasoning engines
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_test_insert_line)
                 )
+                self.ai_caller.model = self.llm_model
                 self.total_input_token_count += prompt_token_count
                 self.total_output_token_count += response_token_count
                 tests_dict = load_yaml(response)
@@ -406,8 +410,9 @@ class UnitTestGenerator:
         """
         self.prompt = self.build_prompt()
 
+        stream = False if self.llm_model in ["o1-preview", "o1-mini"] else True
         response, prompt_token_count, response_token_count = (
-            self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens, stream=True)
+            self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens, stream=stream)
         )
         self.total_input_token_count += prompt_token_count
         self.total_output_token_count += response_token_count
@@ -795,9 +800,11 @@ class UnitTestGenerator:
             )
 
             # Run the analysis via LLM
+            self.ai_caller.model = "gpt-4o" if self.llm_model in ["o1-preview", "o1-mini"] else self.llm_model # Exception for OpenAI's new reasoning engines
             response, prompt_token_count, response_token_count = (
                 self.ai_caller.call_model(prompt=prompt_headers_indentation, stream=False)
             )
+            self.ai_caller.model = self.llm_model # Reset
             self.total_input_token_count += prompt_token_count
             self.total_output_token_count += response_token_count
             tests_dict = load_yaml(response)
