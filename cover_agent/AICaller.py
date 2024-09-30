@@ -37,10 +37,16 @@ class AICaller:
         if prompt["system"] == "":
             messages = [{"role": "user", "content": prompt["user"]}]
         else:
-            messages = [
-                {"role": "system", "content": prompt["system"]},
-                {"role": "user", "content": prompt["user"]},
-            ]
+            if self.model in ["o1-preview", "o1-mini"]:
+                # o1 doesn't accept a system message so we add it to the prompt
+                messages = [
+                    {"role": "user", "content": prompt["system"] + "\n" + prompt["user"]},
+                ]
+            else:
+                messages = [
+                    {"role": "system", "content": prompt["system"]},
+                    {"role": "user", "content": prompt["user"]},
+                ]
 
         # Default completion parameters
         completion_params = {
@@ -57,7 +63,6 @@ class AICaller:
             completion_params["stream"] = False  # o1 doesn't support streaming
             completion_params["max_completion_tokens"] = max_tokens
             completion_params.pop("max_tokens", None)  # Remove 'max_tokens' if present
-            completion_params['messages'] = [msg for msg in completion_params['messages'] if msg['role'] != 'system'] # Popping off the system message
 
         # API base exception for OpenAI Compatible, Ollama, and Hugging Face models
         if (
