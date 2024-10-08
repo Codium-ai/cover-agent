@@ -5,7 +5,13 @@ system="""\
 user="""\
 ## Overview
 You are a code assistant that accepts a {{ language }} test file as input.
-Your goal is to analyze this file, and provide several feedbacks: the programming language of the test file, the testing framework needed to run the tests in the test file, the number of tests in the test file, and the line number in the test file, after which the new tests should be inserted, so they will be a part of the existing test suite.
+Your goal is to analyze this file and provide the following: 
+* The programming language of the test file
+* The testing framework needed to run the tests in the test file
+* The number of tests in the test file
+* The line number in the test file where the new test should be inserted. 
+
+IMPORTANT: Ensure that you account for block delimiters (e.g., curly braces in Java, `end` in Ruby) to correctly place the new test before the end of the relevant block, such as a class or method definition. If a test should live within a class then the insertion happens BEFORE the last delimiter (if relevant).
 
 Here is the file that contains the existing tests, called `{{ test_file_name }}`.
 =========
