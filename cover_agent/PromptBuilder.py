@@ -42,6 +42,7 @@ class PromptBuilder:
         additional_instructions: str = "",
         failed_test_runs: str = "",
         language: str = "python",
+        testing_framework: str = "NOT KNOWN",
     ):
         """
         The `PromptBuilder` class is responsible for building a formatted prompt string by replacing placeholders with the actual content of files read during initialization. It takes in various paths and settings as parameters and provides a method to generate the prompt.
@@ -72,6 +73,8 @@ class PromptBuilder:
         self.test_file = self._read_file(test_file_path)
         self.code_coverage_report = code_coverage_report
         self.language = language
+        self.testing_framework = testing_framework
+
         # add line numbers to each line in 'source_file'. start from 1
         self.source_file_numbered = "\n".join(
             [f"{i + 1} {line}" for i, line in enumerate(self.source_file.split("\n"))]
@@ -98,6 +101,9 @@ class PromptBuilder:
             if failed_test_runs
             else ""
         )
+
+        self.stdout_from_run = ""
+        self.stderr_from_run = ""
 
     def _read_file(self, file_path):
         """
@@ -138,6 +144,9 @@ class PromptBuilder:
             "additional_instructions_text": self.additional_instructions,
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
+            "testing_framework": self.testing_framework,
+            "stdout": self.stdout_from_run,
+            "stderr": self.stderr_from_run,
         }
         environment = Environment(undefined=StrictUndefined)
         try:
@@ -155,6 +164,15 @@ class PromptBuilder:
         return {"system": system_prompt, "user": user_prompt}
 
     def build_prompt_custom(self, file) -> dict:
+        """
+        Builds a custom prompt by replacing placeholders with actual content from files and settings.
+
+        Parameters:
+            file (str): The file to retrieve settings for building the prompt.
+
+        Returns:
+            dict: A dictionary containing the system and user prompts.
+        """
         variables = {
             "source_file_name": self.source_file_name,
             "test_file_name": self.test_file_name,
@@ -168,15 +186,20 @@ class PromptBuilder:
             "additional_instructions_text": self.additional_instructions,
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
+            "testing_framework": self.testing_framework,
+            "stdout": self.stdout_from_run,
+            "stderr": self.stderr_from_run,
         }
         environment = Environment(undefined=StrictUndefined)
         try:
-            system_prompt = environment.from_string(
-                get_settings().get(file).system
-            ).render(variables)
-            user_prompt = environment.from_string(get_settings().get(file).user).render(
-                variables
-            )
+            settings = get_settings().get(file)
+            if settings is None or not hasattr(settings, "system") or not hasattr(
+                settings, "user"
+            ):
+                logging.error(f"Could not find settings for prompt file: {file}")
+                return {"system": "", "user": ""}
+            system_prompt = environment.from_string(settings.system).render(variables)
+            user_prompt = environment.from_string(settings.user).render(variables)
         except Exception as e:
             logging.error(f"Error rendering prompt: {e}")
             return {"system": "", "user": ""}

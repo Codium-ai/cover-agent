@@ -28,6 +28,8 @@ Here is the file that contains the existing tests, called `{{ test_file_name }}`
 {{ test_file| trim }}
 =========
 
+### Test Framework
+The test framework used for running tests is `{{ testing_framework }}`.
 
 {%- if additional_includes_section|trim %}
 
@@ -106,13 +108,6 @@ new_tests:
 ```
 
 Use block scalar('|') to format each YAML output.
-
-
-{%- if additional_instructions_text|trim  %}
-
-{{ additional_instructions_text|trim }}
-{% endif %}
-
 
 Response (should be a valid YAML, and nothing else):
 ```yaml

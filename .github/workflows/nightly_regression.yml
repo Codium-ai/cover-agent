@@ -36,7 +36,7 @@ jobs:
     - name: Build Executable
       run: make installer
     - name: Upload Executable
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: cover-agent
         path: dist/cover-agent*
@@ -58,7 +58,7 @@ jobs:
 
     # Step 2: Download the artifact
     - name: Download artifact
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: cover-agent
         path: dist/

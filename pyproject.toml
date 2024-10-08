@@ -16,6 +16,7 @@ python = ">=3.9,<3.13"
 jinja2 = "^3.1.3"
 beautifulsoup4 = "^4.12.3"
 poetry-dynamic-versioning = "^1.3.0"
+sqlalchemy = "^2.0.32"
 
 # LLM Dependencies
 litellm = { git = "https://github.com/mrT23/litellm.git" }
@@ -42,6 +43,7 @@ build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry.scripts]
 cover-agent = "cover_agent.main:main"
+generate-report = "cover_agent.UnitTestDB:dump_to_report_cli"
 
 [tool.poetry-dynamic-versioning]
 enable = true
