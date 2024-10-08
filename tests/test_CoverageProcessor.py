@@ -71,7 +71,7 @@ class TestCoverageProcessor:
         )
 
         # Action
-        missed, covered = processor.parse_missed_covered_lines_jacoco(
+        missed, covered = processor.parse_missed_covered_lines_jacoco_csv(
             "com.example", "MyClass"
         )
 
@@ -86,7 +86,7 @@ class TestCoverageProcessor:
             return_value=("com.example", "Example"),
         )
         mocker.patch(
-            "cover_agent.CoverageProcessor.CoverageProcessor.parse_missed_covered_lines_jacoco",
+            "cover_agent.CoverageProcessor.CoverageProcessor.parse_missed_covered_lines_jacoco_xml",
             return_value=(0, 0),
         )
 
@@ -173,7 +173,7 @@ class TestCoverageProcessor:
         mock_parse.assert_called_once()
         assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
 
-    def test_parse_missed_covered_lines_jacoco_key_error(self, mocker):
+    def test_parse_missed_covered_lines_jacoco_csv_key_error(self, mocker):
         mock_open = mocker.patch(
             "builtins.open",
             mocker.mock_open(
@@ -192,7 +192,7 @@ class TestCoverageProcessor:
         )
 
         with pytest.raises(KeyError):
-            processor.parse_missed_covered_lines_jacoco("com.example", "MyClass")
+            processor.parse_missed_covered_lines_jacoco_csv("com.example", "MyClass")
 
     def test_parse_coverage_report_lcov_no_coverage_data(self, mocker):
         """
@@ -247,6 +247,116 @@ class TestCoverageProcessor:
         assert covered_lines == [1, 3], "Expected lines 1 and 3 to be covered for app.py"
         assert missed_lines == [2], "Expected line 2 to be missed for app.py"
         assert coverage_pct == 2/3, "Expected 66.67% coverage for app.py"
+
+    def test_parse_coverage_report_unsupported_type(self, mocker):
+        mocker.patch(
+            "cover_agent.CoverageProcessor.CoverageProcessor.extract_package_and_class_java",
+            return_value=("com.example", "Example"),
+        )
+
+        processor = CoverageProcessor(
+            "path/to/coverage_report.html", "path/to/MyClass.java", "jacoco"
+        )
+        with pytest.raises(
+            ValueError, match="Unsupported JaCoCo code coverage report format: html"
+        ):
+            processor.parse_coverage_report_jacoco()
+
+    def test_parse_missed_covered_lines_jacoco_xml_no_source_file(self, mocker):
+        #, mock_xml_tree
+        mocker.patch(
+            "cover_agent.CoverageProcessor.CoverageProcessor.extract_package_and_class_java",
+            return_value=("com.example", "Example"),
+        )
+
+        xml_str = """<report>
+                        <package name="path/to">
+                            <sourcefile name="MyClass.java">
+                                <counter type="INSTRUCTION" missed="53" covered="387"/>
+                                <counter type="BRANCH" missed="2" covered="6"/>
+                                <counter type="LINE" missed="9" covered="94"/>
+                                <counter type="COMPLEXITY" missed="5" covered="23"/>
+                                <counter type="METHOD" missed="3" covered="21"/>
+                                <counter type="CLASS" missed="0" covered="1"/>
+                            </sourcefile>
+                        </package>
+                    </report>"""
+
+        mocker.patch(
+            "xml.etree.ElementTree.parse",
+            return_value=ET.ElementTree(ET.fromstring(xml_str))
+        )
+
+        processor = CoverageProcessor(
+            "path/to/coverage_report.xml", "path/to/MySecondClass.java", "jacoco"
+        )
+
+        # Action
+        missed, covered = processor.parse_missed_covered_lines_jacoco_xml(
+            "MySecondClass"
+        )
+
+        # Assert
+        assert missed == 0
+        assert covered == 0
+
+    def test_parse_missed_covered_lines_jacoco_xml(self, mocker):
+        #, mock_xml_tree
+        mocker.patch(
+            "cover_agent.CoverageProcessor.CoverageProcessor.extract_package_and_class_java",
+            return_value=("com.example", "Example"),
+        )
+
+        xml_str = """<report>
+                        <package name="path/to">
+                            <sourcefile name="MyClass.java">
+                                <counter type="INSTRUCTION" missed="53" covered="387"/>
+                                <counter type="BRANCH" missed="2" covered="6"/>
+                                <counter type="LINE" missed="9" covered="94"/>
+                                <counter type="COMPLEXITY" missed="5" covered="23"/>
+                                <counter type="METHOD" missed="3" covered="21"/>
+                                <counter type="CLASS" missed="0" covered="1"/>
+                            </sourcefile>
+                        </package>
+                    </report>"""
+
+        mocker.patch(
+            "xml.etree.ElementTree.parse",
+            return_value=ET.ElementTree(ET.fromstring(xml_str))
+        )
+
+        processor = CoverageProcessor(
+            "path/to/coverage_report.xml", "path/to/MyClass.java", "jacoco"
+        )
+
+        # Action
+        missed, covered = processor.parse_missed_covered_lines_jacoco_xml(
+            "MyClass"
+        )
+
+        # Assert
+        assert missed == 9
+        assert covered == 94
+
+    def test_get_file_extension_with_valid_file_extension(self):
+        processor = CoverageProcessor(
+            "path/to/coverage_report.xml", "path/to/MyClass.java", "jacoco"
+        )
+
+        file_extension = processor.get_file_extension("coverage_report.xml")
+
+        # Assert
+        assert file_extension == 'xml'
+
+    def test_get_file_extension_with_no_file_extension(self):
+        processor = CoverageProcessor(
+            "path/to/coverage_report", "path/to/MyClass.java", "jacoco"
+        )
+
+        file_extension = processor.get_file_extension("coverage_report")
+
+        # Assert
+        assert file_extension is ''
 
     def test_parse_coverage_report_lcov_with_feature_flag(self, mocker):
         mock_parse_lcov = mocker.patch("cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_lcov", return_value=([], [], 0.0))
