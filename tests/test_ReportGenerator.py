@@ -45,4 +45,14 @@ class TestReportGeneration:
         assert expected_output[2] in content  # Check if the row includes "test_current_date"
         assert expected_output[3] in content  # Check if the HTML closes properly
 
+    def test_generate_partial_diff_basic(self):
+        original = "line1\nline2\nline3"
+        processed = "line1\nline2 modified\nline3\nline4"
+        diff_output = ReportGenerator.generate_partial_diff(original, processed)
+        assert '<span class="diff-added">+line2 modified</span>' in diff_output
+        assert '<span class="diff-added">+line4</span>' in diff_output
+        assert '<span class="diff-removed">-line2</span>' in diff_output
+        assert '<span class="diff-unchanged"> line1</span>' in diff_output
+
+
         # Additional validation can be added based on specific content if required

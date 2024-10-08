@@ -168,3 +168,41 @@ class TestCoverAgent:
         # Clean up the temp files
         os.remove(temp_source_file.name)
         os.remove(temp_test_file.name)
+
+    @patch("cover_agent.CoverAgent.os.environ", {})
+    @patch("cover_agent.CoverAgent.sys.exit")
+    @patch("cover_agent.CoverAgent.UnitTestGenerator")
+    @patch("cover_agent.CoverAgent.UnitTestDB")
+    def test_run_max_iterations_strict_coverage(self, mock_test_db, mock_unit_test_generator, mock_sys_exit):
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
+            with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_test_file:
+                args = argparse.Namespace(
+                    source_file_path=temp_source_file.name,
+                    test_file_path=temp_test_file.name,
+                    test_file_output_path="output_test_file.py",
+                    code_coverage_report_path="coverage_report.xml",
+                    test_command="pytest",
+                    test_command_dir=os.getcwd(),
+                    included_files=None,
+                    coverage_type="cobertura",
+                    report_filepath="test_results.html",
+                    desired_coverage=90,
+                    max_iterations=1,
+                    additional_instructions="",
+                    model="openai/test-model",
+                    api_base="openai/test-api",
+                    use_report_coverage_feature_flag=False,
+                    log_db_path="",
+                    run_tests_multiple_times=False,
+                    strict_coverage=True
+                )
+                # Mock the methods used in run
+                instance = mock_unit_test_generator.return_value
+                instance.current_coverage = 0.5  # below desired coverage
+                instance.desired_coverage = 90
+                instance.generate_tests.return_value = {"new_tests": [{}]}
+                agent = CoverAgent(args)
+                agent.run()
+                # Assertions to ensure sys.exit was called
+                mock_sys_exit.assert_called_once_with(2)
+                mock_test_db.return_value.dump_to_report.assert_called_once_with(args.report_filepath)

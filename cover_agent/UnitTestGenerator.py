@@ -80,6 +80,7 @@ class UnitTestGenerator:
         self.total_input_token_count = 0
         self.total_output_token_count = 0
         self.testing_framework = "Unknown"
+        self.code_coverage_report = ""
 
         # Read self.source_file_path into a string
         with open(self.source_file_path, "r") as f:
@@ -184,7 +185,11 @@ class UnitTestGenerator:
                     if key not in self.last_coverage_percentages:
                         self.last_coverage_percentages[key] =  0
                     self.last_coverage_percentages[key] = percentage_covered
-                percentage_covered = total_lines_covered / total_lines
+                try:
+                    percentage_covered = total_lines_covered / total_lines
+                except ZeroDivisionError:
+                    self.logger.error(f"ZeroDivisionError: Attempting to perform total_lines_covered / total_lines: {total_lines_covered} / {total_lines}.")
+                    percentage_covered = 0
 
                 self.logger.info(
                     f"Total lines covered: {total_lines_covered}, Total lines missed: {total_lines_missed}, Total lines: {total_lines}"
@@ -325,9 +330,11 @@ class UnitTestGenerator:
                 prompt_headers_indentation = self.prompt_builder.build_prompt_custom(
                     file="analyze_suite_test_headers_indentation"
                 )
+                self.ai_caller.model = "gpt-4o" if self.llm_model in ["o1-preview", "o1-mini"] else self.llm_model # Exception for OpenAI's new reasoning engines
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_headers_indentation)
                 )
+                self.ai_caller.model = self.llm_model
                 self.total_input_token_count += prompt_token_count
                 self.total_output_token_count += response_token_count
                 tests_dict = load_yaml(response)
@@ -350,9 +357,11 @@ class UnitTestGenerator:
                 prompt_test_insert_line = self.prompt_builder.build_prompt_custom(
                     file="analyze_suite_test_insert_line"
                 )
+                self.ai_caller.model = "gpt-4o" if self.llm_model in ["o1-preview", "o1-mini"] else self.llm_model # Exception for OpenAI's new reasoning engines
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_test_insert_line)
                 )
+                self.ai_caller.model = self.llm_model
                 self.total_input_token_count += prompt_token_count
                 self.total_output_token_count += response_token_count
                 tests_dict = load_yaml(response)
@@ -401,8 +410,9 @@ class UnitTestGenerator:
         """
         self.prompt = self.build_prompt()
 
+        stream = False if self.llm_model in ["o1-preview", "o1-mini"] else True
         response, prompt_token_count, response_token_count = (
-            self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+            self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens, stream=stream)
         )
         self.total_input_token_count += prompt_token_count
         self.total_output_token_count += response_token_count
@@ -790,15 +800,17 @@ class UnitTestGenerator:
             )
 
             # Run the analysis via LLM
+            self.ai_caller.model = "gpt-4o" if self.llm_model in ["o1-preview", "o1-mini"] else self.llm_model # Exception for OpenAI's new reasoning engines
             response, prompt_token_count, response_token_count = (
                 self.ai_caller.call_model(prompt=prompt_headers_indentation, stream=False)
             )
+            self.ai_caller.model = self.llm_model # Reset
             self.total_input_token_count += prompt_token_count
             self.total_output_token_count += response_token_count
             tests_dict = load_yaml(response)
             
             return tests_dict.get("error_summary", f"ERROR: Unable to summarize error message from inputs. STDERR: {stderr}\nSTDOUT: {stdout}.")
         except Exception as e:
-            logging.error(f"ERROR: Unable to extract error message from inputs using LLM.\nSTDERR: {stderr}\nSTDOUT: {stdout}\n\n{response}")
+            logging.error(f"ERROR: Unable to extract error message from inputs using LLM.\nSTDERR: {stderr}\nSTDOUT: {stdout}")
             logging.error(f"Error extracting error message: {e}")
             return ""
