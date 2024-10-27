@@ -12,15 +12,15 @@ jobs:
   build-executable:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.12'
     
     # Step to cache Poetry dependencies
     - name: Cache Poetry dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cache/pypoetry
@@ -36,7 +36,7 @@ jobs:
     - name: Build Executable
       run: make installer
     - name: Upload Executable
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cover-agent
         path: dist/cover-agent*
@@ -54,11 +54,11 @@ jobs:
     steps:
     # Step 1: Check out the repository code
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     # Step 2: Download the artifact
     - name: Download artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: cover-agent
         path: dist/
