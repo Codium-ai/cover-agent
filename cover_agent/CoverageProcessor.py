@@ -265,6 +265,23 @@ class CoverageProcessor:
 
         return missed, covered
 
+    def parse_diff_coverage_report(self, report_text: str) -> Tuple[int, int, int]:
+        # Extract total lines
+        total_lines_match = re.search(r'Total:\s+(\d+)\s+lines', report_text)
+        total_lines = int(total_lines_match.group(1)) if total_lines_match else 0
+
+        # Extract missing lines
+        missing_lines_match = re.search(r'Missing:\s+(\d+)\s+lines', report_text)
+        missing_lines = int(missing_lines_match.group(1)) if missing_lines_match else 0
+
+        coverage_match = re.search(r'Coverage:\s+(\d+)%', report_text)
+        coverage_percentage = float(coverage_match.group(1)) / 100 if coverage_match else 0.0
+
+        # Calculate processed lines
+        processed_lines = total_lines - missing_lines
+
+        return processed_lines, missing_lines, coverage_percentage
+
     def extract_package_and_class_java(self):
         package_pattern = re.compile(r"^\s*package\s+([\w\.]+)\s*;.*$")
         class_pattern = re.compile(r"^\s*public\s+class\s+(\w+).*")
