@@ -4,6 +4,8 @@ import os
 from jinja2 import Environment, StrictUndefined
 
 from cover_agent.settings.config_loader import get_settings
+import subprocess
+import re
 
 MAX_TESTS_PER_RUN = 4
 
@@ -31,6 +33,14 @@ Below is a list of failed tests that you generated in previous iterations. Do no
 ======
 """
 
+DIFF_COVERAGE_TEXT = """
+## Diff Coverage
+Focus on writing tests for only the lines changed in this branch. The following lines have been changed in the source file since the last test run:
+======
+{changed_lines}
+======
+"""
+
 
 class PromptBuilder:
     def __init__(
@@ -43,6 +53,8 @@ class PromptBuilder:
         failed_test_runs: str = "",
         language: str = "python",
         testing_framework: str = "NOT KNOWN",
+        diff_coverage: bool = False,
+        diff_branch: str = "main",
     ):
         """
         The `PromptBuilder` class is responsible for building a formatted prompt string by replacing placeholders with the actual content of files read during initialization. It takes in various paths and settings as parameters and provides a method to generate the prompt.
@@ -74,7 +86,12 @@ class PromptBuilder:
         self.code_coverage_report = code_coverage_report
         self.language = language
         self.testing_framework = testing_framework
+        self.diff_branch = diff_branch
 
+        if diff_coverage:
+            diff_output = self._get_diff(source_file_path)
+            changed_lines = self._extract_changed_lines(diff_output)
+        
         # add line numbers to each line in 'source_file'. start from 1
         self.source_file_numbered = "\n".join(
             [f"{i + 1} {line}" for i, line in enumerate(self.source_file.split("\n"))]
@@ -102,6 +119,12 @@ class PromptBuilder:
             else ""
         )
 
+        self.diff_coverage_instructions = (
+            DIFF_COVERAGE_TEXT.format(changed_lines=changed_lines)
+            if diff_coverage
+            else ""
+        )
+
         self.stdout_from_run = ""
         self.stderr_from_run = ""
 
@@ -120,6 +143,57 @@ class PromptBuilder:
                 return f.read()
         except Exception as e:
             return f"Error reading {file_path}: {e}"
+    
+    def _get_diff(self, source_file_path):
+        try:
+            # Get unstaged changes
+            command_unstaged = ["git", "diff", self.diff_branch, "--", source_file_path]
+            result_unstaged = subprocess.run(
+                command_unstaged,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+    
+            # Get staged changes
+            command_staged = ["git", "diff", "--staged", self.diff_branch, "--", source_file_path]
+            result_staged = subprocess.run(
+                command_staged,
+                capture_output=True,
+                text=True,
+                check=True
+            )
+    
+            # Combine both diffs
+            combined_diff = result_unstaged.stdout + result_staged.stdout
+            return combined_diff
+        except subprocess.CalledProcessError as e:
+            logging.error(f"Error getting diff with main: {e}")
+            return ""
+
+
+    def _extract_changed_lines(self, diff_output):
+        """
+        Extract the line numbers of the changed lines from the diff output.
+
+        Parameters:
+            diff_output (str): The diff output between the source file and the main branch.
+
+        Returns:
+            list: A list of tuples representing the changed line numbers.
+        """
+        changed_lines = []
+        diff_lines = diff_output.split("\n")
+        for line in diff_lines:
+            if line.startswith("@@"):
+                # Extract line numbers from the diff hunk header
+                match = re.search(r'@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@', line)
+                if match:
+                    start_line = int(match.group(1))
+                    line_count = int(match.group(2)) if match.group(2) else 1
+                    for i in range(start_line, start_line + line_count):
+                        changed_lines.append(i)
+        return changed_lines
 
     def build_prompt(self) -> dict:
         variables = {
@@ -133,6 +207,7 @@ class PromptBuilder:
             "additional_includes_section": self.included_files,
             "failed_tests_section": self.failed_test_runs,
             "additional_instructions_text": self.additional_instructions,
+            "diff_coverage_text": self.diff_coverage_instructions,
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
             "testing_framework": self.testing_framework,
@@ -175,6 +250,7 @@ class PromptBuilder:
             "additional_includes_section": self.included_files,
             "failed_tests_section": self.failed_test_runs,
             "additional_instructions_text": self.additional_instructions,
+            "diff_coverage_text": self.diff_coverage_instructions,
             "language": self.language,
             "max_tests": MAX_TESTS_PER_RUN,
             "testing_framework": self.testing_framework,

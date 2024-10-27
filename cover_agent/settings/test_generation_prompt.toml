@@ -49,6 +49,11 @@ The test framework used for running tests is `{{ testing_framework }}`.
 {{ additional_instructions_text|trim }}
 {% endif %}
 
+{%- if diff_coverage_text|trim %}
+
+{{ diff_coverage_text|trim }}
+{% endif %}
+
 
 ## Code Coverage
 Based on the code coverage report below, your goal is to suggest new test cases that would increase the current coverage. Focus only on untested or partially tested areas:

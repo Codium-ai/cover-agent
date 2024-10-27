@@ -175,6 +175,7 @@ class TestPromptBuilder:
         result = builder.build_prompt()
         assert result == {"system": "", "user": ""}
 
+
 class TestPromptBuilderEndToEnd:
     def test_custom_analyze_test_run_failure(self):
         # Create fake source and test files and tmp files and pass in the paths

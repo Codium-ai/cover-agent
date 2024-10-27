@@ -30,6 +30,8 @@ class UnitTestGenerator:
         desired_coverage: int = 90,  # Default to 90% coverage if not specified
         additional_instructions: str = "",
         use_report_coverage_feature_flag: bool = False,
+        diff_coverage: bool = False,
+        comparasion_branch: str = "main",
     ):
         """
         Initialize the UnitTestGenerator class with the provided parameters.
@@ -70,6 +72,8 @@ class UnitTestGenerator:
         self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
         self.last_coverage_percentages = {}
         self.llm_model = llm_model
+        self.diff_coverage = diff_coverage
+        self.comparasion_branch = comparasion_branch
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
@@ -96,8 +100,9 @@ class UnitTestGenerator:
         Returns:
             None
         """
-        # Run coverage and build the prompt
         self.run_coverage()
+        if self.diff_coverage:
+            self.run_diff_coverage()
         self.prompt = self.build_prompt()
 
     def get_code_language(self, source_file_path):
@@ -224,6 +229,48 @@ class UnitTestGenerator:
             with open(self.code_coverage_report_path, "r") as f:
                 self.code_coverage_report = f.read()
 
+    def run_diff_coverage(self):
+        """
+        Preform a diff coverage command to generate diff coverage report. 
+        Process the diff coverage report to extract the diff coverage percentage.
+
+        Parameters:
+        - None
+
+        Returns:
+        - None
+        """
+        # Perform a diff coverage command to generate a diff coverage report
+        coverage_filename = os.path.basename(self.code_coverage_report_path)
+        coverage_command = f"diff-cover --compare-branch={self.comparasion_branch} {coverage_filename}"
+        
+        self.logger.info(
+            f'Running diff coverage command to generate diff coverage report: "{coverage_command}"'
+        )
+        stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
+            command=coverage_command, cwd=self.test_command_dir
+        )
+        assert (
+            exit_code == 0
+        ), f'Fatal: Error running test command. Are you sure the command is correct? "{coverage_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
+
+        coverage_processor = CoverageProcessor(
+            file_path=self.code_coverage_report_path,
+            src_file_path=self.source_file_path,
+            coverage_type=self.coverage_type,
+            use_report_coverage_feature_flag=self.use_report_coverage_feature_flag
+        )
+
+        lines_processed, lines_missed, diff_coverage_percentage = coverage_processor.parse_diff_coverage_report(
+            report_text=stdout
+        )
+
+        self.logger.info(
+            f"Lines processed: {lines_processed}, Lines missed: {lines_missed}, Diff coverage: {diff_coverage_percentage}"
+        )
+
+        self.current_coverage = diff_coverage_percentage
+
     @staticmethod
     def get_included_files(included_files):
         """
@@ -303,6 +350,8 @@ class UnitTestGenerator:
             failed_test_runs=failed_test_runs_value,
             language=self.language,
             testing_framework=self.testing_framework,
+            diff_coverage=self.diff_coverage,
+            diff_branch=self.comparasion_branch,
         )
 
         return self.prompt_builder.build_prompt()
@@ -548,6 +597,20 @@ class UnitTestGenerator:
                     )
                     if exit_code != 0:
                         break
+
+                    if self.diff_coverage:
+                        report_path = self.code_coverage_report_path.replace(self.test_command_dir, "")
+                        report_path = report_path.lstrip("/")
+                        test_command = f"diff-cover --compare-branch={self.comparasion_branch} {report_path}"
+                        self.logger.info(
+                            f'Running diff coverage command to generate diff coverage report: "{test_command}"'
+                        )
+                        stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
+                            command=test_command, cwd=self.test_command_dir
+                        )
+                        if exit_code != 0:
+                            break
+
                 
 
                 # Step 3: Check for pass/fail from the Runner object
@@ -624,6 +687,10 @@ class UnitTestGenerator:
                             coverage_percentages[key] = percentage_covered
 
                         new_percentage_covered = total_lines_covered / total_lines
+                    elif self.diff_coverage:
+                        _, _, new_percentage_covered = new_coverage_processor.parse_diff_coverage_report(
+                            report_text=stdout
+                        )
                     else:
                         _, _, new_percentage_covered = (
                             new_coverage_processor.process_coverage_report(
@@ -751,6 +818,7 @@ class UnitTestGenerator:
                 "original_test_file": original_content,
                 "processed_test_file": "N/A",
             }
+        
 
     def to_dict(self):
         return {
