@@ -18,7 +18,8 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 [![Twitter](https://img.shields.io/twitter/follow/codiumai)](https://twitter.com/codiumai)
     <a href="https://github.com/Codium-ai/cover-agent/commits/main">
     <img alt="GitHub" src="https://img.shields.io/github/last-commit/Codium-ai/cover-agent/main?style=for-the-badge" height="20">
-    </a>
+    </a><br>
+    <a href="https://trendshift.io/repositories/10328" target="_blank"><img src="https://trendshift.io/api/badge/repositories/10328" alt="Codium-ai/cover-agent | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </div>
 
 ## Table of Contents
