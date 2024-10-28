@@ -67,6 +67,7 @@ class UnitTestGenerator:
         self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
         self.last_coverage_percentages = {}
         self.llm_model = llm_model
+        self.current_coverage = 0
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
@@ -174,7 +175,7 @@ class UnitTestGenerator:
                 total_lines_missed = 0
                 total_lines = 0
                 for key in file_coverage_dict:
-                    lines_covered, lines_missed, percentage_covered = (
+                    lines_covered, lines_missed, percentage_covered, branch_covered = (
                         file_coverage_dict[key]
                     )
                     total_lines_covered += len(lines_covered)
@@ -198,7 +199,7 @@ class UnitTestGenerator:
                     f"coverage: Percentage {round(percentage_covered * 100, 2)}%"
                 )
             else:
-                lines_covered, lines_missed, percentage_covered = (
+                lines_covered, lines_missed, percentage_covered, branches_covered = (
                     coverage_processor.process_coverage_report(
                         time_of_test_command=time_of_test_command
                     )
@@ -206,7 +207,8 @@ class UnitTestGenerator:
 
             # Process the extracted coverage metrics
             self.current_coverage = percentage_covered
-            self.code_coverage_report = f"Lines covered: {lines_covered}\nLines missed: {lines_missed}\nPercentage covered: {round(percentage_covered * 100, 2)}%"
+            self.branches_coverage = branches_covered
+            self.code_coverage_report = f"Lines covered: {lines_covered}\nLines missed: {lines_missed}\nPercentage covered: {round(percentage_covered * 100, 2)}%\nBranches covered: {branches_covered}"
         except AssertionError as error:
             # Handle the case where the coverage report does not exist or was not updated after the test command
             self.logger.error(f"Error in coverage processing: {error}")
@@ -627,7 +629,7 @@ class UnitTestGenerator:
 
                         new_percentage_covered = total_lines_covered / total_lines
                     else:
-                        _, _, new_percentage_covered = (
+                        _, _, new_percentage_covered, new_branches_covered = (
                             new_coverage_processor.process_coverage_report(
                                 time_of_test_command=time_of_test_command
                             )
@@ -708,6 +710,7 @@ class UnitTestGenerator:
                 )  # this is important, otherwise the next test will be inserted at the wrong line
 
                 self.current_coverage = new_percentage_covered
+                self.branches_coverage = new_branches_covered
 
                 for key in coverage_percentages:
                     if key not in self.last_coverage_percentages:
@@ -723,7 +726,7 @@ class UnitTestGenerator:
                     self.last_coverage_percentages[key] = coverage_percentages[key]
 
                 self.logger.info(
-                    f"Test passed and coverage increased. Current coverage: {round(new_percentage_covered * 100, 2)}%"
+                    f"Test passed and coverage increased. Current line coverage: {round(new_percentage_covered * 100, 2)}%, Current Branch coverage: {round(new_branches_covered * 100 , 2)}%"
                 )
                 return {
                     "status": "PASS",

@@ -125,9 +125,9 @@ class CoverAgent:
         ):
             # Log the current coverage
             self.logger.info(
-                f"Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%"
+                f"Current Line Coverage: {round(self.test_gen.current_coverage * 100, 2)}%, Current Branch Coverage: {round(self.test_gen.branches_coverage * 100, 2)}%"
             )
-            self.logger.info(f"Desired Coverage: {self.test_gen.desired_coverage}%")
+            self.logger.info(f"Desired Line Coverage: {self.test_gen.desired_coverage}%")
 
             # Generate new tests
             generated_tests_dict = self.test_gen.generate_tests(max_tokens=4096)
@@ -154,10 +154,10 @@ class CoverAgent:
         # Log the final coverage
         if self.test_gen.current_coverage >= (self.test_gen.desired_coverage / 100):
             self.logger.info(
-                f"Reached above target coverage of {self.test_gen.desired_coverage}% (Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%) in {iteration_count} iterations."
+                f"Reached above target coverage of {self.test_gen.desired_coverage}% (Current Line Coverage: {round(self.test_gen.current_coverage * 100, 2)}%, Current Branch Coverage: {round(self.test_gen.branches_coverage * 100, 2)}%) in {iteration_count} iterations."
             )
         elif iteration_count == self.args.max_iterations:
-            failure_message = f"Reached maximum iteration limit without achieving desired coverage. Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%"
+            failure_message = f"Reached maximum iteration limit without achieving desired coverage. Current Line Coverage: {round(self.test_gen.current_coverage * 100, 2)}%, Current Branch Coverage: {round(self.test_gen.branches_coverage * 100, 2)}%"
             if self.args.strict_coverage:
                 # User requested strict coverage (similar to "--cov-fail-under in pytest-cov"). Fail with exist code 2.
                 self.logger.error(failure_message)
