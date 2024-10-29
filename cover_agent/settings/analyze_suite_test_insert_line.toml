@@ -13,7 +13,7 @@ Your goal is to analyze this file and provide the following:
 
 IMPORTANT: Ensure that you account for block delimiters (e.g., curly braces in Java, `end` in Ruby) to correctly place the new test before the end of the relevant block, such as a class or method definition. If a test should live within a class then the insertion happens BEFORE the last delimiter (if relevant).
 
-Here is the file that contains the existing tests, called `{{ test_file_name }}`.
+Here is the file that contains the existing tests, called `{{ test_file_name }}`. Note that we have manually added line numbers for each line of code, to help you understand the structure of the file. Those numbers are not a part of the original code.
 =========
 {{ test_file_numbered|trim }}
 =========
@@ -31,6 +31,7 @@ class TestsAnalysis(BaseModel):
 
 
 Example output:
+
 ```yaml
 language: {{ language }}
 testing_framework: ...
