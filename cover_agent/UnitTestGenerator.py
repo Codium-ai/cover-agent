@@ -54,6 +54,9 @@ class UnitTestGenerator:
             None
         """
         # Class variables
+        self.relevant_line_number_to_insert_imports_after = None
+        self.relevant_line_number_to_insert_tests_after = None
+        self.test_headers_indentation = None
         self.source_file_path = source_file_path
         self.test_file_path = test_file_path
         self.code_coverage_report_path = code_coverage_report_path
@@ -252,7 +255,7 @@ class UnitTestGenerator:
             return out_str.strip()
         return ""
 
-    def build_prompt(self):
+    def build_prompt(self) -> dict:
         """
         Builds a prompt using the provided information to be used for generating tests.
 
@@ -388,7 +391,7 @@ class UnitTestGenerator:
             self.logger.error(f"Error during initial test suite analysis: {e}")
             raise Exception("Error during initial test suite analysis")
 
-    def generate_tests(self, max_tokens=4096):
+    def generate_tests(self):
         """
         Generate tests using the AI model based on the constructed prompt.
 
@@ -407,11 +410,8 @@ class UnitTestGenerator:
             Exception: If there is an error during test generation, such as a parsing error while processing the AI model response.
         """
         self.prompt = self.build_prompt()
+        response, prompt_token_count, response_token_count =  self.ai_caller.call_model(prompt=self.prompt)
 
-        stream = False if self.llm_model in ["o1-preview", "o1-mini"] else True
-        response, prompt_token_count, response_token_count = (
-            self.ai_caller.call_model(prompt=self.prompt, max_tokens=max_tokens, stream=stream)
-        )
         self.total_input_token_count += prompt_token_count
         self.total_output_token_count += response_token_count
         try:

@@ -122,15 +122,6 @@ class PromptBuilder:
             return f"Error reading {file_path}: {e}"
 
     def build_prompt(self) -> dict:
-        """
-        Replaces placeholders with the actual content of files read during initialization, and returns the formatted prompt.
-
-        Parameters:
-            None
-
-        Returns:
-            str: The formatted prompt string.
-        """
         variables = {
             "source_file_name": self.source_file_name,
             "test_file_name": self.test_file_name,
