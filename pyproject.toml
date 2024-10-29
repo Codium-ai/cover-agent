@@ -2,7 +2,7 @@
 name = "cover-agent"
 version = "0.0.0" # Placeholder. Will be replaced by dynamic versioning.
 description = "Cover Agent Tool"
-authors = ["CodiumAI <tal.r@codium.ai>"]
+authors = ["QodoAI <tal.r@codium.ai>"]
 license = "Apache 2.0"
 readme = "README.md"
 

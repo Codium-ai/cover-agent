@@ -1683,7 +1683,7 @@ proxy = ["PyJWT (>=2.8.0,<3.0.0)", "apscheduler (>=3.10.4,<4.0.0)", "backoff", "
 type = "git"
 url = "https://github.com/Codium-research/litellm_2024_10_29.git"
 reference = "HEAD"
-resolved_reference = "acc5e481430180ea3bcd590c9ed9ae3fa6b72e69"
+resolved_reference = "8ed6769744b6d5a44f527a7df755dd41dc71339b"
 
 [[package]]
 name = "macholib"
