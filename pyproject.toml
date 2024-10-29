@@ -19,7 +19,7 @@ poetry-dynamic-versioning = "^1.3.0"
 sqlalchemy = "^2.0.32"
 
 # LLM Dependencies
-litellm = "^1.50.2"
+litellm = { git = "https://github.com/Codium-research/litellm_2024_10_29.git" }
 openai = "^1.52.1"
 tiktoken = "^0.8.0"
 boto3 = "^1.34.121"
