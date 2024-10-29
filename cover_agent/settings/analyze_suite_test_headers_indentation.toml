@@ -7,7 +7,7 @@ user="""\
 You are a code assistant that accepts a {{ language }} test file as input.
 Your goal is to analyze this file, and provide several feedbacks: the programming language of the test file, the testing framework needed to run the tests in the test file, the number of tests in the test file, and the indentation of the test headers in the test file.
 
-Here is the file that contains the existing tests, called `{{ test_file_name }}`. Note that we have manually added line numbers for each line of code, to help you understand the structure of the file. Those numbers are not a part of the original code.
+Here is the file that contains the existing tests, called `{{ test_file_name }}`:
 =========
 {{ test_file|trim }}
 =========
@@ -27,6 +27,7 @@ class TestsAnalysis(BaseModel):
 
 
 Example output:
+
 ```yaml
 language: {{ language }}
 testing_framework: ...
