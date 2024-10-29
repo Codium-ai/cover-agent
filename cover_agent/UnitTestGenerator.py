@@ -501,7 +501,7 @@ class UnitTestGenerator:
                         [delta_indent * " " + line for line in test_code.split("\n")]
                     )
             test_code_indented = "\n" + test_code_indented.strip("\n") + "\n"
-
+            exit_code = 0
             if test_code_indented and relevant_line_number_to_insert_tests_after:
                 # Step 1: Insert the generated test to the relevant line in the test file
                 additional_imports_lines = ""
@@ -798,16 +798,17 @@ class UnitTestGenerator:
             )
 
             # Run the analysis via LLM
-            self.ai_caller.model = "gpt-4o" if self.llm_model in ["o1-preview", "o1-mini"] else self.llm_model # Exception for OpenAI's new reasoning engines
             response, prompt_token_count, response_token_count = (
                 self.ai_caller.call_model(prompt=prompt_headers_indentation, stream=False)
             )
-            self.ai_caller.model = self.llm_model # Reset
             self.total_input_token_count += prompt_token_count
             self.total_output_token_count += response_token_count
             tests_dict = load_yaml(response)
-            
-            return tests_dict.get("error_summary", f"ERROR: Unable to summarize error message from inputs. STDERR: {stderr}\nSTDOUT: {stdout}.")
+            if tests_dict.get("error_summary"):
+                output_str = tests_dict.get("error_summary")
+            else:
+                output_str = f"ERROR: Unable to summarize error message from inputs. STDERR: {stderr}\nSTDOUT: {stdout}."
+            return output_str
         except Exception as e:
             logging.error(f"ERROR: Unable to extract error message from inputs using LLM.\nSTDERR: {stderr}\nSTDOUT: {stdout}")
             logging.error(f"Error extracting error message: {e}")

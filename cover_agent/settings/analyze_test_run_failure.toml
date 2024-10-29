@@ -31,7 +31,8 @@ class TestFailureAnalysis(BaseModel):
 
 Example output:
 ```yaml
-error_summary: ...
+error_summary: |
+   ...
 ```
 
 The Response should be only a valid YAML object, without any introduction text or follow-up text.
