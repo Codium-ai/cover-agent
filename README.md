@@ -247,10 +247,11 @@ This will also generate all logs and output reports that are generated in `.gith
 - Poetry
 
 #### Steps
-1. Install the dependencies
+1. If not already done, install the dependencies
     ```shell
     poetry install
     ```
+
 2. Let Poetry manage / create the environment
     ```shell
    poetry shell
