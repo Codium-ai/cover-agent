@@ -100,7 +100,7 @@ The Cover Agent can be installed as a Python Pip package or run as a standalone 
 
 #### Python Pip
 To install the Python Pip package directly via GitHub run the following command:
-```
+```shell
 pip install git+https://github.com/Codium-ai/cover-agent.git
 ```
 
@@ -235,10 +235,30 @@ Set up your development environment by running the `poetry install` command as y
 Note: for older versions of Poetry you may need to include the `--dev` option to install Dev dependencies.
 
 After setting up your environment run the following command:
-```
+```shell
 poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent --cov-report=xml --cov-report=term --log-cli-level=INFO
 ```
 This will also generate all logs and output reports that are generated in `.github/workflows/ci_pipeline.yml`.
+
+### Running the app locally from source
+1. Install the dependencies
+    ```shell
+    poetry install
+    ```
+2. Let Poetry manage / create the environment
+    ```shell
+   poetry shell
+   ```
+
+3. Run the app
+    ```shell
+   poetry run cover-agent \
+     --source-file-path ... \
+     ...
+    ```
+
+(i.e. prepending `poetry run` to your `cover-agent` commands --
+see the [Running the Code](#running-the-code) section above).
 
 ### Building the binary locally
 You can build the binary locally simply by invoking the `make installer` command. This will run PyInstaller locally on your machine. Ensure that you have set up the poetry project first (i.e. running `poetry install`).
