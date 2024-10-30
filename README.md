@@ -241,6 +241,12 @@ poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent
 This will also generate all logs and output reports that are generated in `.github/workflows/ci_pipeline.yml`.
 
 ### Running the app locally from source
+
+#### Prerequisites
+- Python3
+- Poetry
+
+#### Steps
 1. Install the dependencies
     ```shell
     poetry install
@@ -253,12 +259,13 @@ This will also generate all logs and output reports that are generated in `.gith
 3. Run the app
     ```shell
    poetry run cover-agent \
-     --source-file-path ... \
-     ...
+     --source-file-path <path_to_source_file> \
+     [other_options...]
     ```
 
-(i.e. prepending `poetry run` to your `cover-agent` commands --
-see the [Running the Code](#running-the-code) section above).
+Notice that you're prepending `poetry run` to your `cover-agent` command. Replace `<path_to_your_source_file>` with the
+actual path to your source file. Add any other necessary options as described in
+the [Running the Code](#running-the-code) section.
 
 ### Building the binary locally
 You can build the binary locally simply by invoking the `make installer` command. This will run PyInstaller locally on your machine. Ensure that you have set up the poetry project first (i.e. running `poetry install`).
