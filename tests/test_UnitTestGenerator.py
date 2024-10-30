@@ -137,4 +137,48 @@ class TestUnitTestGenerator:
                 # The eventual call to try_fix_yaml() will end up spitting out the same string but deeming is "YAML."
                 # While this is not a valid YAML, the function will return the original string (for better or for worse).
                 assert result =="This is not YAML"
+
+    def test_run_diff_coverage_success(self):
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
+            generator = UnitTestGenerator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+                comparasion_branch="main"
+            )
+            with patch.object(Runner, 'run_command', return_value=("diff coverage report", "", 0, datetime.datetime.now())):
+                with patch.object(CoverageProcessor, 'parse_diff_coverage_report', return_value=(10, 2, 0.8)):
+                    generator.run_diff_coverage()
+                    assert generator.current_coverage == 0.8
+
+    def test_run_diff_coverage_failure(self):
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
+            generator = UnitTestGenerator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+                comparasion_branch="main"
+            )
+            with patch.object(Runner, 'run_command', return_value=("", "error", 1, datetime.datetime.now())):
+                with pytest.raises(AssertionError):
+                    generator.run_diff_coverage()
+
+    def test_run_diff_coverage_parse_error(self):
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
+            generator = UnitTestGenerator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+                comparasion_branch="main"
+            )
+            with patch.object(Runner, 'run_command', return_value=("diff coverage report", "", 0, datetime.datetime.now())):
+                with patch.object(CoverageProcessor, 'parse_diff_coverage_report', side_effect=ValueError("Mock parse error")):
+                    with pytest.raises(ValueError):
+                        generator.run_diff_coverage()
                 

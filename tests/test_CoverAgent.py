@@ -119,7 +119,9 @@ class TestCoverAgent:
                     model="openai/test-model",
                     api_base="openai/test-api",
                     use_report_coverage_feature_flag=False,
-                    log_db_path=""
+                    log_db_path="",
+                    diff_coverage=False,
+                    branch="main"
                 )
 
                 with pytest.raises(AssertionError) as exc_info:
@@ -154,7 +156,9 @@ class TestCoverAgent:
                     model="openai/test-model",
                     api_base="openai/test-api",
                     use_report_coverage_feature_flag=False,
-                    log_db_path=""
+                    log_db_path="",
+                    diff_coverage=False,
+                    branch="main"
                 )
 
                 with pytest.raises(AssertionError) as exc_info:
@@ -194,7 +198,9 @@ class TestCoverAgent:
                     use_report_coverage_feature_flag=False,
                     log_db_path="",
                     run_tests_multiple_times=False,
-                    strict_coverage=True
+                    strict_coverage=True,
+                    diff_coverage=False,
+                    branch="main"
                 )
                 # Mock the methods used in run
                 instance = mock_unit_test_generator.return_value
