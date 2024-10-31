@@ -50,7 +50,8 @@ class TestAICaller:
         with pytest.raises(Exception) as exc_info:
             ai_caller.call_model(prompt)
 
-        assert str(exc_info.value) == "list index out of range"
+        # assert str(exc_info.value) == "list index out of range"
+        assert str(exc_info.value) == "'NoneType' object is not subscriptable" # this error message might change for different versions of litellm
 
     @patch("cover_agent.AICaller.litellm.completion")
     @patch.dict(os.environ, {"WANDB_API_KEY": "test_key"})

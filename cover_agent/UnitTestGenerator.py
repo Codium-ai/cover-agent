@@ -330,7 +330,6 @@ class UnitTestGenerator:
                 prompt_headers_indentation = self.prompt_builder.build_prompt_custom(
                     file="analyze_suite_test_headers_indentation"
                 )
-                self.ai_caller.model = "gpt-4o" if self.llm_model in ["o1-preview", "o1-mini"] else self.llm_model # Exception for OpenAI's new reasoning engines
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_headers_indentation)
                 )
@@ -357,7 +356,6 @@ class UnitTestGenerator:
                 prompt_test_insert_line = self.prompt_builder.build_prompt_custom(
                     file="analyze_suite_test_insert_line"
                 )
-                self.ai_caller.model = "gpt-4o" if self.llm_model in ["o1-preview", "o1-mini"] else self.llm_model # Exception for OpenAI's new reasoning engines
                 response, prompt_token_count, response_token_count = (
                     self.ai_caller.call_model(prompt=prompt_test_insert_line)
                 )
