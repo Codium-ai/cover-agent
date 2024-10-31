@@ -51,7 +51,7 @@ The test framework used for running tests is `{{ testing_framework }}`.
 
 
 ## Code Coverage
-The following is the existing code coverage report. Use this to determine what tests to write, as you should only write tests that increase the overall coverage:
+Based on the code coverage report below, your goal is to suggest new test cases that would increase the current coverage. Focus only on untested or partially tested areas:
 =========
 {{ code_coverage_report|trim }}
 =========
@@ -78,7 +78,9 @@ class NewTests(BaseModel):
     new_tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new test functions to append to the existing test suite, aiming to increase the code coverage. Each test should run as-is, without requiring any additional inputs or setup code. Don't introduce new dependencies")
 =====
 
+
 Example output:
+
 ```yaml
 language: {{ language }}
 existing_test_function_signature: |
@@ -106,6 +108,7 @@ new_tests:
   test_tags: happy path
     ...
 ```
+
 
 Use block scalar('|') to format each YAML output.
 

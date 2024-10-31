@@ -130,7 +130,7 @@ class CoverAgent:
             self.logger.info(f"Desired Coverage: {self.test_gen.desired_coverage}%")
 
             # Generate new tests
-            generated_tests_dict = self.test_gen.generate_tests(max_tokens=4096)
+            generated_tests_dict = self.test_gen.generate_tests()
 
             # Loop through each new test and validate it
             for generated_test in generated_tests_dict.get("new_tests", []):
