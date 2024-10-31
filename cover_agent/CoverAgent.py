@@ -29,6 +29,7 @@ class CoverAgent:
         self.test_gen = UnitTestGenerator(
             source_file_path=args.source_file_path,
             test_file_path=args.test_file_output_path,
+            project_root=args.project_root,
             code_coverage_report_path=args.code_coverage_report_path,
             test_command=args.test_command,
             test_command_dir=args.test_command_dir,
@@ -58,6 +59,13 @@ class CoverAgent:
             raise FileNotFoundError(
                 f"Test file not found at {self.args.test_file_path}"
             )
+
+        # Ensure the project root exists
+        if self.args.project_root and not os.path.isdir(self.args.project_root):
+            raise FileNotFoundError(
+                f"Project root not found at {self.args.project_root}"
+            )
+
         # Create default DB file if not provided
         if not self.args.log_db_path:
             self.args.log_db_path = "cover_agent_unit_test_runs.db"

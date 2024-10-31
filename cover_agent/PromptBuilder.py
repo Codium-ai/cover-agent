@@ -43,6 +43,7 @@ class PromptBuilder:
         failed_test_runs: str = "",
         language: str = "python",
         testing_framework: str = "NOT KNOWN",
+        project_root: str = "",
     ):
         """
         The `PromptBuilder` class is responsible for building a formatted prompt string by replacing placeholders with the actual content of files read during initialization. It takes in various paths and settings as parameters and provides a method to generate the prompt.
@@ -67,8 +68,11 @@ class PromptBuilder:
             build_prompt(self)
                 Replaces placeholders with the actual content of files read during initialization and returns the formatted prompt string.
         """
-        self.source_file_name = os.path.basename(source_file_path)
-        self.test_file_name = os.path.basename(test_file_path)
+        self.project_root = project_root
+        self.source_file_path = source_file_path
+        self.test_file_path = test_file_path
+        self.source_file_name_rel = os.path.relpath(source_file_path, project_root)
+        self.test_file_name_rel = os.path.relpath(test_file_path, project_root)
         self.source_file = self._read_file(source_file_path)
         self.test_file = self._read_file(test_file_path)
         self.code_coverage_report = code_coverage_report
@@ -123,8 +127,8 @@ class PromptBuilder:
 
     def build_prompt(self) -> dict:
         variables = {
-            "source_file_name": self.source_file_name,
-            "test_file_name": self.test_file_name,
+            "source_file_name": self.source_file_name_rel,
+            "test_file_name": self.test_file_name_rel,
             "source_file_numbered": self.source_file_numbered,
             "test_file_numbered": self.test_file_numbered,
             "source_file": self.source_file,
@@ -165,8 +169,8 @@ class PromptBuilder:
             dict: A dictionary containing the system and user prompts.
         """
         variables = {
-            "source_file_name": self.source_file_name,
-            "test_file_name": self.test_file_name,
+            "source_file_name": self.source_file_name_rel,
+            "test_file_name": self.test_file_name_rel,
             "source_file_numbered": self.source_file_numbered,
             "test_file_numbered": self.test_file_numbered,
             "source_file": self.source_file,

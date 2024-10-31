@@ -58,16 +58,14 @@ async def run():
                                                                   language,
                                                                   lsp,
                                                                   project_dir,
-                                                                  rel_file,
-                                                                  target_file)
+                                                                  rel_file)
         print("Getting context done.")
 
         print("\nGetting reverse context ...")
         reverse_context_files, reverse_context_symbols = await get_reverse_context(captures,
                                                           lsp,
                                                           project_dir,
-                                                          rel_file,
-                                                          target_file)
+                                                          rel_file)
         print("Getting reverse context done.")
 
     print("\n\n================")

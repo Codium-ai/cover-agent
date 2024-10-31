@@ -103,17 +103,20 @@ class AICaller:
             completion_tokens = int(usage.completion_tokens)
 
         if "WANDB_API_KEY" in os.environ:
-            root_span = Trace(
-                name="inference_"
-                + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
-                kind="llm",  # kind can be "llm", "chain", "agent", or "tool"
-                inputs={
-                    "user_prompt": prompt["user"],
-                    "system_prompt": prompt["system"],
-                },
-                outputs={"model_response": content},
-            )
-            root_span.log(name="inference")
+            try:
+                root_span = Trace(
+                    name="inference_"
+                    + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                    kind="llm",  # kind can be "llm", "chain", "agent", or "tool"
+                    inputs={
+                        "user_prompt": prompt["user"],
+                        "system_prompt": prompt["system"],
+                    },
+                    outputs={"model_response": content},
+                )
+                root_span.log(name="inference")
+            except Exception as e:
+                print(f"Error logging to W&B: {e}")
 
         # Returns: Response, Prompt token count, and Completion token count
         return content, prompt_tokens, completion_tokens

@@ -23,13 +23,16 @@ Those numbers are not a part of the original code.
 
 
 ## Test File
-Here is the file that contains the existing tests, called `{{ test_file_name }}`.
+Here is the file that contains the existing tests, called `{{ test_file_name }}`:
 =========
 {{ test_file| trim }}
 =========
 
 ### Test Framework
 The test framework used for running tests is `{{ testing_framework }}`.
+{%- if language == "python" and testing_framework == "pytest" %}
+If the current tests are part of a class and contain a 'self' input, than the generated tests should also include the `self` parameter in the test function signature.
+{%- endif %}
 
 {%- if additional_includes_section|trim %}
 
@@ -68,7 +71,7 @@ class SingleTest(BaseModel):
 {%- else %}
     test_name: str = Field(description=" A short unique test name, that should reflect the test objective")
 {%- endif %}
-    test_code: str = Field(description="A single test function, that tests the behavior described in 'test_behavior'. The test should be a written like its a part of the existing test suite, if there is one, and it can use existing helper functions, setup, or teardown code.")
+    test_code: str = Field(description="A new '{{ testing_framework }}' test function that extends the existing test suite, and tests the behavior described in 'test_behavior'. The test should be a written like its a part of the existing test suite, if there is one, and it can use existing helper functions, setup, or teardown code.")
     new_imports_code: str = Field(description="New imports that are required to run the new test function, and are not already imported in the test file. Give an empty string if no new imports are required. If relevant, add new imports as  'import ...' lines.")
     test_tags: str = Field(description="A single label that best describes the test, out of: ['happy path', 'edge case','other']")
 
