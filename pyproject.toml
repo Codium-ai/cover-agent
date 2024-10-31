@@ -28,6 +28,12 @@ numpy = "^1.26.0"   # Note: Earlier version have incompatibility issues with goo
 dynaconf = "^3.2.4"
 wandb = "^0.17.1"
 
+# LSP Dependencies
+grep_ast = "^0.3.3"
+tree_sitter = "^0.21.3"
+tree_sitter_languages = "^1.10.2"
+jedi-language-server = "^0.41.1"
+
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
 pyinstaller = "^6.6.0"
