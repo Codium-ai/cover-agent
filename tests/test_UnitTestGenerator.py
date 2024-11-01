@@ -98,9 +98,10 @@ class TestUnitTestGenerator:
             )
             with patch.object(Runner, 'run_command', return_value=("", "", 0, datetime.datetime.now())):
                 with patch.object(CoverageProcessor, 'process_coverage_report', return_value={'test.py': ([], [], 1.0)}):
-                    generator.run_coverage()
-                    # Dividing by zero so we're expecting a logged error and a return of 0
-                    assert generator.current_coverage == 0
+                    with patch("builtins.open", mock_open(read_data="file content")):
+                        generator.run_coverage()
+                        # Dividing by zero so we're expecting a logged error and a return of 0
+                        assert generator.current_coverage == 0
 
     def test_build_prompt_with_failed_tests(self):
         with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
