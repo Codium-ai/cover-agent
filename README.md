@@ -37,13 +37,14 @@ New mode - scan an entire repo, auto identify the test files, auto collect conte
 How to run:
 
 1) Create a branch in your repo
-2) Run the following command:
+2) cd to your repo
+3) Run the following command:
 ```shell
 poetry run cover-agent \
   --project-language="python" \
   --project-root="<path_to_your_repo>" \
   --code-coverage-report-path="<path_to_your_repo>/coverage.xml" \
-  --test-command="coverage run -m pytest -v <relative_path_to_unittest_folder> --cov=<path_to_your_repo> --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=30" \
+  --test-command="coverage run -m pytest <relative_path_to_unittest_folder> --cov=<path_to_your_repo> --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=30" \
   --model=bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0
 ```
 

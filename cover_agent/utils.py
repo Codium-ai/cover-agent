@@ -169,6 +169,11 @@ def parse_args_full_repo():
     parser.add_argument(
         "--project-root", required=True, help="Path to the root of the project."
     )
+    # ToDo
+    # parser.add_argument(
+    #     "--unittest-folder-rel-path", required=False, help="Relative path to the unittest folder."
+    # )
+
     parser.add_argument(
         "--code-coverage-report-path",
         required=True,

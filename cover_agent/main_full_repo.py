@@ -33,7 +33,6 @@ async def run():
             # Analyze the test file against the context files
             print("\nAnalyzing test file against context files...")
             source_file, context_files_include = await analyze_context(test_file, context_files, args, ai_caller)
-            print(f"Main source file:\n'{source_file}'")
 
             if source_file:
                 # Run the CoverAgent for the test file
