@@ -28,7 +28,7 @@ async def run():
         for test_file in test_files:
             # Find the context files for the test file
             context_files = await find_test_file_context(args, lsp, test_file)
-            print(f"Context files for test file '{test_file}':\n{''.join([f'{f}\n' for f in context_files])}")
+            print(f"Context files for test file '{test_file}':\n{''.join([f'{f}\n' for f in context_files])}\n")
 
             # Analyze the test file against the context files
             print("\nAnalyzing test file against context files...")

@@ -144,4 +144,40 @@ class TestAICaller:
             response, prompt_tokens, response_tokens = ai_caller.call_model(prompt, stream=True)
             assert response == "response"
             assert prompt_tokens == 2
+
+    @patch("cover_agent.AICaller.litellm.completion")
+    @patch.dict(os.environ, {"WANDB_API_KEY": "test_key"})
+    @patch("cover_agent.AICaller.Trace.log")
+    def test_call_model_wandb_logging_exception(self, mock_log, mock_completion, ai_caller):
+        mock_completion.return_value = [
+            {"choices": [{"delta": {"content": "response"}}]}
+        ]
+        mock_log.side_effect = Exception("Logging error")
+        prompt = {"system": "", "user": "Hello, world!"}
+        with patch("cover_agent.AICaller.litellm.stream_chunk_builder") as mock_builder:
+            mock_builder.return_value = {
+                "choices": [{"message": {"content": "response"}}],
+                "usage": {"prompt_tokens": 2, "completion_tokens": 10},
+            }
+            with patch("builtins.print") as mock_print:
+                response, prompt_tokens, response_tokens = ai_caller.call_model(prompt)
+                assert response == "response"
+                assert prompt_tokens == 2
+                assert response_tokens == 10
+                mock_print.assert_any_call("Error logging to W&B: Logging error")
+
+
+    @patch("cover_agent.AICaller.litellm.completion")
+    def test_call_model_error_summary_handling(self, mock_completion, ai_caller):
+        mock_response = Mock()
+        mock_response.choices = [Mock(message=Mock(content={"error_summary": "Error occurred", "source": "source info"}))]
+        mock_response.usage = Mock(prompt_tokens=2, completion_tokens=10)
+        mock_completion.return_value = mock_response
+        with patch("builtins.print") as mock_print:
+            response, prompt_tokens, response_tokens = ai_caller.call_model({"system": "", "user": "Hello, world!"}, stream=False)
+            assert response == {"error_summary": "Error occurred", "source": "source info"}
+            assert prompt_tokens == 2
+            assert response_tokens == 10
+            mock_print.assert_any_call("Error summary: Error occurred")
+
             assert response_tokens == 10
