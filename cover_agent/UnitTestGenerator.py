@@ -20,7 +20,6 @@ class UnitTestGenerator:
         self,
         source_file_path: str,
         test_file_path: str,
-        project_root: str,
         code_coverage_report_path: str,
         test_command: str,
         llm_model: str,
@@ -31,6 +30,7 @@ class UnitTestGenerator:
         desired_coverage: int = 90,  # Default to 90% coverage if not specified
         additional_instructions: str = "",
         use_report_coverage_feature_flag: bool = False,
+        project_root: str = "",
     ):
         """
         Initialize the UnitTestGenerator class with the provided parameters.

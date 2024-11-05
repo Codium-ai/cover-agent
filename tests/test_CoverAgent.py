@@ -28,6 +28,7 @@ class TestCoverAgent:
             args = parse_args()
             assert args.source_file_path == "test_source.py"
             assert args.test_file_path == "test_file.py"
+            assert args.project_root == ""
             assert args.code_coverage_report_path == "coverage_report.xml"
             assert args.test_command == "pytest"
             assert args.test_command_dir == os.getcwd()
@@ -46,6 +47,7 @@ class TestCoverAgent:
         args = argparse.Namespace(
             source_file_path="test_source.py",
             test_file_path="test_file.py",
+            project_root="",
             code_coverage_report_path="coverage_report.xml",
             test_command="pytest",
             test_command_dir=os.getcwd(),
@@ -78,6 +80,7 @@ class TestCoverAgent:
         args = argparse.Namespace(
             source_file_path="test_source.py",
             test_file_path="test_file.py",
+            project_root="",
             code_coverage_report_path="coverage_report.xml",
             test_command="pytest",
             test_command_dir=os.getcwd(),
@@ -106,6 +109,7 @@ class TestCoverAgent:
                 args = argparse.Namespace(
                     source_file_path=temp_source_file.name,
                     test_file_path=temp_test_file.name,
+                    project_root="",
                     test_file_output_path="output_test_file.py",  # This will be the path where output is copied
                     code_coverage_report_path="coverage_report.xml",
                     test_command="echo hello",
@@ -141,6 +145,7 @@ class TestCoverAgent:
                 args = argparse.Namespace(
                     source_file_path=temp_source_file.name,
                     test_file_path=temp_test_file.name,
+                    project_root="",
                     test_file_output_path="",  # No output path provided
                     code_coverage_report_path="coverage_report.xml",
                     test_command="echo hello",
@@ -179,6 +184,7 @@ class TestCoverAgent:
                 args = argparse.Namespace(
                     source_file_path=temp_source_file.name,
                     test_file_path=temp_test_file.name,
+                    project_root="",
                     test_file_output_path="output_test_file.py",
                     code_coverage_report_path="coverage_report.xml",
                     test_command="pytest",

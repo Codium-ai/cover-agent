@@ -16,7 +16,7 @@ def parse_args():
         "--test-file-path", required=True, help="Path to the input test file."
     )
     parser.add_argument(
-        "--project-root", required=False, help="Path to the root of the project."
+        "--project-root", required=False, help="Path to the root of the project.", default=""
     )
     parser.add_argument(
         "--test-file-output-path",
