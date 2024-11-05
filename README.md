@@ -49,7 +49,7 @@ poetry run cover-agent \
 ```
 
 Notes:
-- `-v <relative_path_to_unittest_folder>` is optional, but will help to filter other type of tests, like e2e tests.
+- `<relative_path_to_unittest_folder>` is optional, but will prevent running e2e test files if exists, which may take a long time"
 - You can use other models, like 'gpt-4o' or 'o1-mini', but recommended to use 'sonnet-3.5' as this is currently the best code model in the world.
 
 Additional configuration options:

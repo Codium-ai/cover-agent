@@ -212,3 +212,27 @@ class TestCoverAgent:
                 # Assertions to ensure sys.exit was called
                 mock_sys_exit.assert_called_once_with(2)
                 mock_test_db.return_value.dump_to_report.assert_called_once_with(args.report_filepath)
+
+    @patch("cover_agent.CoverAgent.os.path.isfile", return_value=True)
+    @patch("cover_agent.CoverAgent.os.path.isdir", return_value=False)
+    def test_project_root_not_found(self, mock_isdir, mock_isfile):
+        args = argparse.Namespace(
+            source_file_path="test_source.py",
+            test_file_path="test_file.py",
+            project_root="/nonexistent/path",
+            test_file_output_path="",
+            code_coverage_report_path="coverage_report.xml",
+            test_command="pytest",
+            test_command_dir=os.getcwd(),
+            included_files=None,
+            coverage_type="cobertura",
+            report_filepath="test_results.html",
+            desired_coverage=90,
+            max_iterations=10
+        )
+        
+        with pytest.raises(FileNotFoundError) as exc_info:
+            agent = CoverAgent(args)
+            
+        assert str(exc_info.value) == f"Project root not found at {args.project_root}"
+

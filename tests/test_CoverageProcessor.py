@@ -425,3 +425,14 @@ class TestCoverageProcessor:
             processor.parse_coverage_report()
 
 
+
+    def test_parse_coverage_report_lcov_without_feature_flag(self, mocker):
+        mock_parse_lcov = mocker.patch(
+            "cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_lcov",
+            return_value=([], [], 0.0)
+        )
+        processor = CoverageProcessor("fake_path", "app.py", "lcov", use_report_coverage_feature_flag=False)
+        result = processor.parse_coverage_report()
+        mock_parse_lcov.assert_called_once()
+        assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
+

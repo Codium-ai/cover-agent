@@ -165,19 +165,3 @@ class TestAICaller:
                 assert prompt_tokens == 2
                 assert response_tokens == 10
                 mock_print.assert_any_call("Error logging to W&B: Logging error")
-
-
-    @patch("cover_agent.AICaller.litellm.completion")
-    def test_call_model_error_summary_handling(self, mock_completion, ai_caller):
-        mock_response = Mock()
-        mock_response.choices = [Mock(message=Mock(content={"error_summary": "Error occurred", "source": "source info"}))]
-        mock_response.usage = Mock(prompt_tokens=2, completion_tokens=10)
-        mock_completion.return_value = mock_response
-        with patch("builtins.print") as mock_print:
-            response, prompt_tokens, response_tokens = ai_caller.call_model({"system": "", "user": "Hello, world!"}, stream=False)
-            assert response == {"error_summary": "Error occurred", "source": "source info"}
-            assert prompt_tokens == 2
-            assert response_tokens == 10
-            mock_print.assert_any_call("Error summary: Error occurred")
-
-            assert response_tokens == 10

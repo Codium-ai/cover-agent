@@ -227,3 +227,48 @@ test_name:"""
         ]
     
         assert test_files == expected_files
+
+    def test_try_fix_yaml_invalid_snippet(self):
+        from cover_agent.utils import try_fix_yaml
+        
+        # Invalid YAML inside code block markers
+        yaml_str = '''```yaml
+        key: [unclosed bracket
+        ```'''
+        result = try_fix_yaml(yaml_str)
+        assert result is None
+
+
+    def test_find_test_files_with_forbidden_dirs(self, mocker):
+        from cover_agent.utils import find_test_files
+        import argparse
+        
+        mock_os_walk = [
+            ('/path/to/project', ('test', 'node_modules'), ('test_file1.py',)),
+            ('/path/to/project/test', (), ('test_file2.py',)),
+            ('/path/to/project/node_modules', (), ('test_file3.py',))
+        ]
+        
+        def mock_is_forbidden(path, lang):
+            return 'node_modules' in path
+            
+        mocker.patch('os.walk', return_value=mock_os_walk)
+        mocker.patch('cover_agent.utils.is_forbidden_directory', side_effect=mock_is_forbidden)
+        mocker.patch('cover_agent.utils.filename_to_lang', return_value='python')
+        mocker.patch('os.path.getmtime', return_value=1000)
+        
+        args = argparse.Namespace(
+            project_root='/path/to/project',
+            project_language='python',
+            max_test_files_allowed_to_analyze=2,
+            look_for_oldest_unchanged_test_file=True
+        )
+        
+        test_files = find_test_files(args)
+        expected_files = [
+            '/path/to/project/test_file1.py',
+            '/path/to/project/test/test_file2.py'
+        ]
+        
+        assert test_files == expected_files
+
