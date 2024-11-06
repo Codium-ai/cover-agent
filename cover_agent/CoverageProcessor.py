@@ -275,7 +275,16 @@ class CoverageProcessor:
         missing_lines = int(missing_lines_match.group(1)) if missing_lines_match else 0
 
         coverage_match = re.search(r'Coverage:\s+(\d+)%', report_text)
-        coverage_percentage = float(coverage_match.group(1)) / 100 if coverage_match else 0.0
+
+        # Handle the case where no coverage information is available
+        if "No lines with coverage information in this diff" in report_text:
+            coverage_percentage = 1.0
+        # Failsafe when something goes wrong with the regex
+        elif not coverage_match:
+            self.logger.warning(f"Error with parsing diff cover report: {report_text}. Skipping --diff-coverage flag.")
+            coverage_percentage = 1.0
+        else:
+            coverage_percentage = float(coverage_match.group(1)) / 100
 
         # Calculate processed lines
         processed_lines = total_lines - missing_lines

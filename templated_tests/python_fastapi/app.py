@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException
 from datetime import date, datetime
+from fastapi import FastAPI, HTTPException
+from typing import List
 import math
 
 app = FastAPI()
@@ -123,3 +124,70 @@ async def echo(message: str):
     Returns the same message that is sent to it.
     """
     return {"message": message}
+
+@app.get("/factorial/{number}")
+async def factorial(number: int):
+    """
+    Calculate the factorial of a non-negative integer.
+    
+    Parameters:
+    - number (int): The number to calculate the factorial for.
+
+    Returns:
+    - dict: A dictionary containing the factorial of the given number.
+    Raises:
+    - HTTPException with status code 400 if the number is negative.
+    """
+    if number < 0:
+        raise HTTPException(status_code=400, detail="Cannot calculate factorial of a negative number")
+    result = math.factorial(number)
+    return {"result": result}
+
+
+@app.get("/fibonacci/{n}")
+async def fibonacci(n: int):
+    """
+    Generate the Fibonacci sequence up to the n-th term.
+    
+    Parameters:
+    - n (int): The number of terms to generate.
+
+    Returns:
+    - dict: A dictionary containing the Fibonacci sequence up to n terms.
+    Raises:
+    - HTTPException with status code 400 if n is negative.
+    """
+    if n <= 0:
+        raise HTTPException(status_code=400, detail="Number of terms must be a positive integer")
+    
+    sequence = [0, 1]
+    while len(sequence) < n:
+        sequence.append(sequence[-1] + sequence[-2])
+    return {"fibonacci_sequence": sequence[:n]}
+
+
+@app.get("/reverse/{text}")
+async def reverse(text: str):
+    """
+    Reverse the given text string.
+    
+    Parameters:
+    - text (str): The string to be reversed.
+
+    Returns:
+    - dict: A dictionary containing the reversed text.
+    """
+    reversed_text = text[::-1]
+    return {"reversed": reversed_text}
+
+
+@app.get("/timestamp")
+async def timestamp():
+    """
+    Get the current timestamp in ISO 8601 format.
+    
+    Returns:
+    - dict: A dictionary containing the current date and time as a timestamp.
+    """
+    current_time = datetime.now().isoformat()
+    return {"timestamp": current_time}
