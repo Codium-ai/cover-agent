@@ -48,7 +48,7 @@ requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry.scripts]
-cover-agent = "cover_agent.main_full_repo:main"
+cover-agent = "cover_agent.main:main"
 generate-report = "cover_agent.UnitTestDB:dump_to_report_cli"
 
 [tool.poetry-dynamic-versioning]
