@@ -240,20 +240,28 @@ class UnitTestGenerator:
         Returns:
         - None
         """
-        # Perform a diff coverage command to generate a diff coverage report
+        # Determine the filename of the code coverage report
         coverage_filename = os.path.basename(self.code_coverage_report_path)
+        
+        # Construct the diff coverage command to compare with the specified branch
         coverage_command = f"diff-cover --compare-branch={self.comparasion_branch} {coverage_filename}"
         
+        # Log the execution of the diff coverage command
         self.logger.info(
             f'Running diff coverage command to generate diff coverage report: "{coverage_command}"'
         )
+        
+        # Execute the diff coverage command and capture its output
         stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
             command=coverage_command, cwd=self.test_command_dir
         )
+        
+        # Ensure the command executed successfully; otherwise, log and raise an error
         assert (
             exit_code == 0
         ), f'Fatal: Error running test command. Are you sure the command is correct? "{coverage_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
 
+        # Initialize a CoverageProcessor instance to handle coverage data parsing
         coverage_processor = CoverageProcessor(
             file_path=self.code_coverage_report_path,
             src_file_path=self.source_file_path,
@@ -261,14 +269,17 @@ class UnitTestGenerator:
             use_report_coverage_feature_flag=self.use_report_coverage_feature_flag
         )
 
+        # Parse the diff coverage report to extract processed lines, missed lines, and coverage percentage
         lines_processed, lines_missed, diff_coverage_percentage = coverage_processor.parse_diff_coverage_report(
             report_text=stdout
         )
 
+        # Log the extracted diff coverage metrics
         self.logger.info(
-            f"Lines processed: {lines_processed}, Lines missed: {lines_missed}, Diff coverage: {diff_coverage_percentage}"
+            f"Lines processed: {lines_processed}, Lines missed: {lines_missed}, Diff coverage: {round(diff_coverage_percentage * 100, 2)}%"
         )
 
+        # Update the current coverage percentage with the diff coverage result
         self.current_coverage = diff_coverage_percentage
 
     @staticmethod
