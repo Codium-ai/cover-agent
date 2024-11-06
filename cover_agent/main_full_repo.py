@@ -1,5 +1,6 @@
 import asyncio
 import copy
+import os
 from cover_agent.AICaller import AICaller
 from cover_agent.lsp_logic.utils.utils_context import analyze_context, find_test_file_context, \
     initialize_language_server
@@ -12,7 +13,7 @@ async def run():
 
     # scan the project directory for test files
     test_files = find_test_files(args)
-    print(f"Test files found:\n{''.join([f'{f}\n' for f in test_files])}")
+    print("Test files found:\n" + ''.join(f"{f}\n" for f in test_files))
 
     # initialize the language server
     print("\nInitializing language server...")
@@ -28,7 +29,7 @@ async def run():
         for test_file in test_files:
             # Find the context files for the test file
             context_files = await find_test_file_context(args, lsp, test_file)
-            print(f"Context files for test file '{test_file}':\n{''.join([f'{f}\n' for f in context_files])}\n")
+            print("Context files for test file '{}':\n{}".format(test_file, ''.join(f"{f}\n" for f in context_files)))
 
             # Analyze the test file against the context files
             print("\nAnalyzing test file against context files...")
@@ -37,12 +38,17 @@ async def run():
             if source_file:
                 # Run the CoverAgent for the test file
                 args_copy = copy.deepcopy(args)
-                args_copy.source_file_path = source_file
+                args_copy.source_file_path = os.path.join(args.project_root, source_file)
+                args_copy.test_command_dir = args.project_root
                 args_copy.test_file_path = test_file
                 args_copy.included_files = context_files_include
                 agent = CoverAgent(args_copy)
                 agent.run()
 
 
-if __name__ == "__main__":
+def main():
     asyncio.run(run())
+
+
+if __name__ == "__main__":
+    main()
