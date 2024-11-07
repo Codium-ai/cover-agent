@@ -228,7 +228,7 @@ class UnitTestGenerator:
                 self.code_coverage_report = f.read()
 
     @staticmethod
-    def get_included_files(included_files: list, project_root: str = "") -> str:
+    def get_included_files(included_files: list, project_root: str = "", disable_tokens=False) -> str:
         if included_files:
             included_files_content = []
             file_names_rel = []
@@ -248,7 +248,7 @@ class UnitTestGenerator:
                     )
 
             out_str = out_str.strip()
-            if get_settings().get("include_files.limit_tokens"):
+            if not disable_tokens and get_settings().get("include_files.limit_tokens", False):
                 encoder = TokenEncoder.get_token_encoder()
                 num_input_tokens = len(encoder.encode(out_str))
                 if num_input_tokens > get_settings().get("include_files.max_tokens"):
