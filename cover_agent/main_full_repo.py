@@ -38,7 +38,7 @@ async def run():
             if source_file:
                 # Run the CoverAgent for the test file
                 args_copy = copy.deepcopy(args)
-                args_copy.source_file_path = os.path.join(args.project_root, source_file)
+                args_copy.source_file_path = source_file
                 args_copy.test_command_dir = args.project_root
                 args_copy.test_file_path = test_file
                 args_copy.included_files = context_files_include
