@@ -236,7 +236,7 @@ class UnitTestGenerator:
                 try:
                     with open(file_path, "r") as file:
                         included_files_content.append(file.read())
-                        file_path_rel = os.path.relpath(file_path, project_root)
+                        file_path_rel = os.path.relpath(file_path, project_root) if project_root else file_path
                         file_names_rel.append(file_path_rel)
                 except IOError as e:
                     print(f"Error reading file {file_path}: {str(e)}")
