@@ -33,7 +33,7 @@ def clip_tokens(text: str, max_tokens: int, add_three_dots=True, num_input_token
             num_input_tokens = len(encoder.encode(text))
         if num_input_tokens <= max_tokens:
             return text
-        if max_tokens < 0:
+        if max_tokens <= 0:
             return ""
 
         # calculate the number of characters to keep
