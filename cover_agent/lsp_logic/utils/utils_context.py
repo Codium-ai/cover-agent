@@ -38,7 +38,7 @@ async def analyze_context(test_file, context_files, args, ai_caller):
         system_prompt = environment.from_string(settings.system).render(variables)
         user_prompt = environment.from_string(settings.user).render(variables)
         response, prompt_token_count, response_token_count = (
-            ai_caller.call_model(prompt={"system": system_prompt, "user": user_prompt})
+            ai_caller.call_model(prompt={"system": system_prompt, "user": user_prompt}, stream=False)
         )
         response_dict = load_yaml(response)
         if int(response_dict.get('is_this_a_unit_test', 0)) == 1:

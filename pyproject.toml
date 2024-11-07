@@ -27,6 +27,7 @@ google-cloud-aiplatform = "^1.54.0"
 numpy = "^1.26.0"   # Note: Earlier version have incompatibility issues with google-cloud-aiplatform
 dynaconf = "^3.2.4"
 wandb = "^0.17.1"
+tiktoken = "^0.8.0"
 
 # LSP Dependencies
 grep_ast = "^0.3.3"
