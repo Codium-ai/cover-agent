@@ -105,7 +105,7 @@ def parse_args():
         "--diff-coverage",
         action="store_true",
         default=False,
-        help="If set, Cover-Agent will only generate tests based on the diff between branches. Default: False.",
+        help="If set, Cover-Agent will only generate tests based on the diff between branches. Note: Requires git to be installed. Default: False.",
     )
     parser.add_argument( 
         "--branch",

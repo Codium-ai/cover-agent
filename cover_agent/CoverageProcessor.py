@@ -1,6 +1,7 @@
 from cover_agent.CustomLogger import CustomLogger
 from typing import Literal, Tuple, Union
 import csv
+import json
 import os
 import re
 import xml.etree.ElementTree as ET
@@ -21,6 +22,7 @@ class CoverageProcessor:
             file_path (str): The path to the coverage report file.
             src_file_path (str): The fully qualified path of the file for which coverage data is being processed.
             coverage_type (Literal["cobertura", "lcov"]): The type of coverage report being processed.
+            use_report_coverage_feature_flag (bool, optional): Controls whether to process coverage data for all files in the report (True) or only for the specified file (False). Defaults to False.
 
         Attributes:
             file_path (str): The path to the coverage report file.
@@ -265,31 +267,46 @@ class CoverageProcessor:
 
         return missed, covered
 
-    def parse_diff_coverage_report(self, report_text: str) -> Tuple[int, int, int]:
-        # Extract total lines
-        total_lines_match = re.search(r'Total:\s+(\d+)\s+lines', report_text)
-        total_lines = int(total_lines_match.group(1)) if total_lines_match else 0
+    def parse_json_diff_coverage_report(self) -> Tuple[List[int], List[int], float]:
+        """
+        Parses a JSON-formatted diff coverage report to extract covered lines, missed lines, 
+        and the coverage percentage for the specified src_file_path.
 
-        # Extract missing lines
-        missing_lines_match = re.search(r'Missing:\s+(\d+)\s+lines', report_text)
-        missing_lines = int(missing_lines_match.group(1)) if missing_lines_match else 0
+        Returns:
+            Tuple[List[int], List[int], float]: A tuple containing lists of covered and missed lines, 
+                                                and the coverage percentage.
+        """
+        with open(self.file_path, "r") as file:
+            report_data = json.load(file)
 
-        coverage_match = re.search(r'Coverage:\s+(\d+)%', report_text)
+        # Create relative path components of `src_file_path` for matching
+        src_relative_path = os.path.relpath(self.src_file_path)
+        src_relative_components = src_relative_path.split(os.sep)
 
-        # Handle the case where no coverage information is available
-        if "No lines with coverage information in this diff" in report_text:
-            coverage_percentage = 1.0
-        # Failsafe when something goes wrong with the regex
-        elif not coverage_match:
-            self.logger.warning(f"Error with parsing diff cover report: {report_text}. Skipping --diff-coverage flag.")
-            coverage_percentage = 1.0
+        # Initialize variables for covered and missed lines
+        relevant_stats = None
+
+        for file_path, stats in report_data["src_stats"].items():
+            # Split the JSON's file path into components
+            file_path_components = file_path.split(os.sep)
+
+            # Match if the JSON path ends with the same components as `src_file_path`
+            if file_path_components[-len(src_relative_components):] == src_relative_components:
+                relevant_stats = stats
+                break
+
+        # If a match is found, extract the data
+        if relevant_stats:
+            covered_lines = relevant_stats["covered_lines"]
+            violation_lines = relevant_stats["violation_lines"]
+            coverage_percentage = relevant_stats["percent_covered"] / 100  # Convert to decimal
         else:
-            coverage_percentage = float(coverage_match.group(1)) / 100
+            # Default values if the file isn't found in the report
+            covered_lines = []
+            violation_lines = []
+            coverage_percentage = 0.0
 
-        # Calculate processed lines
-        processed_lines = total_lines - missing_lines
-
-        return processed_lines, missing_lines, coverage_percentage
+        return covered_lines, violation_lines, coverage_percentage
 
     def extract_package_and_class_java(self):
         package_pattern = re.compile(r"^\s*package\s+([\w\.]+)\s*;.*$")

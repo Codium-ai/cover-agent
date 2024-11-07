@@ -101,8 +101,6 @@ class UnitTestGenerator:
             None
         """
         self.run_coverage()
-        if self.diff_coverage:
-            self.run_diff_coverage()
         self.prompt = self.build_prompt()
 
     def get_code_language(self, source_file_path):
@@ -142,7 +140,9 @@ class UnitTestGenerator:
 
     def run_coverage(self):
         """
-        Perform an initial build/test command to generate coverage report and get a baseline.
+        Perform an initial build/test command to generate a coverage report.
+        If diff coverage is enabled, run a diff-cover command to generate a diff-based report.
+        Process the report to extract and log coverage data.
 
         Parameters:
         - None
@@ -150,137 +150,95 @@ class UnitTestGenerator:
         Returns:
         - None
         """
-        # Perform an initial build/test command to generate coverage report and get a baseline
-        self.logger.info(
-            f'Running build/test command to generate coverage report: "{self.test_command}"'
-        )
+        # Step 1: Run the initial test command to generate a baseline coverage report
+        self.logger.info(f'Running test command to generate coverage report: "{self.test_command}"')
         stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
             command=self.test_command, cwd=self.test_command_dir
         )
-        assert (
-            exit_code == 0
-        ), f'Fatal: Error running test command. Are you sure the command is correct? "{self.test_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
 
-        # Instantiate CoverageProcessor and process the coverage report
+        # Ensure the test command executed successfully
+        assert exit_code == 0, (
+            f'Fatal: Error running test command. Are you sure the command is correct? "{self.test_command}"'
+            f"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}"
+        )
+
+        # Step 2: Determine if diff coverage or full coverage processing is needed
+        if self.diff_coverage:
+            # Run the diff-cover command to generate a JSON diff coverage report
+            coverage_filename = os.path.basename(self.code_coverage_report_path)
+            coverage_command = f"diff-cover --json-report diff-cover-report.json --compare-branch={self.comparasion_branch} {coverage_filename}"
+            report_file_path = "diff-cover-report.json"
+            
+            # Log and execute the diff coverage command
+            self.logger.info(f'Running diff coverage command: "{coverage_command}"')
+            stdout, stderr, exit_code, _ = Runner.run_command(
+                command=coverage_command, cwd=self.test_command_dir
+            )
+
+            # Ensure the diff command executed successfully
+            assert exit_code == 0, (
+                f'Fatal: Error running diff coverage command. Are you sure the command is correct? "{coverage_command}"'
+                f"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}"
+            )
+        else:
+            # Use the standard coverage report path
+            report_file_path = self.code_coverage_report_path
+
+        # Step 3: Process the appropriate coverage report
         coverage_processor = CoverageProcessor(
-            file_path=self.code_coverage_report_path,
+            file_path=report_file_path,
             src_file_path=self.source_file_path,
             coverage_type=self.coverage_type,
             use_report_coverage_feature_flag=self.use_report_coverage_feature_flag
         )
 
-        # Use the process_coverage_report method of CoverageProcessor, passing in the time the test command was executed
         try:
             if self.use_report_coverage_feature_flag:
-                self.logger.info(
-                    "Using the report coverage feature flag to process the coverage report"
-                )
-                file_coverage_dict = coverage_processor.process_coverage_report(
-                    time_of_test_command=time_of_test_command
-                )
-                total_lines_covered = 0
-                total_lines_missed = 0
-                total_lines = 0
-                for key in file_coverage_dict:
-                    lines_covered, lines_missed, percentage_covered = (
-                        file_coverage_dict[key]
-                    )
+                # Process coverage for all files if the feature flag is enabled
+                self.logger.info("Using the report coverage feature flag to process the coverage report")
+                file_coverage_dict = coverage_processor.process_coverage_report(time_of_test_command=time_of_test_command)
+
+                # Aggregate results across all files
+                total_lines_covered, total_lines_missed, total_lines = 0, 0, 0
+                for key, (lines_covered, lines_missed, percentage_covered) in file_coverage_dict.items():
                     total_lines_covered += len(lines_covered)
                     total_lines_missed += len(lines_missed)
                     total_lines += len(lines_covered) + len(lines_missed)
+
+                    # Track coverage per file
                     if key == self.source_file_path:
                         self.last_source_file_coverage = percentage_covered
-                    if key not in self.last_coverage_percentages:
-                        self.last_coverage_percentages[key] =  0
                     self.last_coverage_percentages[key] = percentage_covered
-                try:
-                    percentage_covered = total_lines_covered / total_lines
-                except ZeroDivisionError:
-                    self.logger.error(f"ZeroDivisionError: Attempting to perform total_lines_covered / total_lines: {total_lines_covered} / {total_lines}.")
-                    percentage_covered = 0
 
-                self.logger.info(
-                    f"Total lines covered: {total_lines_covered}, Total lines missed: {total_lines_missed}, Total lines: {total_lines}"
-                )
-                self.logger.info(    
-                    f"coverage: Percentage {round(percentage_covered * 100, 2)}%"
-                )
+                # Calculate and log the overall coverage
+                coverage_percentage = total_lines_covered / total_lines if total_lines else 0
+                self.logger.info(f"Total lines covered: {total_lines_covered}, Total lines missed: {total_lines_missed}, Total lines: {total_lines}")
+                self.logger.info(f"Overall coverage: {round(coverage_percentage * 100, 2)}%")
+
             else:
-                lines_covered, lines_missed, percentage_covered = (
-                    coverage_processor.process_coverage_report(
-                        time_of_test_command=time_of_test_command
-                    )
-                )
+                # Process coverage for only the main source file
+                lines_covered, lines_missed, coverage_percentage = coverage_processor.process_coverage_report(time_of_test_command)
 
-            # Process the extracted coverage metrics
-            self.current_coverage = percentage_covered
-            self.code_coverage_report = f"Lines covered: {lines_covered}\nLines missed: {lines_missed}\nPercentage covered: {round(percentage_covered * 100, 2)}%"
+            # Update and log the coverage report summary
+            self.current_coverage = coverage_percentage
+            self.code_coverage_report = (
+                f"Lines covered: {lines_covered}\n"
+                f"Lines missed: {lines_missed}\n"
+                f"Percentage covered: {round(coverage_percentage * 100, 2)}%"
+            )
+            self.logger.info(self.code_coverage_report)
+
         except AssertionError as error:
             # Handle the case where the coverage report does not exist or was not updated after the test command
             self.logger.error(f"Error in coverage processing: {error}")
-            # Optionally, re-raise the error or handle it as deemed appropriate for your application
             raise
-        except (ValueError, NotImplementedError) as e:
-            # Handle errors related to unsupported coverage report types or issues in parsing
-            self.logger.warning(f"Error parsing coverage report: {e}")
-            self.logger.info(
-                "Will default to using the full coverage report. You will need to check coverage manually for each passing test."
-            )
+
+        except (ValueError, NotImplementedError) as error:
+            # Handle unsupported report types or issues in parsing
+            self.logger.warning(f"Error parsing coverage report: {error}")
+            self.logger.info("Defaulting to the full coverage report. Manual coverage check required for each passing test.")
             with open(self.code_coverage_report_path, "r") as f:
                 self.code_coverage_report = f.read()
-
-    def run_diff_coverage(self):
-        """
-        Preform a diff coverage command to generate diff coverage report. 
-        Process the diff coverage report to extract the diff coverage percentage.
-
-        Parameters:
-        - None
-
-        Returns:
-        - None
-        """
-        # Determine the filename of the code coverage report
-        coverage_filename = os.path.basename(self.code_coverage_report_path)
-        
-        # Construct the diff coverage command to compare with the specified branch
-        coverage_command = f"diff-cover --compare-branch={self.comparasion_branch} {coverage_filename}"
-        
-        # Log the execution of the diff coverage command
-        self.logger.info(
-            f'Running diff coverage command to generate diff coverage report: "{coverage_command}"'
-        )
-        
-        # Execute the diff coverage command and capture its output
-        stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
-            command=coverage_command, cwd=self.test_command_dir
-        )
-        
-        # Ensure the command executed successfully; otherwise, log and raise an error
-        assert (
-            exit_code == 0
-        ), f'Fatal: Error running test command. Are you sure the command is correct? "{coverage_command}"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}'
-
-        # Initialize a CoverageProcessor instance to handle coverage data parsing
-        coverage_processor = CoverageProcessor(
-            file_path=self.code_coverage_report_path,
-            src_file_path=self.source_file_path,
-            coverage_type=self.coverage_type,
-            use_report_coverage_feature_flag=self.use_report_coverage_feature_flag
-        )
-
-        # Parse the diff coverage report to extract processed lines, missed lines, and coverage percentage
-        lines_processed, lines_missed, diff_coverage_percentage = coverage_processor.parse_diff_coverage_report(
-            report_text=stdout
-        )
-
-        # Log the extracted diff coverage metrics
-        self.logger.info(
-            f"Lines processed: {lines_processed}, Lines missed: {lines_missed}, Diff coverage: {round(diff_coverage_percentage * 100, 2)}%"
-        )
-
-        # Update the current coverage percentage with the diff coverage result
-        self.current_coverage = diff_coverage_percentage
 
     @staticmethod
     def get_included_files(included_files):
@@ -361,8 +319,6 @@ class UnitTestGenerator:
             failed_test_runs=failed_test_runs_value,
             language=self.language,
             testing_framework=self.testing_framework,
-            diff_coverage=self.diff_coverage,
-            diff_branch=self.comparasion_branch,
         )
 
         return self.prompt_builder.build_prompt()
@@ -607,22 +563,7 @@ class UnitTestGenerator:
                         command=self.test_command, cwd=self.test_command_dir
                     )
                     if exit_code != 0:
-                        break
-
-                    if self.diff_coverage:
-                        report_path = self.code_coverage_report_path.replace(self.test_command_dir, "")
-                        report_path = report_path.lstrip("/")
-                        test_command = f"diff-cover --compare-branch={self.comparasion_branch} {report_path}"
-                        self.logger.info(
-                            f'Running diff coverage command to generate diff coverage report: "{test_command}"'
-                        )
-                        stdout, stderr, exit_code, time_of_test_command = Runner.run_command(
-                            command=test_command, cwd=self.test_command_dir
-                        )
-                        if exit_code != 0:
-                            break
-
-                
+                        break               
 
                 # Step 3: Check for pass/fail from the Runner object
                 if exit_code != 0:
@@ -668,49 +609,11 @@ class UnitTestGenerator:
                 # If test passed, check for coverage increase
                 try:
                     # Step 4: Check that the coverage has increased using the CoverageProcessor class
-                    new_coverage_processor = CoverageProcessor(
-                        file_path=self.code_coverage_report_path,
-                        src_file_path=self.source_file_path,
-                        coverage_type=self.coverage_type,
-                        use_report_coverage_feature_flag=self.use_report_coverage_feature_flag,
-                    )
-                    coverage_percentages = {}
+                    old_coverage_percentage = self.current_coverage
+                    self.run_coverage()
 
-                    if self.use_report_coverage_feature_flag:
-                        self.logger.info(
-                            "Using the report coverage feature flag to process the coverage report"
-                        )
-                        file_coverage_dict = new_coverage_processor.process_coverage_report(
-                            time_of_test_command=time_of_test_command
-                        )
-                        total_lines_covered = 0
-                        total_lines_missed = 0
-                        total_lines = 0
-                        for key in file_coverage_dict:
-                            lines_covered, lines_missed, percentage_covered = (
-                                file_coverage_dict[key]
-                            )
-                            total_lines_covered += len(lines_covered)
-                            total_lines_missed += len(lines_missed)
-                            total_lines += len(lines_covered) + len(lines_missed)
-                            if key not in coverage_percentages:
-                                coverage_percentages[key] = 0
-                            coverage_percentages[key] = percentage_covered
-
-                        new_percentage_covered = total_lines_covered / total_lines
-                    elif self.diff_coverage:
-                        _, _, new_percentage_covered = new_coverage_processor.parse_diff_coverage_report(
-                            report_text=stdout
-                        )
-                    else:
-                        _, _, new_percentage_covered = (
-                            new_coverage_processor.process_coverage_report(
-                                time_of_test_command=time_of_test_command
-                            )
-                        )
-
-                    if new_percentage_covered <= self.current_coverage:
-                        # Coverage has not increased, rollback the test by removing it from the test file
+                    # Coverage has not increased, rollback the test by removing it from the test file
+                    if self.current_coverage <= old_coverage_percentage:
                         with open(self.test_file_path, "w") as test_file:
                             test_file.write(original_content)
                             test_file.flush()
@@ -783,8 +686,6 @@ class UnitTestGenerator:
                     additional_imports_lines
                 )  # this is important, otherwise the next test will be inserted at the wrong line
 
-                self.current_coverage = new_percentage_covered
-
                 for key in coverage_percentages:
                     if key not in self.last_coverage_percentages:
                         self.last_coverage_percentages[key] = 0
@@ -830,6 +731,57 @@ class UnitTestGenerator:
                 "processed_test_file": "N/A",
             }
         
+    def insert_test_and_imports(self, test_code, additional_imports, original_content):
+        # Insert the generated test code and imports at the relevant lines
+        test_code_indented = self.indent_test_code(test_code)
+        relevant_line_number_to_insert_tests_after = self.relevant_line_number_to_insert_tests_after
+        relevant_line_number_to_insert_imports_after = self.relevant_line_number_to_insert_imports_after
+
+        # Prepare the modified test file content
+        content_lines = original_content.split("\n")
+        processed_test_lines = (
+            content_lines[:relevant_line_number_to_insert_tests_after]
+            + test_code_indented.splitlines()
+            + content_lines[relevant_line_number_to_insert_tests_after:]
+        )
+        if additional_imports and relevant_line_number_to_insert_imports_after:
+            processed_test_lines = (
+                processed_test_lines[:relevant_line_number_to_insert_imports_after]
+                + additional_imports.splitlines()
+                + processed_test_lines[relevant_line_number_to_insert_imports_after:]
+            )
+
+        with open(self.test_file_path, "w") as test_file:
+            test_file.write("\n".join(processed_test_lines))
+
+    def rollback_test_file(self, original_content):
+        # Rollback the test file to its original state
+        with open(self.test_file_path, "w") as test_file:
+            test_file.write(original_content)
+
+    def log_and_return_failure(self, reason, exit_code, stdout, stderr, generated_test):
+        self.logger.info(f"Test failed: {reason}")
+        return {
+            "status": "FAIL",
+            "reason": reason,
+            "exit_code": exit_code,
+            "stderr": stderr,
+            "stdout": stdout,
+            "test": generated_test,
+            "coverage_before": self.current_coverage,
+            "coverage_after": self.current_coverage,  # remains the same if failed
+        }
+
+    def log_and_return_success(self, stdout, stderr, generated_test):
+        self.logger.info("Test passed and coverage increased.")
+        return {
+            "status": "PASS",
+            "stdout": stdout,
+            "stderr": stderr,
+            "test": generated_test,
+            "coverage_before": self.current_coverage,  # before update in run_coverage
+            "coverage_after": self.current_coverage,
+        }
 
     def to_dict(self):
         return {
