@@ -32,6 +32,31 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 
 ## News and Updates
 
+### 2024-11-05:
+New mode - scan an entire repo, auto identify the test files, auto collect context for each test file, and extend the test suite with new tests.
+How to run:
+
+1) Create a branch in your repo
+2) cd to your repo
+3) Run the following command:
+```shell
+poetry run cover-agent \
+  --project-language="python" \
+  --project-root="<path_to_your_repo>" \
+  --code-coverage-report-path="<path_to_your_repo>/coverage.xml" \
+  --test-command="coverage run -m pytest <relative_path_to_unittest_folder> --cov=<path_to_your_repo> --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=30" \
+  --model=bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0
+```
+
+Notes:
+- `<relative_path_to_unittest_folder>` is optional, but will prevent running e2e test files if exists, which may take a long time"
+- You can use other models, like 'gpt-4o' or 'o1-mini', but recommended to use 'sonnet-3.5' as this is currently the best code model in the world.
+
+Additional configuration options:
+- `--max-test-files-allowed-to-analyze` - The maximum number of test files to analyze. Default is 20 (to avoid long running times).
+- `--look-for-oldest-unchanged-test-files` - If set, the tool will sort the test files by the last modified date and analyze the oldest ones first. This is useful to find the test files that are most likely to be outdated, and for multiple runs. Default is False.
+
+
 ### 2024-09-29:
 We are excited to announce the latest series of updates to CoverAgent, delivering significant improvements to functionality, documentation, and testing frameworks. These updates reflect our ongoing commitment to enhancing the developer experience, improving error handling, and refining the testing processes.
 
@@ -119,6 +144,7 @@ After downloading the executable or installing the Pip package you can run the C
 cover-agent \
   --source-file-path "<path_to_source_file>" \
   --test-file-path "<path_to_test_file>" \
+  --project-root "<path_to_project_root>" \
   --code-coverage-report-path "<path_to_coverage_report>" \
   --test-command "<test_command_to_run>" \
   --test-command-dir "<directory_to_run_test_command>" \
@@ -138,6 +164,7 @@ Follow the steps in the README.md file located in the `templated_tests/python_fa
 cover-agent \
   --source-file-path "templated_tests/python_fastapi/app.py" \
   --test-file-path "templated_tests/python_fastapi/test_app.py" \
+  --project-root "templated_tests/python_fastapi" \
   --code-coverage-report-path "templated_tests/python_fastapi/coverage.xml" \
   --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
   --test-command-dir "templated_tests/python_fastapi" \

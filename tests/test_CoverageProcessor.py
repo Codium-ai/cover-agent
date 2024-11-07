@@ -408,3 +408,31 @@ class TestCoverageProcessor:
         processor = CoverageProcessor("fake_path", "app.py", "unsupported_type", use_report_coverage_feature_flag=True)
         with pytest.raises(ValueError, match="Unsupported coverage report type: unsupported_type"):
             processor.parse_coverage_report()
+
+    def test_parse_coverage_report_jacoco_without_feature_flag(self, mocker):
+        mock_parse_jacoco = mocker.patch(
+            "cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_jacoco",
+            return_value=([], [], 0.0)
+        )
+        processor = CoverageProcessor("fake_path", "app.py", "jacoco", use_report_coverage_feature_flag=False)
+        result = processor.parse_coverage_report()
+        mock_parse_jacoco.assert_called_once()
+        assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
+
+    def test_parse_coverage_report_unsupported_type_without_feature_flag(self):
+        processor = CoverageProcessor("fake_path", "app.py", "unsupported_type", use_report_coverage_feature_flag=False)
+        with pytest.raises(ValueError, match="Unsupported coverage report type: unsupported_type"):
+            processor.parse_coverage_report()
+
+
+
+    def test_parse_coverage_report_lcov_without_feature_flag(self, mocker):
+        mock_parse_lcov = mocker.patch(
+            "cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_lcov",
+            return_value=([], [], 0.0)
+        )
+        processor = CoverageProcessor("fake_path", "app.py", "lcov", use_report_coverage_feature_flag=False)
+        result = processor.parse_coverage_report()
+        mock_parse_lcov.assert_called_once()
+        assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
+

@@ -161,3 +161,114 @@ test_name:"""
         yaml_str = "```yaml\ninvalid_yaml: [unclosed_list\n```"
         assert load_yaml(yaml_str) is None
 
+
+
+    def test_parse_args_full_repo_defaults_with_imports(self):
+        from cover_agent.utils import parse_args_full_repo
+        import sys
+        import os
+    
+        test_args = [
+            "program_name",
+            "--project-language", "python",
+            "--project-root", "/path/to/project",
+            "--code-coverage-report-path", "/path/to/report",
+            "--test-command", "pytest"
+        ]
+        sys.argv = test_args
+        args = parse_args_full_repo()
+    
+        assert args.project_language == "python"
+        assert args.project_root == "/path/to/project"
+        assert args.code_coverage_report_path == "/path/to/report"
+        assert args.test_command == "pytest"
+        assert args.max_test_files_allowed_to_analyze == 20
+        assert args.look_for_oldest_unchanged_test_file is False
+        assert args.test_command_dir == os.getcwd()
+        assert args.coverage_type == "cobertura"
+        assert args.report_filepath == "test_results.html"
+        assert args.max_iterations == 2
+        assert args.additional_instructions == ""
+        assert args.model == "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0"
+        assert args.api_base == "http://localhost:11434"
+        assert args.strict_coverage is False
+        assert args.run_tests_multiple_times == 1
+        assert args.use_report_coverage_feature_flag is False
+        assert args.log_db_path == ""
+        assert args.test_file_output_path == ""
+        assert args.desired_coverage == 100
+
+
+    def test_find_test_files(self, mocker):
+        from cover_agent.utils import find_test_files
+        import argparse
+    
+        mock_os_walk = [
+            ('/path/to/project', ('dir1', 'dir2'), ('test_file1.py', 'file2.py')),
+            ('/path/to/project/dir1', (), ('test_file2.py', 'file3.py')),
+            ('/path/to/project/dir2', (), ('file4.py', 'test_file3.py')),
+        ]
+        mocker.patch('os.walk', return_value=mock_os_walk)
+        mocker.patch('cover_agent.utils.is_forbidden_directory', return_value=False)
+        mocker.patch('cover_agent.utils.filename_to_lang', return_value='python')
+    
+        args = argparse.Namespace(
+            project_root='/path/to/project',
+            project_language='python',
+            max_test_files_allowed_to_analyze=10,
+            look_for_oldest_unchanged_test_file=False
+        )
+    
+        test_files = find_test_files(args)
+        expected_files = [
+            '/path/to/project/test_file1.py',
+            '/path/to/project/dir1/test_file2.py',
+            '/path/to/project/dir2/test_file3.py'
+        ]
+    
+        assert test_files == expected_files
+
+    def test_try_fix_yaml_invalid_snippet(self):
+        from cover_agent.utils import try_fix_yaml
+        
+        # Invalid YAML inside code block markers
+        yaml_str = '''```yaml
+        key: [unclosed bracket
+        ```'''
+        result = try_fix_yaml(yaml_str)
+        assert result is None
+
+
+    def test_find_test_files_with_forbidden_dirs(self, mocker):
+        from cover_agent.utils import find_test_files
+        import argparse
+        
+        mock_os_walk = [
+            ('/path/to/project', ('test', 'node_modules'), ('test_file1.py',)),
+            ('/path/to/project/test', (), ('test_file2.py',)),
+            ('/path/to/project/node_modules', (), ('test_file3.py',))
+        ]
+        
+        def mock_is_forbidden(path, lang):
+            return 'node_modules' in path
+            
+        mocker.patch('os.walk', return_value=mock_os_walk)
+        mocker.patch('cover_agent.utils.is_forbidden_directory', side_effect=mock_is_forbidden)
+        mocker.patch('cover_agent.utils.filename_to_lang', return_value='python')
+        mocker.patch('os.path.getmtime', return_value=1000)
+        
+        args = argparse.Namespace(
+            project_root='/path/to/project',
+            project_language='python',
+            max_test_files_allowed_to_analyze=2,
+            look_for_oldest_unchanged_test_file=True
+        )
+        
+        test_files = find_test_files(args)
+        expected_files = [
+            '/path/to/project/test_file1.py',
+            '/path/to/project/test/test_file2.py'
+        ]
+        
+        assert test_files == expected_files
+

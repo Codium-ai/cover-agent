@@ -3,7 +3,8 @@ import os
 from cover_agent.lsp_logic.utils.utils import uri_to_path, is_forbidden_directory
 
 
-async def get_direct_context(captures, language, lsp, project_dir, rel_file, target_file):
+async def get_direct_context(captures, language, lsp, project_dir, rel_file):
+    target_file = str(os.path.join(project_dir, rel_file))
     skip_found_symbols = True
     context_files = set()
     context_symbols = set()
@@ -30,14 +31,15 @@ async def get_direct_context(captures, language, lsp, project_dir, rel_file, tar
                 if project_dir not in d_path:
                     continue
                 if not is_forbidden_directory(d_path, language):
-                    print(f"Context definition: \'{name_symbol}\' at line {line} from file \'{rel_d_path}\'")
+                    # print(f"Context definition: \'{name_symbol}\' at line {line} from file \'{rel_d_path}\'")
                     context_files.add(d_path)
                     context_symbols.add(name_symbol)
                     context_symbols_and_files.add((name_symbol, rel_d_path))
     return context_files, context_symbols
 
 
-async def get_reverse_context(captures, lsp, project_dir, rel_file, target_file):
+async def get_reverse_context(captures, lsp, project_dir, rel_file):
+    target_file = str(os.path.join(project_dir, rel_file))
     skip_found_symbols = True
     reverse_context_files = set()
     reverse_context_symbols = set()

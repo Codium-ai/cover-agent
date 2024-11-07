@@ -1,0 +1,47 @@
+[analyze_test_against_context]
+system="""\
+You are a {{ language }} code assistant that accepts a test file and a list of context files.
+"""
+
+user="""\
+You will be given the content of a {{ language }} test file, and a list of context files.
+Your goal is to determine the following things:
+
+1. Is this test file a unit test?
+2  Among the context files, which file can be seen as the primary file being tested?
+
+
+Inputs:
+
+This is the content of the test file, called `{{ test_file_name_rel }}`:
+========= 
+{{ test_file_content|trim }}
+=========
+
+
+These are the names of the context files:
+=========
+{{ context_files_names_rel| trim }}
+=========
+
+
+Your answer should be a YAML object equivalent to type $TestAgainstContextAnalysis, according to the following Pydantic definitions:
+=====
+class TestAgainstContextAnalysis(BaseModel):
+    is_this_a_unit_test: bool = Field(description="Is this test file a unit test ? return 1 if it is a unit test, 0 otherwise")
+    main_file: str = Field(description="Among the provided context files, which one can be seen as the main file that the test file is testing (choose the most relevant one if there are multiple options)"? )
+=====
+
+
+Example output:
+```yaml
+is_this_a_unit_test: 1
+main_file: |
+  context_file_1
+```
+
+The Response should be only a valid YAML object, without any introduction text or follow-up text.
+
+Answer:
+```yaml
+"""

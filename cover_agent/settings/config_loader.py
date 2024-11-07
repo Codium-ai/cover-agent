@@ -8,6 +8,7 @@ SETTINGS_FILES = [
     "analyze_suite_test_headers_indentation.toml",
     "analyze_suite_test_insert_line.toml",
     "analyze_test_run_failure.toml",
+    "analyze_test_against_context.toml",
 ]
 
 

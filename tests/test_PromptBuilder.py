@@ -205,3 +205,20 @@ class TestPromptBuilderEndToEnd:
         os.remove(source_file.name)
         os.remove(test_file.name)
         os.remove(tmp_file.name)
+
+    def test_build_prompt_custom_missing_settings(self, monkeypatch):
+        # Mock get_settings to return None for the file
+        def mock_get_settings():
+            return type('Settings', (), {'get': lambda x: None})()
+        
+        monkeypatch.setattr('cover_agent.PromptBuilder.get_settings', mock_get_settings)
+        
+        builder = PromptBuilder(
+            source_file_path="source_path",
+            test_file_path="test_path",
+            code_coverage_report="coverage_report"
+        )
+        
+        result = builder.build_prompt_custom("nonexistent_file")
+        assert result == {"system": "", "user": ""}
+

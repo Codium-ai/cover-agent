@@ -30,6 +30,7 @@ class UnitTestGenerator:
         desired_coverage: int = 90,  # Default to 90% coverage if not specified
         additional_instructions: str = "",
         use_report_coverage_feature_flag: bool = False,
+        project_root: str = "",
     ):
         """
         Initialize the UnitTestGenerator class with the provided parameters.
@@ -57,6 +58,7 @@ class UnitTestGenerator:
         self.relevant_line_number_to_insert_imports_after = None
         self.relevant_line_number_to_insert_tests_after = None
         self.test_headers_indentation = None
+        self.project_root = project_root
         self.source_file_path = source_file_path
         self.test_file_path = test_file_path
         self.code_coverage_report_path = code_coverage_report_path
@@ -303,6 +305,7 @@ class UnitTestGenerator:
             failed_test_runs=failed_test_runs_value,
             language=self.language,
             testing_framework=self.testing_framework,
+            project_root=self.project_root,
         )
 
         return self.prompt_builder.build_prompt()

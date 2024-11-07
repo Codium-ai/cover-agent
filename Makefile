@@ -28,6 +28,7 @@ installer:
 		--hidden-import=tiktoken_ext.openai_public \
 		--hidden-import=tiktoken_ext \
 		--hidden-import=wandb \
+		--hidden-import=tree_sitter \
 		--hidden-import=wandb_gql \
 		--onefile \
 		--name cover-agent \
