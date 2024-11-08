@@ -32,13 +32,11 @@ async def analyze_context(test_file, context_files, args, ai_caller):
                      "test_file_content": open(test_file, 'r').read(),
                      "context_files_names_rel": context_files_rel_filtered_list_str
                      }
-        file = 'analyze_test_against_context'
         environment = Environment(undefined=StrictUndefined)
-        settings = get_settings().get(file)
-        system_prompt = environment.from_string(settings.system).render(variables)
-        user_prompt = environment.from_string(settings.user).render(variables)
+        system_prompt = environment.from_string(get_settings().analyze_test_against_context.system).render(variables)
+        user_prompt = environment.from_string(get_settings().analyze_test_against_context.user).render(variables)
         response, prompt_token_count, response_token_count = (
-            ai_caller.call_model(prompt={"system": system_prompt, "user": user_prompt})
+            ai_caller.call_model(prompt={"system": system_prompt, "user": user_prompt}, stream=False)
         )
         response_dict = load_yaml(response)
         if int(response_dict.get('is_this_a_unit_test', 0)) == 1:

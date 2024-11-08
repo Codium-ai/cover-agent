@@ -9,6 +9,7 @@ SETTINGS_FILES = [
     "analyze_suite_test_insert_line.toml",
     "analyze_test_run_failure.toml",
     "analyze_test_against_context.toml",
+    "configuration.toml",
 ]
 
 
@@ -56,3 +57,4 @@ class SingletonSettings:
 
 def get_settings():
     return SingletonSettings().settings
+

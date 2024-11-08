@@ -10,7 +10,7 @@ MAX_TESTS_PER_RUN = 4
 # Markdown text used as conditional appends
 ADDITIONAL_INCLUDES_TEXT = """
 ## Additional Includes
-The following is a set of included files used as context for the source code above. This is usually included libraries needed as context to write better tests:
+Here are the additional files needed to provide context for the source code:
 ======
 {included_files}
 ======

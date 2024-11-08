@@ -54,7 +54,7 @@ If the current tests are part of a class and contain a 'self' input, than the ge
 
 
 ## Code Coverage
-Based on the code coverage report below, your goal is to suggest new test cases that would increase the current coverage. Focus only on untested or partially tested areas:
+Based on the code coverage report below, your goal is to suggest new test cases for the test file `{{ test_file_name }}` against the source file `{{ source_file_name }}` that would increase the coverage, meaning cover missing lines of code.
 =========
 {{ code_coverage_report|trim }}
 =========
