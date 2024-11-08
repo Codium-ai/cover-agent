@@ -10,9 +10,9 @@ import time
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-import git
+# import git
 
-from cover_agent.lsp_logic.utils import io
+# from cover_agent.lsp_logic.utils import io
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".webp"}
 
@@ -90,25 +90,25 @@ class ChdirTemporaryDirectory(IgnorantTemporaryDirectory):
         super().__exit__(exc_type, exc_val, exc_tb)
 
 
-class GitTemporaryDirectory(ChdirTemporaryDirectory):
-    def __enter__(self):
-        dname = super().__enter__()
-        self.repo = make_repo(dname)
-        return dname
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        del self.repo
-        super().__exit__(exc_type, exc_val, exc_tb)
-
-
-def make_repo(path=None):
-    if not path:
-        path = "."
-    repo = git.Repo.init(path)
-    repo.config_writer().set_value("user", "name", "Test User").release()
-    repo.config_writer().set_value("user", "email", "testuser@example.com").release()
-
-    return repo
+# class GitTemporaryDirectory(ChdirTemporaryDirectory):
+#     def __enter__(self):
+#         dname = super().__enter__()
+#         self.repo = make_repo(dname)
+#         return dname
+#
+#     def __exit__(self, exc_type, exc_val, exc_tb):
+#         del self.repo
+#         super().__exit__(exc_type, exc_val, exc_tb)
+#
+#
+# def make_repo(path=None):
+#     if not path:
+#         path = "."
+#     repo = git.Repo.init(path)
+#     repo.config_writer().set_value("user", "name", "Test User").release()
+#     repo.config_writer().set_value("user", "email", "testuser@example.com").release()
+#
+#     return repo
 
 
 def is_image_file(file_name):
