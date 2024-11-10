@@ -128,7 +128,8 @@ class TestCoverAgent:
 
                 with pytest.raises(AssertionError) as exc_info:
                     agent = CoverAgent(args)
-                    agent.test_gen.get_coverage_and_build_prompt()
+                    failed_test_runs = agent.test_validator.get_coverage()
+                    agent.test_gen.build_prompt(failed_test_runs)
                     agent._duplicate_test_file()
 
                 assert "Fatal: Coverage report" in str(exc_info.value)
@@ -164,7 +165,8 @@ class TestCoverAgent:
 
                 with pytest.raises(AssertionError) as exc_info:
                     agent = CoverAgent(args)
-                    agent.test_gen.get_coverage_and_build_prompt()
+                    failed_test_runs = agent.test_validator.get_coverage()
+                    agent.test_gen.build_prompt(failed_test_runs)
                     agent._duplicate_test_file()
 
                 assert "Fatal: Coverage report" in str(exc_info.value)
@@ -177,8 +179,9 @@ class TestCoverAgent:
     @patch("cover_agent.CoverAgent.os.environ", {})
     @patch("cover_agent.CoverAgent.sys.exit")
     @patch("cover_agent.CoverAgent.UnitTestGenerator")
+    @patch("cover_agent.CoverAgent.UnitTestValidator")
     @patch("cover_agent.CoverAgent.UnitTestDB")
-    def test_run_max_iterations_strict_coverage(self, mock_test_db, mock_unit_test_generator, mock_sys_exit):
+    def test_run_max_iterations_strict_coverage(self, mock_test_db, mock_unit_test_validator, mock_unit_test_generator, mock_sys_exit):
         with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
             with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_test_file:
                 args = argparse.Namespace(
@@ -203,10 +206,11 @@ class TestCoverAgent:
                     strict_coverage=True
                 )
                 # Mock the methods used in run
-                instance = mock_unit_test_generator.return_value
-                instance.current_coverage = 0.5  # below desired coverage
-                instance.desired_coverage = 90
-                instance.generate_tests.return_value = {"new_tests": [{}]}
+                validator = mock_unit_test_validator.return_value
+                validator.current_coverage = 0.5  # below desired coverage
+                validator.desired_coverage = 90
+                generator = mock_unit_test_generator.return_value
+                generator.generate_tests.return_value = {"new_tests": [{}]}
                 agent = CoverAgent(args)
                 agent.run()
                 # Assertions to ensure sys.exit was called
