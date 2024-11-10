@@ -53,7 +53,7 @@ class CoverAgent:
                 ind1 = test_command.index('pytest')
                 ind2 = test_command[ind1:].index('--')
                 args.test_command = f"{test_command[:ind1]}pytest {test_file_relative_path} {test_command[ind1 + ind2:]}"
-                print(f"Running only the test file: {args.test_command}")
+                print(f"\nRunning only a single test file: '{args.test_command}'")
             elif 'unittest' in test_command:  #
                 pass  # maybe call an llm to do that ?
             # toDo - add more test runners
