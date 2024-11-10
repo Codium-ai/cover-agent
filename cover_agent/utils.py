@@ -169,6 +169,14 @@ def parse_args_full_repo():
     parser.add_argument(
         "--project-root", required=True, help="Path to the root of the project."
     )
+
+    parser.add_argument(
+        "--run-each-test-separately",
+        type=bool,
+        default=True,
+        help="Run each test separately. Default: True"
+    )
+
     # ToDo
     # parser.add_argument(
     #     "--unittest-folder-rel-path", required=False, help="Relative path to the unittest folder."
@@ -202,7 +210,7 @@ def parse_args_full_repo():
     parser.add_argument(
         "--max-iterations",
         type=int,
-        default=2,
+        default=3,
         help="The maximum number of iterations. Default: %(default)s.",
     )
     parser.add_argument(

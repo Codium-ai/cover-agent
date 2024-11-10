@@ -1,6 +1,8 @@
 import subprocess
 import time
 
+from cover_agent.settings.config_loader import get_settings
+
 
 class Runner:
     @staticmethod
@@ -18,10 +20,16 @@ class Runner:
         # Get the current time before running the test command, in milliseconds
         command_start_time = int(round(time.time() * 1000))
 
+        max_allowed_runtime_seconds = get_settings().get("tests.max_allowed_runtime_seconds", 60)
         # Ensure the command is executed with shell=True for string commands
-        result = subprocess.run(
-            command, shell=True, cwd=cwd, text=True, capture_output=True
-        )
+        try:
+            result = subprocess.run(
+                command, shell=True, cwd=cwd, text=True, capture_output=True, timeout=max_allowed_runtime_seconds
+            )
 
-        # Return a dictionary with the desired information
-        return result.stdout, result.stderr, result.returncode, command_start_time
+            # Return a dictionary with the desired information
+            return result.stdout, result.stderr, result.returncode, command_start_time
+        except subprocess.TimeoutExpired:
+            # Handle the timeout case
+            return "", "Command timed out", -1, command_start_time
+

@@ -26,6 +26,9 @@ class CoverAgent:
         self._validate_paths()
         self._duplicate_test_file()
 
+        # To run only a single test file, we need to modify the test command
+        self.parse_command_to_run_only_a_single_test(args)
+
         self.test_gen = UnitTestGenerator(
             source_file_path=args.source_file_path,
             test_file_path=args.test_file_output_path,
@@ -41,6 +44,19 @@ class CoverAgent:
             api_base=args.api_base,
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
         )
+
+    def parse_command_to_run_only_a_single_test(self, args):
+        test_command = args.test_command
+        if hasattr(args, 'run_each_test_separately') and args.run_each_test_separately:
+            test_file_relative_path = os.path.relpath(args.test_file_output_path, args.project_root)
+            if 'pytest' in test_command:  # coverage run -m pytest tests  --cov=/Users/talrid/Git/cover-agent --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=30
+                ind1 = test_command.index('pytest')
+                ind2 = test_command[ind1:].index('--')
+                args.test_command = f"{test_command[:ind1]}pytest {test_file_relative_path} {test_command[ind1 + ind2:]}"
+                print(f"Running only the test file: {args.test_command}")
+            elif 'unittest' in test_command:  #
+                pass  # maybe call an llm to do that ?
+            # toDo - add more test runners
 
     def _validate_paths(self):
         """
