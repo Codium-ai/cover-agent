@@ -563,11 +563,11 @@ class UnitTestValidator:
                 for key in new_coverage_percentages:
                     if new_coverage_percentages[key] > self.last_coverage_percentages[key] and key == self.source_file_path.split("/")[-1]:
                         self.logger.info(
-                            f"Coverage for provided source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(coverage_percentages[key] * 100, 2)}"
+                            f"Coverage for provided source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(new_coverage_percentages[key] * 100, 2)}"
                         )
                     elif new_coverage_percentages[key] > self.last_coverage_percentages[key]:
                         self.logger.info(
-                            f"Coverage for non-source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(coverage_percentages[key] * 100, 2)}"
+                            f"Coverage for non-source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(new_coverage_percentages[key] * 100, 2)}"
                         )
                 self.current_coverage = new_percentage_covered
                 self.last_coverage_percentages = new_coverage_percentages.copy()
