@@ -57,7 +57,7 @@ class CoverAgent:
             api_base=args.api_base,
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
             diff_coverage=args.diff_coverage,
-            comparasion_branch=args.branch,
+            comparison_branch=args.branch,
         )
 
     def _validate_paths(self):

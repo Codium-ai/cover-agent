@@ -32,7 +32,7 @@ class UnitTestValidator:
         use_report_coverage_feature_flag: bool = False,
         project_root: str = "",
         diff_coverage: bool = False,
-        comparasion_branch: str = "main",
+        comparison_branch: str = "main",
     ):
         """
         Initialize the UnitTestValidator class with the provided parameters.
@@ -75,7 +75,7 @@ class UnitTestValidator:
         self.last_coverage_percentages = {}
         self.llm_model = llm_model
         self.diff_coverage = diff_coverage
-        self.comparasion_branch = comparasion_branch
+        self.comparison_branch = comparison_branch
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
@@ -739,7 +739,7 @@ class UnitTestValidator:
     def generate_diff_coverage_report(self):
         # Run the diff-cover command to generate a JSON diff coverage report
         coverage_filename = os.path.basename(self.code_coverage_report_path)
-        coverage_command = f"diff-cover --json-report {self.diff_coverage_report_name} --compare-branch={self.comparasion_branch} {coverage_filename}"
+        coverage_command = f"diff-cover --json-report {self.diff_coverage_report_name} --compare-branch={self.comparison_branch} {coverage_filename}"
         # Log and execute the diff coverage command
         self.logger.info(f'Running diff coverage command: "{coverage_command}"')
         stdout, stderr, exit_code, _ = Runner.run_command(
