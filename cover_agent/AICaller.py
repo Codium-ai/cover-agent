@@ -4,7 +4,8 @@ import time
 
 import litellm
 from wandb.sdk.data_types.trace_tree import Trace
-
+from tenacity import retry, retry_if_exception_type, retry_if_not_exception_type, stop_after_attempt, wait_fixed
+MODEL_RETRIES = 3
 
 class AICaller:
     def __init__(self, model: str, api_base: str = ""):
@@ -18,6 +19,10 @@ class AICaller:
         self.model = model
         self.api_base = api_base
 
+    @retry(
+        stop=stop_after_attempt(MODEL_RETRIES),
+        wait=wait_fixed(1)  # Add a fixed delay of 1 seconds between retries
+    )
     def call_model(self, prompt: dict, max_tokens=4096, stream=True):
         """
         Call the language model with the provided prompt and retrieve the response.
@@ -73,7 +78,11 @@ class AICaller:
         ):
             completion_params["api_base"] = self.api_base
 
-        response = litellm.completion(**completion_params)
+        try:
+            response = litellm.completion(**completion_params)
+        except Exception as e:
+            print(f"Error calling LLM model: {e}")
+            raise e
 
         if stream:
             chunks = []
@@ -85,11 +94,13 @@ class AICaller:
                     time.sleep(
                         0.01
                     )  # Optional: Delay to simulate more 'natural' response pacing
+
+                model_response = litellm.stream_chunk_builder(chunks, messages=messages)
             except Exception as e:
-                print(f"Error during streaming: {e}")
+                print(f"Error calling LLM model during streaming: {e}")
+                raise e
             print("\n")
             # Build the final response from the streamed chunks
-            model_response = litellm.stream_chunk_builder(chunks, messages=messages)
             content = model_response["choices"][0]["message"]["content"]
             usage = model_response["usage"]
             prompt_tokens = int(usage["prompt_tokens"])
