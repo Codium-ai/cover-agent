@@ -3,12 +3,31 @@ import os
 import time
 
 import litellm
+from functools import wraps
 from wandb.sdk.data_types.trace_tree import Trace
 from tenacity import retry, retry_if_exception_type, retry_if_not_exception_type, stop_after_attempt, wait_fixed
 MODEL_RETRIES = 3
 
+
+def conditional_retry(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        if not self.enable_retry:
+            return func(self, *args, **kwargs)
+
+        @retry(
+            stop=stop_after_attempt(MODEL_RETRIES),
+            wait=wait_fixed(1)
+        )
+        def retry_wrapper():
+            return func(self, *args, **kwargs)
+
+        return retry_wrapper()
+
+    return wrapper
+
 class AICaller:
-    def __init__(self, model: str, api_base: str = ""):
+    def __init__(self, model: str, api_base: str = "", enable_retry=True):
         """
         Initializes an instance of the AICaller class.
 
@@ -18,11 +37,9 @@ class AICaller:
         """
         self.model = model
         self.api_base = api_base
+        self.enable_retry = enable_retry
 
-    @retry(
-        stop=stop_after_attempt(MODEL_RETRIES),
-        wait=wait_fixed(1)  # Add a fixed delay of 1 seconds between retries
-    )
+    @conditional_retry  # You can access self.enable_retry here
     def call_model(self, prompt: dict, max_tokens=4096, stream=True):
         """
         Call the language model with the provided prompt and retrieve the response.
@@ -95,10 +112,11 @@ class AICaller:
                         0.01
                     )  # Optional: Delay to simulate more 'natural' response pacing
 
-                model_response = litellm.stream_chunk_builder(chunks, messages=messages)
             except Exception as e:
                 print(f"Error calling LLM model during streaming: {e}")
-                raise e
+                if self.enable_retry:
+                    raise e
+            model_response = litellm.stream_chunk_builder(chunks, messages=messages)
             print("\n")
             # Build the final response from the streamed chunks
             content = model_response["choices"][0]["message"]["content"]
