@@ -48,7 +48,7 @@ async def analyze_context(test_file, context_files, args, ai_caller):
                     context_files_include = [f for f in context_files if f != file]
 
         if source_file:
-            print(f"Test file: `{test_file}` is a unit test file for source file: `{source_file}`")
+            print(f"Test file: `{test_file}`,\nis a unit test file for source file: `{source_file}`")
         else:
             print(f"Test file: `{test_file}` is not a unit test file")
     except Exception as e:
