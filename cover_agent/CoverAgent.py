@@ -209,7 +209,7 @@ class CoverAgent:
             if self.args.diff_coverage:
                 failure_message = f"Reached maximum iteration limit without achieving desired diff coverage. Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
             else:
-                failure_message = f"Reached maximum iteration limit without achieving desired coverage. Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%"
+                failure_message = f"Reached maximum iteration limit without achieving desired coverage. Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
             if self.args.strict_coverage:
                 # User requested strict coverage (similar to "--cov-fail-under in pytest-cov"). Fail with exist code 2.
                 self.logger.error(failure_message)
