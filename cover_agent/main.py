@@ -81,12 +81,12 @@ def parse_args():
     parser.add_argument(
         "--api-base",
         default="http://localhost:11434",
-        help="The API url to use for Ollama or Hugging Face or Azure. Default: %(default)s.",
+        help="The API url to use for Ollama or Hugging Face or Azure OpenAI. Default: %(default)s.",
     )
     parser.add_argument(
         "--api-version",
         default="2023-12-01-preview",
-        help="The API version to use for Azure. Default: %(default)s.",
+        help="The API version to use for Azure OpenAI. Default: %(default)s.",
     )
     parser.add_argument(
         "--strict-coverage",

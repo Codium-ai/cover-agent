@@ -13,8 +13,8 @@ class AICaller:
 
         Parameters:
             model (str): The name of the model to be used.
-            api_base (str): The base API URL to use in case the model is set to Ollama or Hugging Face or Azure.
-            api_version (str): The API version to use in case the model is set to Azure.
+            api_base (str): The base API URL to use in case the model is set to Ollama or Hugging Face or Azure OpenAI.
+            api_version (str): The API version to use in case the model is set to Azure OpenAI.
         """
         self.model = model
         self.api_base = api_base
@@ -67,7 +67,7 @@ class AICaller:
             completion_params["max_completion_tokens"] = max_tokens
             completion_params.pop("max_tokens", None)  # Remove 'max_tokens' if present
 
-        # API base exception for OpenAI Compatible, Ollama, Hugging Face models, and Azure
+        # API base exception for OpenAI Compatible, Ollama, Hugging Face models, and Azure OpenAI
         if (
             "ollama" in self.model
             or "huggingface" in self.model
@@ -76,7 +76,7 @@ class AICaller:
         ):
             completion_params["api_base"] = self.api_base
         
-        # API version exception for Azure
+        # API version exception for Azure OpenAI
         if self.model.startswith("azure/"):
             completion_params["api_version"] = self.api_version
 
