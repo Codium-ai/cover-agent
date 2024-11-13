@@ -262,6 +262,16 @@ def parse_args_full_repo():
         default=100,
         help="The desired coverage percentage. Default: %(default)s.",
     )
+    parser.add_argument(
+        "--diff-coverage",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "--branch",
+        type=str,
+        default="main",
+    )
     return parser.parse_args()
 
 

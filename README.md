@@ -44,7 +44,7 @@ poetry run cover-agent-full-repo \
   --project-language="python" \
   --project-root="<path_to_your_repo>" \
   --code-coverage-report-path="<path_to_your_repo>/coverage.xml" \
-  --test-command="coverage run -m pytest <relative_path_to_unittest_folder> --cov=<path_to_your_repo> --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=30" \
+  --test-command="coverage run -m pytest <relative_path_to_unittest_folder> --cov=<path_to_your_repo> --cov-report=xml --cov-report=term --log-cli-level=INFO" \
   --model=bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0
 ```
 

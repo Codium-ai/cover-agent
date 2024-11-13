@@ -1,6 +1,6 @@
 [include_files]
 limit_tokens=true
-max_tokens=16000
+max_tokens=20000
 
 [tests]
 max_allowed_runtime_seconds=30

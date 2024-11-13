@@ -31,7 +31,10 @@ SOFTWARE.
 
 from enum import Enum, IntEnum, IntFlag
 from typing import Dict, List, Literal, Union
-from typing import NotRequired, TypedDict
+try:
+    from typing import NotRequired, TypedDict
+except ImportError:  # before Python 3.11
+    from typing_extensions import NotRequired, TypedDict
 
 URI = str
 DocumentUri = str
