@@ -123,7 +123,9 @@ class TestCoverAgent:
                     model="openai/test-model",
                     api_base="openai/test-api",
                     use_report_coverage_feature_flag=False,
-                    log_db_path=""
+                    log_db_path="",
+                    diff_coverage=False,
+                    branch="main"
                 )
 
                 with pytest.raises(AssertionError) as exc_info:
@@ -160,7 +162,9 @@ class TestCoverAgent:
                     model="openai/test-model",
                     api_base="openai/test-api",
                     use_report_coverage_feature_flag=False,
-                    log_db_path=""
+                    log_db_path="",
+                    diff_coverage=False,
+                    branch="main"
                 )
 
                 with pytest.raises(AssertionError) as exc_info:
@@ -203,12 +207,15 @@ class TestCoverAgent:
                     use_report_coverage_feature_flag=False,
                     log_db_path="",
                     run_tests_multiple_times=False,
-                    strict_coverage=True
+                    strict_coverage=True,
+                    diff_coverage=False,
+                    branch="main"
                 )
                 # Mock the methods used in run
                 validator = mock_unit_test_validator.return_value
                 validator.current_coverage = 0.5  # below desired coverage
                 validator.desired_coverage = 90
+                validator.get_coverage.return_value = [{}, "python", "pytest", ""]
                 generator = mock_unit_test_generator.return_value
                 generator.generate_tests.return_value = {"new_tests": [{}]}
                 agent = CoverAgent(args)
@@ -239,4 +246,49 @@ class TestCoverAgent:
             agent = CoverAgent(args)
             
         assert str(exc_info.value) == f"Project root not found at {args.project_root}"
+
+    @patch("cover_agent.CoverAgent.UnitTestValidator")
+    @patch("cover_agent.CoverAgent.UnitTestGenerator")
+    @patch("cover_agent.CoverAgent.UnitTestDB")
+    @patch("cover_agent.CoverAgent.CustomLogger")
+    def test_run_diff_coverage(self, mock_logger, mock_test_db, mock_test_gen, mock_test_validator):
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
+            with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_test_file:
+                args = argparse.Namespace(
+                    source_file_path=temp_source_file.name,
+                    test_file_path=temp_test_file.name,
+                    project_root="",
+                    test_file_output_path="output_test_file.py",
+                    code_coverage_report_path="coverage_report.xml",
+                    test_command="pytest",
+                    test_command_dir=os.getcwd(),
+                    included_files=None,
+                    coverage_type="cobertura",
+                    report_filepath="test_results.html",
+                    desired_coverage=90,
+                    max_iterations=1,
+                    additional_instructions="",
+                    model="openai/test-model",
+                    api_base="openai/test-api",
+                    use_report_coverage_feature_flag=False,
+                    log_db_path="",
+                    run_tests_multiple_times=False,
+                    strict_coverage=False,
+                    diff_coverage=True,
+                    branch="main"
+                )
+                mock_test_validator.return_value.current_coverage = 0.5
+                mock_test_validator.return_value.desired_coverage = 90
+                mock_test_validator.return_value.get_coverage.return_value = [{}, "python", "pytest", ""]
+                mock_test_gen.return_value.generate_tests.return_value = {"new_tests": [{}]}
+                agent = CoverAgent(args)
+                agent.run()
+                mock_logger.get_logger.return_value.info.assert_any_call(
+                    f"Current Diff Coverage: {round(mock_test_validator.return_value.current_coverage * 100, 2)}%"
+                )
+
+        # Clean up the temp files
+        os.remove(temp_source_file.name)
+        os.remove(temp_test_file.name)
+
 

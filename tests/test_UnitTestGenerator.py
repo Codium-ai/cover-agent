@@ -58,7 +58,10 @@ class TestUnitTestGenerator:
                     "error_message": "AssertionError"
                 }
             ]
-            prompt = generator.build_prompt(failed_test_runs)
+            language = "python"
+            test_framework = "pytest"
+            code_coverage_report = ""
+            prompt = generator.build_prompt(failed_test_runs, language, test_framework, code_coverage_report)
             assert "Failed Test:" in prompt['user']
 
 
@@ -71,9 +74,12 @@ class TestUnitTestGenerator:
                 test_command="pytest",
                 llm_model="gpt-3"
             )
-            generator.build_prompt = lambda x: "Test prompt"
+            language = "python"
+            test_framework = "pytest"
+            code_coverage_report = ""
+            generator.build_prompt = lambda x, y, z, w: "Test prompt"
             with patch.object(generator.ai_caller, 'call_model', return_value=("This is not YAML", 10, 10)):
-                result = generator.generate_tests([])
+                result = generator.generate_tests([], language, test_framework, code_coverage_report)
                 
                 # The eventual call to try_fix_yaml() will end up spitting out the same string but deeming is "YAML."
                 # While this is not a valid YAML, the function will return the original string (for better or for worse).

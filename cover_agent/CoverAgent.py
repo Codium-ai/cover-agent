@@ -56,6 +56,8 @@ class CoverAgent:
             llm_model=args.model,
             api_base=args.api_base,
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
+            diff_coverage=args.diff_coverage,
+            comparison_branch=args.branch,
         )
 
     def _validate_paths(self):
@@ -140,8 +142,8 @@ class CoverAgent:
 
         # Run initial test suite analysis
         self.test_validator.initial_test_suite_analysis()
-        failed_test_runs = self.test_validator.get_coverage()
-        self.test_gen.build_prompt(failed_test_runs)
+        failed_test_runs, language, test_framework, coverage_report = self.test_validator.get_coverage()
+        self.test_gen.build_prompt(failed_test_runs, language, test_framework, coverage_report)
 
         # Loop until desired coverage is reached or maximum iterations are met
         while (
@@ -149,13 +151,18 @@ class CoverAgent:
             and iteration_count < self.args.max_iterations
         ):
             # Log the current coverage
-            self.logger.info(
-                f"Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
-            )
+            if self.args.diff_coverage:
+                self.logger.info(
+                    f"Current Diff Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
+                )
+            else:
+                self.logger.info(
+                    f"Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
+                )
             self.logger.info(f"Desired Coverage: {self.test_validator.desired_coverage}%")
 
             # Generate new tests
-            generated_tests_dict = self.test_gen.generate_tests(failed_test_runs)
+            generated_tests_dict = self.test_gen.generate_tests(failed_test_runs, language, test_framework, coverage_report)
 
             # Loop through each new test and validate it
             for generated_test in generated_tests_dict.get("new_tests", []):
@@ -183,7 +190,10 @@ class CoverAgent:
                 f"Reached above target coverage of {self.test_validator.desired_coverage}% (Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%) in {iteration_count} iterations."
             )
         elif iteration_count == self.args.max_iterations:
-            failure_message = f"Reached maximum iteration limit without achieving desired coverage. Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
+            if self.args.diff_coverage:
+                failure_message = f"Reached maximum iteration limit without achieving desired diff coverage. Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
+            else:
+                failure_message = f"Reached maximum iteration limit without achieving desired coverage. Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%"
             if self.args.strict_coverage:
                 # User requested strict coverage (similar to "--cov-fail-under in pytest-cov"). Fail with exist code 2.
                 self.logger.error(failure_message)

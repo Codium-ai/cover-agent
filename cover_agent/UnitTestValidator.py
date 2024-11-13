@@ -31,6 +31,8 @@ class UnitTestValidator:
         additional_instructions: str = "",
         use_report_coverage_feature_flag: bool = False,
         project_root: str = "",
+        diff_coverage: bool = False,
+        comparison_branch: str = "main",
     ):
         """
         Initialize the UnitTestValidator class with the provided parameters.
@@ -72,12 +74,23 @@ class UnitTestValidator:
         self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
         self.last_coverage_percentages = {}
         self.llm_model = llm_model
+        self.diff_coverage = diff_coverage
+        self.comparison_branch = comparison_branch
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
 
         # Get the logger instance from CustomLogger
         self.logger = CustomLogger.get_logger(__name__)
+
+        # Override covertype to be 'diff' if diff_coverage is enabled
+        if self.diff_coverage:
+            self.coverage_type = "diff_cover_json"
+            self.diff_coverage_report_name = "diff-cover-report.json"
+            self.diff_cover_report_path = f"{self.test_command_dir}/{self.diff_coverage_report_name}"
+            self.logger.info(f"Diff coverage enabled. Using coverage report: {self.diff_cover_report_path}")
+        else:
+            self.diff_cover_report_path = ""
 
         # States to maintain within this class
         self.preprocessor = FilePreprocessor(self.test_file_path)
@@ -96,7 +109,8 @@ class UnitTestValidator:
             file_path=self.code_coverage_report_path,
             src_file_path=self.source_file_path,
             coverage_type=self.coverage_type,
-            use_report_coverage_feature_flag=self.use_report_coverage_feature_flag
+            use_report_coverage_feature_flag=self.use_report_coverage_feature_flag,
+            diff_coverage_report_path=self.diff_cover_report_path,
         )
 
     def get_coverage(self):
@@ -108,7 +122,7 @@ class UnitTestValidator:
         """
         # Run coverage and build the prompt
         self.run_coverage()
-        return self.failed_test_runs
+        return self.failed_test_runs, self.language, self.testing_framework, self.code_coverage_report
     
     def get_code_language(self, source_file_path):
         """
@@ -284,6 +298,10 @@ class UnitTestValidator:
             )
             self.current_coverage = coverage
             self.last_coverage_percentages = coverage_percentages.copy()
+            self.logger.info(
+                f"Initial coverage: {round(self.current_coverage * 100, 2)}%"
+            )
+            
         except AssertionError as error:
             # Handle the case where the coverage report does not exist or was not updated after the test command
             self.logger.error(f"Error in coverage processing: {error}")
@@ -700,6 +718,14 @@ class UnitTestValidator:
             self.logger.info(
                 f"coverage: Percentage {round(percentage_covered * 100, 2)}%"
             )
+        elif self.diff_coverage:
+            self.generate_diff_coverage_report()
+            lines_covered, lines_missed, percentage_covered = (
+                self.coverage_processor.process_coverage_report(
+                    time_of_test_command=time_of_test_command
+                )
+            )
+            self.code_coverage_report = f"Lines covered: {lines_covered}\nLines missed: {lines_missed}\nPercentage covered: {round(percentage_covered * 100, 2)}%"
         else:
             lines_covered, lines_missed, percentage_covered = (
                 self.coverage_processor.process_coverage_report(
@@ -708,3 +734,20 @@ class UnitTestValidator:
             )
             self.code_coverage_report = f"Lines covered: {lines_covered}\nLines missed: {lines_missed}\nPercentage covered: {round(percentage_covered * 100, 2)}%"
         return percentage_covered, coverage_percentages
+
+
+    def generate_diff_coverage_report(self):
+        # Run the diff-cover command to generate a JSON diff coverage report
+        coverage_filename = os.path.basename(self.code_coverage_report_path)
+        coverage_command = f"diff-cover --json-report {self.diff_coverage_report_name} --compare-branch={self.comparison_branch} {coverage_filename}"
+        # Log and execute the diff coverage command
+        self.logger.info(f'Running diff coverage command: "{coverage_command}"')
+        stdout, stderr, exit_code, _ = Runner.run_command(
+            command=coverage_command, cwd=self.test_command_dir
+        )
+
+        # Ensure the diff command executed successfully
+        assert exit_code == 0, (
+            f'Fatal: Error running diff coverage command. Are you sure the command is correct? "{coverage_command}"'
+            f"\nExit code {exit_code}. \nStdout: \n{stdout} \nStderr: \n{stderr}"
+        )
