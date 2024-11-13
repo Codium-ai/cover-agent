@@ -36,14 +36,18 @@ async def run():
             source_file, context_files_include = await analyze_context(test_file, context_files, args, ai_caller)
 
             if source_file:
-                # Run the CoverAgent for the test file
-                args_copy = copy.deepcopy(args)
-                args_copy.source_file_path = source_file
-                args_copy.test_command_dir = args.project_root
-                args_copy.test_file_path = test_file
-                args_copy.included_files = context_files_include
-                agent = CoverAgent(args_copy)
-                agent.run()
+                try:
+                    # Run the CoverAgent for the test file
+                    args_copy = copy.deepcopy(args)
+                    args_copy.source_file_path = source_file
+                    args_copy.test_command_dir = args.project_root
+                    args_copy.test_file_path = test_file
+                    args_copy.included_files = context_files_include
+                    agent = CoverAgent(args_copy)
+                    agent.run()
+                except Exception as e:
+                    print(f"Error running CoverAgent for test file '{test_file}': {e}")
+                    pass
 
 
 def main():
