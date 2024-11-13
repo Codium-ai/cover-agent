@@ -40,7 +40,7 @@ How to run:
 2) cd to your repo
 3) Run the following command:
 ```shell
-poetry run cover-agent \
+poetry run cover-agent-full-repo \
   --project-language="python" \
   --project-root="<path_to_your_repo>" \
   --code-coverage-report-path="<path_to_your_repo>/coverage.xml" \
