@@ -257,7 +257,7 @@ export AZURE_API_KEY="<your api key>" # azure api key
 
 cover-agent \
   ...
-  --model "azure/<your deployment name>" \
+  --model "azure/<your deployment name>"
 ```
 
 
