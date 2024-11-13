@@ -187,7 +187,7 @@ test_name:"""
         assert args.test_command_dir == os.getcwd()
         assert args.coverage_type == "cobertura"
         assert args.report_filepath == "test_results.html"
-        assert args.max_iterations == 2
+        assert args.max_iterations == 3
         assert args.additional_instructions == ""
         assert args.model == "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0"
         assert args.api_base == "http://localhost:11434"
