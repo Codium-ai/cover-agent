@@ -13,7 +13,8 @@ class AICaller:
 
         Parameters:
             model (str): The name of the model to be used.
-            api_base (str): The base API URL to use in case the model is set to Ollama or Hugging Face.
+            api_base (str): The base API URL to use in case the model is set to Ollama or Hugging Face or Azure.
+            api_version (str): The API version to use in case the model is set to Azure.
         """
         self.model = model
         self.api_base = api_base
