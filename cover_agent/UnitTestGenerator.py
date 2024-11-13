@@ -25,6 +25,7 @@ class UnitTestGenerator:
         test_command: str,
         llm_model: str,
         api_base: str = "",
+        api_version: str = "",
         test_command_dir: str = os.getcwd(),
         included_files: list = None,
         coverage_type="cobertura",

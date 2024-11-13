@@ -7,7 +7,7 @@ from wandb.sdk.data_types.trace_tree import Trace
 
 
 class AICaller:
-    def __init__(self, model: str, api_base: str = ""):
+    def __init__(self, model: str, api_base: str = "", api_version: str = ""):
         """
         Initializes an instance of the AICaller class.
 
@@ -17,6 +17,7 @@ class AICaller:
         """
         self.model = model
         self.api_base = api_base
+        self.api_version = api_version
 
     def call_model(self, prompt: dict, max_tokens=4096, stream=True):
         """
@@ -65,13 +66,18 @@ class AICaller:
             completion_params["max_completion_tokens"] = max_tokens
             completion_params.pop("max_tokens", None)  # Remove 'max_tokens' if present
 
-        # API base exception for OpenAI Compatible, Ollama, and Hugging Face models
+        # API base exception for OpenAI Compatible, Ollama, Hugging Face models, and Azure
         if (
             "ollama" in self.model
             or "huggingface" in self.model
             or self.model.startswith("openai/")
+            or self.model.startswith("azure/")
         ):
             completion_params["api_base"] = self.api_base
+        
+        # API version exception for Azure
+        if self.model.startswith("azure/"):
+            completion_params["api_version"] = self.api_version
 
         response = litellm.completion(**completion_params)
 

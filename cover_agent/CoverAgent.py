@@ -42,6 +42,7 @@ class CoverAgent:
             additional_instructions=args.additional_instructions,
             llm_model=args.model,
             api_base=args.api_base,
+            api_version=args.api_version,
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
         )
 
@@ -58,6 +59,7 @@ class CoverAgent:
             additional_instructions=args.additional_instructions,
             llm_model=args.model,
             api_base=args.api_base,
+            api_version=args.api_version,
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
             diff_coverage=args.diff_coverage,
             comparison_branch=args.branch,
