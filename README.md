@@ -249,6 +249,16 @@ cover-agent \
   --api-base "<your-api-base>"
 ```
 
+#### Azure OpenAI Compatible Endpoint
+```shell
+export AZURE_OPENAI_API_KEY="<your api key>" # If <your-api-base> requires an API KEY, set this value.
+
+cover-agent \
+  ...
+  --model "azure/<your deployment name>" \
+  --api-base "<your-api-base>" \
+  --api-version "<your-api-version>"
+```
 
 ## Development
 This section discusses the development of this project.
