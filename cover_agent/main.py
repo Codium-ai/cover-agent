@@ -85,7 +85,7 @@ def parse_args():
     )
     parser.add_argument(
         "--api-version",
-        default="2024-06-01-preview",
+        default="2023-12-01-preview",
         help="The API version to use for Azure. Default: %(default)s.",
     )
     parser.add_argument(
