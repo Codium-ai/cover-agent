@@ -161,7 +161,7 @@ class UnitTestGenerator:
             return out_str
         return ""
 
-    def build_prompt(self, failed_test_runs) -> dict:
+    def build_prompt(self, failed_test_runs, language, testing_framework, code_coverage_report) -> dict:
         """
         Builds a prompt using the provided information to be used for generating tests.
 
@@ -200,18 +200,18 @@ class UnitTestGenerator:
         self.prompt_builder = PromptBuilder(
             source_file_path=self.source_file_path,
             test_file_path=self.test_file_path,
-            code_coverage_report=self.code_coverage_report,
+            code_coverage_report=code_coverage_report,
             included_files=self.included_files,
             additional_instructions=self.additional_instructions,
             failed_test_runs=failed_test_runs_value,
-            language=self.language,
-            testing_framework=self.testing_framework,
+            language=language,
+            testing_framework=testing_framework,
             project_root=self.project_root,
         )
 
         return self.prompt_builder.build_prompt()
 
-    def generate_tests(self, failed_test_runs):
+    def generate_tests(self, failed_test_runs, language, testing_framework, code_coverage_report):
         """
         Generate tests using the AI model based on the constructed prompt.
 
@@ -229,7 +229,7 @@ class UnitTestGenerator:
         Raises:
             Exception: If there is an error during test generation, such as a parsing error while processing the AI model response.
         """
-        self.prompt = self.build_prompt(failed_test_runs)
+        self.prompt = self.build_prompt(failed_test_runs, language, testing_framework, code_coverage_report)
         response, prompt_token_count, response_token_count =  self.ai_caller.call_model(prompt=self.prompt)
 
         self.total_input_token_count += prompt_token_count

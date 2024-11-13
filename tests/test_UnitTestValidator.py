@@ -168,3 +168,61 @@ class TestUnitValidator:
                 assert generator.relevant_line_number_to_insert_tests_after == 100
                 assert generator.relevant_line_number_to_insert_imports_after == 10
                 assert generator.testing_framework == "pytest"
+
+    
+    def test_post_process_coverage_report_with_report_coverage_flag(self):
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
+            generator = UnitTestValidator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+                use_report_coverage_feature_flag=True
+            )
+            with patch.object(CoverageProcessor, 'process_coverage_report', return_value={'test.py': ([1], [1], 1.0)}):
+                percentage_covered, coverage_percentages = generator.post_process_coverage_report(datetime.datetime.now())
+                assert percentage_covered == 0.5
+                assert coverage_percentages == {'test.py': 1.0}
+
+    def test_post_process_coverage_report_with_diff_coverage(self):
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
+            generator = UnitTestValidator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+                diff_coverage=True
+            )
+            with patch.object(generator, 'generate_diff_coverage_report'), \
+                    patch.object(CoverageProcessor, 'process_coverage_report', return_value=([], [], 0.8)):
+                percentage_covered, coverage_percentages = generator.post_process_coverage_report(datetime.datetime.now())
+                assert percentage_covered == 0.8
+
+    def test_post_process_coverage_report_without_flags(self):
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
+            generator = UnitTestValidator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3"
+            )
+            with patch.object(CoverageProcessor, 'process_coverage_report', return_value=([], [], 0.7)):
+                percentage_covered, coverage_percentages = generator.post_process_coverage_report(datetime.datetime.now())
+                assert percentage_covered == 0.7
+
+    def test_generate_diff_coverage_report(self):
+        with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
+            generator = UnitTestValidator(
+                source_file_path=temp_source_file.name,
+                test_file_path="test_test.py",
+                code_coverage_report_path="coverage.xml",
+                test_command="pytest",
+                llm_model="gpt-3",
+                diff_coverage=True
+            )
+            with patch.object(Runner, 'run_command', return_value=("", "", 0, datetime.datetime.now())):
+                generator.generate_diff_coverage_report()
+                assert generator.diff_cover_report_path.endswith("diff-cover-report.json")
