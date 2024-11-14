@@ -240,6 +240,7 @@ class CoverageProcessor:
         root = tree.getroot()
         sourcefile = root.find(f".//sourcefile[@name='{class_name}.java']") or root.find(f".//sourcefile[@name='{class_name}.kt']")
 
+
         if sourcefile is None:
             return 0, 0
 
@@ -265,14 +266,15 @@ class CoverageProcessor:
                         covered = int(row["LINE_COVERED"])
                         break
                     except KeyError as e:
-                        self.logger.error("Missing expected column in CSV: {e}")
+                        self.logger.error(f"Missing expected column in CSV: {str(e)}")
                         raise
 
         return missed, covered
 
     def extract_package_and_class_java_kotlin(self):
-        package_pattern = re.compile(r"^\s*package\s+([\w\.]+)\s*;?$")
+        package_pattern = re.compile(r"^\s*package\s+([\w\.]+)(?:\s*;)?\s*$")
         class_pattern = re.compile(r"^\s*(?:public\s+)?class\s+(\w+).*")
+
 
         package_name = ""
         class_name = ""
