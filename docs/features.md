@@ -1,28 +1,30 @@
-# Features
-This doc contains explanations and usages of the feature flags used in Cover Agent.
+# Cover Agent Feature Flags
 
-## Diff Based Coverage
-This update introduces a new feature that allows for generating tests based on the differences between branches, focusing on the changes in the codebase. This is particularly useful for ensuring that new changes are adequately tested without needing to run tests on the entire codebase.
+## Features Overview
 
-### Key Features:
-- **Diff Coverage Support**: The tool can now generate tests specifically for the code changes between branches using the `diff-cover` pip package.
-- **New Command-Line Options**: 
-  - `--diff-coverage`: Enable this option to generate tests based on the diff between branches.
-  - `--branch`: Specify the branch to compare against when using `--diff-coverage`. The default is `main`.
-- **Mutually Exclusive Flags**: The `--diff-coverage` option cannot be used simultaneously with `--use-report-coverage-feature-flag`.
+### 1. Diff-Based Coverage
+Generates targeted tests for changes between branches, helping ensure new code is adequately tested without re-running all tests.
 
-### How to Run:
-To utilize the diff coverage feature, run the tool with the following command-line options:
+- **Options**:
+  - `--diff-coverage`: Enables diff-based test generation.
+  - `--branch=<branch_name>`: Specifies a branch for comparison (default: `main`).
+- **Usage**:
+  ```bash
+  python cover_agent/main.py --diff-coverage --branch=develop
+  ```
+  This example compares the current branch with `develop`, generating tests for new changes.
 
-```bash
-python cover_agent/main.py --diff-coverage --branch=<comparison_branch>
-```
+- **Note**: `--diff-coverage` cannot be used with `--use-report-coverage-feature-flag`.
 
-Replace `<comparison_branch>` with the name of the branch you want to compare against. This will generate tests focused on the changes between your current branch and the specified comparison branch.
+### 2. Report-Based Coverage
+Accepts tests if they increase coverage for any file in the report, regardless of the specific source file.
 
-### Example:
-```bash
-python cover_agent/main.py --diff-coverage --branch=develop
-```
+- **Option**:
+  - `--use-report-coverage-feature-flag`: Activates this feature to accept any coverage increase as sufficient.
+- **Usage**:
+  ```bash
+  python cover_agent/main.py --use-report-coverage-feature-flag
+  ```
+  This example accepts tests that improve coverage anywhere in the report.
 
-This command will generate tests for the differences between your current branch and the `develop` branch, ensuring that new changes are adequately covered by tests.
+- **Note**: This flag is mutually exclusive with `--diff-coverage`.
