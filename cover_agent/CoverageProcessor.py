@@ -212,7 +212,7 @@ class CoverageProcessor:
         """
         lines_covered, lines_missed = [], []
 
-        package_name, class_name = self.extract_package_and_class_java()
+        package_name, class_name = self.extract_package_and_class_java_kotlin()
         file_extension = self.get_file_extension(self.file_path)
 
         missed, covered = 0, 0
@@ -238,7 +238,7 @@ class CoverageProcessor:
         """Parses a JaCoCo XML code coverage report to extract covered and missed line numbers for a specific file."""
         tree = ET.parse(self.file_path)
         root = tree.getroot()
-        sourcefile = root.find(f".//sourcefile[@name='{class_name}.java']")
+        sourcefile = root.find(f".//sourcefile[@name='{class_name}.java']") or root.find(f".//sourcefile[@name='{class_name}.kt']")
 
         if sourcefile is None:
             return 0, 0
@@ -270,9 +270,9 @@ class CoverageProcessor:
 
         return missed, covered
 
-    def extract_package_and_class_java(self):
-        package_pattern = re.compile(r"^\s*package\s+([\w\.]+)\s*;.*$")
-        class_pattern = re.compile(r"^\s*public\s+class\s+(\w+).*")
+    def extract_package_and_class_java_kotlin(self):
+        package_pattern = re.compile(r"^\s*package\s+([\w\.]+)\s*;?$")
+        class_pattern = re.compile(r"^\s*(?:public\s+)?class\s+(\w+).*")
 
         package_name = ""
         class_name = ""
