@@ -36,9 +36,10 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 New mode - scan an entire repo, auto identify the test files, auto collect context for each test file, and extend the test suite with new tests.
 How to run:
 
-1) Create a branch in your repo
-2) cd to your repo
-3) Run the following command:
+1) Install cover-agent on your venv: `pip install git+https://github.com/Codium-ai/cover-agent.git`
+2) Create a branch in your repo
+3) cd to your repo
+4) Run the following command:
 ```shell
 poetry run cover-agent-full-repo \
   --project-language="python" \
