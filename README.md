@@ -41,13 +41,13 @@ How to run:
 ```
 [tool.poetry]
 name = "cover-agent"
-version = "0.0.0" # Placeholder. Will be replaced by dynamic versioning.
+version = "0.0.0" # Placeholder
 description = "Cover Agent Tool"
 authors = ["QodoAI"]
 license = "AGPL-3.0 license"
 readme = "README.md"
 ```
-3) Create a branch in your repo (we went to extend the tests on a dedicated branch)
+3) Create a branch in your repo (we want to extend the tests on a dedicated branch)
 4) cd to your repo root
 5) Run the following command:
 ```shell
