@@ -4,6 +4,7 @@ from cover_agent.CustomLogger import CustomLogger
 from typing import Dict, Optional, Tuple, Union
 import csv
 import os
+import re
 import xml.etree.ElementTree as ET
 
 @dataclass
@@ -69,39 +70,36 @@ class CoverageProcessor(ABC):
     def parse_coverage_report(self) -> Dict[str, CoverageData]:
         pass
     
-    @abstractmethod
     def process_coverage_report(self, time_of_test_command: int) -> CoverageReport:
-        self._is_coverage_valid(time_of_test_command=int(os.path.getmtime(self.file_path) * 1000))
+        self._is_coverage_valid(time_of_test_command=time_of_test_command)
         coverage = self.parse_coverage_report()
         report = CoverageReport(0.0, coverage)
         if coverage:
-            total_covered_lines = sum(cov.covered_lines for cov in coverage.file_coverage.values())
-            total_missed_lines = sum(cov.missed_lines for cov in coverage.file_coverage.values())
+            total_covered_lines = sum(cov.covered_lines for cov in coverage.values())
+            total_missed_lines = sum(cov.missed_lines for cov in coverage.values())
             total_lines = total_covered_lines + total_missed_lines
-            report.total_coverage = (float(total_covered_lines) / total_lines) if total_lines > 0 else 0.0
+            report.total_coverage = (float(total_covered_lines) / float(total_lines)) if total_lines > 0 else 0.0
         return report
 
     def _is_coverage_valid(
         self, time_of_test_command: int
     ) ->  None:
-        self._is_report_exist()
-        self._is_report_obsolete(time_of_test_command)
-
-    def _is_report_exist(self):
-       if not os.path.exists(self.file_path):
+        if not self._is_report_exist():
             raise FileNotFoundError(f'Coverage report "{self.file_path}" not found')
-
-    def _is_report_obsolete(self, time_of_test_command: int):
-       if int(os.path.getmtime(self.file_path) * 1000) <= time_of_test_command:
+        if not self._is_report_obsolete(time_of_test_command):
             raise ValueError("Coverage report is outdated")
+
+    def _is_report_exist(self) -> bool:
+        return os.path.exists(self.file_path)
+
+    def _is_report_obsolete(self, time_of_test_command: int) -> bool:
+        return int(os.path.getmtime(self.file_path) * 1000) > time_of_test_command
     
 class CoberturaProcessor(CoverageProcessor):
     def parse_coverage_report(self) -> Dict[str, CoverageData]:
-        self._is_coverage_valid(time_of_test_command=int(os.path.getmtime(self.file_path) * 1000))
-
         tree = ET.parse(self.file_path)
         root = tree.getroot()
-        coverage = Dict[str, CoverageData]
+        coverage = {}
         for cls in root.findall(".//class"):
             cls_filename = cls.get("filename")
             if cls_filename:
@@ -118,8 +116,8 @@ class CoberturaProcessor(CoverageProcessor):
             else:
                 lines_missed.append(line_number)
         total_lines = len(lines_covered) + len(lines_missed)
-        coverage_percentage = (float(lines_covered) / total_lines) if total_lines > 0 else 0.0
-        return CoverageData(lines_covered, lines_missed, coverage_percentage)
+        coverage_percentage = (float(len(lines_covered)) / total_lines) if total_lines > 0 else 0.0
+        return CoverageData(len(lines_covered), len(lines_missed), coverage_percentage)
 
 class LcovProcessor(CoverageProcessor):
     def parse_coverage_report(self) -> Dict[str, CoverageData]:
@@ -142,8 +140,8 @@ class LcovProcessor(CoverageProcessor):
                             elif line.startswith("end_of_record"):
                                 break
                         total_lines = len(lines_covered) + len(lines_missed)
-                        coverage_percentage = (float(lines_covered) / total_lines) if total_lines > 0 else 0.0
-                        coverage[filename] = CoverageData(lines_covered, lines_missed, coverage_percentage)
+                        coverage_percentage = (float(len(lines_covered)) / total_lines) if total_lines > 0 else 0.0
+                        coverage[filename] = CoverageData(len(lines_covered), len(lines_missed), coverage_percentage)
         except (FileNotFoundError, IOError) as e:
             self.logger.error(f"Error reading file {self.file_path}: {e}")
             raise
@@ -152,52 +150,84 @@ class LcovProcessor(CoverageProcessor):
 class JacocoProcessor(CoverageProcessor):
     def parse_coverage_report(self) -> Dict[str, CoverageData]:
         coverage = {}
+        package_name, class_name = self._extract_package_and_class_java()
         file_extension = self._get_file_extension(self.file_path)
         if file_extension == 'xml':
-            coverage = self._parse_jacoco_xml()
+            missed_lines, covered_lines = self._parse_jacoco_xml(class_name=class_name)
         elif file_extension == 'csv':
-            coverage = self._parse_jacoco_csv()
+            missed, covered = self._parse_jacoco_csv(package_name=package_name, class_name=class_name)
         else:
             raise ValueError(f"Unsupported JaCoCo code coverage report format: {file_extension}")
+        total_lines = missed + covered
+        coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0.0
+        coverage[class_name] = CoverageData(covered_lines, missed_lines, coverage_percentage)
         return coverage
     
     def _get_file_extension(self, filename: str) -> str | None:
         """Get the file extension from a given filename."""
         return os.path.splitext(filename)[1].lstrip(".")
     
-    def _parse_jacoco_xml(self) -> Dict[str, CoverageData]:
+    def _extract_package_and_class_java(self):
+        package_pattern = re.compile(r"^\s*package\s+([\w\.]+)\s*;.*$")
+        class_pattern = re.compile(r"^\s*public\s+class\s+(\w+).*")
+
+        package_name = ""
+        class_name = ""
+        try:
+            with open(self.src_file_path, "r") as file:
+                for line in file:
+                    if not package_name:  # Only match package if not already found
+                        package_match = package_pattern.match(line)
+                        if package_match:
+                            package_name = package_match.group(1)
+
+                    if not class_name:  # Only match class if not already found
+                        class_match = class_pattern.match(line)
+                        if class_match:
+                            class_name = class_match.group(1)
+
+                    if package_name and class_name:  # Exit loop if both are found
+                        break
+        except (FileNotFoundError, IOError) as e:
+            self.logger.error(f"Error reading file {self.src_file_path}: {e}")
+            raise
+
+        return package_name, class_name
+    
+    def _parse_jacoco_xml(
+        self, class_name: str
+    ) -> tuple[int, int]:
+        """Parses a JaCoCo XML code coverage report to extract covered and missed line numbers for a specific file."""
         tree = ET.parse(self.file_path)
         root = tree.getroot()
-        coverage = {}
-        for sourcefile in root.findall(".//sourcefile"):
-            filename = sourcefile.get("name")
-            missed, covered = 0, 0
-            for counter in sourcefile.findall('counter'):
-                if counter.attrib.get('type') == 'LINE':
-                    missed = int(counter.attrib.get('missed', 0))
-                    covered = int(counter.attrib.get('covered', 0))
-                    break
-            total_lines = missed + covered
-            coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0
-            coverage[filename] = CoverageData(covered, missed, coverage_percentage)
-        return coverage
-    def _parse_jacoco_csv(self) -> Dict[str, CoverageData]:
-        coverage = {}
+        sourcefile = root.find(f".//sourcefile[@name='{class_name}.java']")
+
+        if sourcefile is None:
+            return 0, 0
+
+        missed, covered = 0, 0
+        for counter in sourcefile.findall('counter'):
+            if counter.attrib.get('type') == 'LINE':
+                missed += int(counter.attrib.get('missed', 0))
+                covered += int(counter.attrib.get('covered', 0))
+                break
+
+        return missed, covered
+    def _parse_jacoco_csv(self, package_name, class_name) -> Dict[str, CoverageData]:
         with open(self.file_path, "r") as file:
             reader = csv.DictReader(file)
             missed, covered = 0, 0
             for row in reader:
-                try:
-                    missed = int(row["LINE_MISSED"])
-                    covered = int(row["LINE_COVERED"])
-                    total_lines = missed + covered
-                    coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0
-                    coverage[filename] = CoverageData(covered, missed, coverage_percentage)
-                    break
-                except KeyError as e:
-                    self.logger.error("Missing expected column in CSV: {e}")
-                    raise
-        return coverage
+                if row["PACKAGE"] == package_name and row["CLASS"] == class_name:
+                    try:
+                        missed = int(row["LINE_MISSED"])
+                        covered = int(row["LINE_COVERED"])
+                        break
+                    except KeyError as e:
+                        self.logger.error(f"Missing expected column in CSV: {e}")
+                        raise
+
+        return missed, covered
 
 class CoverageReportFilter:
     def filter_report(self, report: CoverageReport, file_pattern: str) -> CoverageReport:
@@ -207,8 +237,8 @@ class CoverageReportFilter:
             if file_pattern in file
         }
         return CoverageReport(
-            total_coverage=sum(cov.covered_lines for cov in filtered_coverage.values()) / 
-                         sum(cov.covered_lines + cov.missed_lines for cov in filtered_coverage.values())
+            total_coverage=(sum(cov.covered_lines for cov in filtered_coverage.values()) / 
+                         sum(cov.covered_lines + cov.missed_lines for cov in filtered_coverage.values()))
                          if filtered_coverage else 0.0,
             file_coverage=filtered_coverage
         )
@@ -256,7 +286,7 @@ def process_coverage(
     processor = CoverageProcessorFactory.create_processor(tool_type, report_path, src_file_path)
     
     # Process full report
-    report = processor.parse_coverage_report()
+    report = processor.process_coverage_report(time_of_test_command=int(os.path.getmtime(report_path) * 1000))
     
     # Apply filtering if needed
     if not is_global_coverage_enabled and file_pattern:
