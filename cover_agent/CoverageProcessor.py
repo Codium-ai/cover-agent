@@ -218,9 +218,9 @@ class CoverageProcessor:
             package_name, class_name = self.extract_package_and_class_java()
         elif source_file_extension == 'kt':
             package_name, class_name = self.extract_package_and_class_kotlin()
-
         else:
-            raise ValueError(f"Unsupported Byte Class Language: {source_file_extension}")
+            self.logger.warn(f"Unsupported Bytecode Language: {source_file_extension}. Using default Java logic.")
+            package_name, class_name = self.extract_package_and_class_java()
 
 
         file_extension = self.get_file_extension(self.file_path)
