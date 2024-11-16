@@ -53,23 +53,28 @@ class CoverageProcessor:
         Returns:
             Tuple[list, list, float]: A tuple containing lists of covered and missed line numbers, and the coverage percentage.
         """
-        self.verify_report_update(time_of_test_command)
+        self._is_report_exist()
+        self._is_report_obsolete(time_of_test_command)
         return self.parse_coverage_report()
 
-    def verify_report_update(self, time_of_test_command: int):
+    def _is_report_exist(self):
         """
-        Verifies the coverage report's existence and update time.
-
-        Args:
-            time_of_test_command (int): The time the test command was run, in milliseconds.
-
+        Verifies the coverage report's existence.
         Raises:
-            AssertionError: If the coverage report does not exist or was not updated after the test command.
+            AssertionError: If the coverage report does not exist.
         """
         assert os.path.exists(
             self.file_path
         ), f'Fatal: Coverage report "{self.file_path}" was not generated.'
 
+    def _is_report_obsolete(self, time_of_test_command: int):
+        """
+        Verifies if the report is newer than the file modified time.
+        Args:
+            time_of_test_command (int): The time the test command was run, in milliseconds.
+        Raises:
+            AssertionError: If the coverage report was not updated after the test command.
+        """
         # Convert file modification time to milliseconds for comparison
         file_mod_time_ms = int(round(os.path.getmtime(self.file_path) * 1000))
 
