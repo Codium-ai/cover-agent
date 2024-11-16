@@ -120,10 +120,39 @@ class TestCoverageProcessor:
         with pytest.raises(FileNotFoundError, match="File not found"):
             processor.extract_package_and_class_java()
 
+    def test_extract_package_and_class_kotlin(self, mocker):
+        kotlin_file_content = """
+        package com.madrapps.playground
+    
+        import androidx.lifecycle.ViewModel
+
+        class MainViewModel : ViewModel() {
+        
+            fun validate(userId: String): Boolean {
+                return userId == "admin"
+            }
+        
+            fun verifyAccess1(userId: String): Boolean {
+                return userId == "super-admin"
+            }
+        
+            fun verifyPassword(password: String): Boolean {
+                return password.isNotBlank()
+            }
+        }
+        """
+        mocker.patch("builtins.open", mocker.mock_open(read_data=kotlin_file_content))
+        processor = CoverageProcessor("fake_path", "path/to/MainViewModel.kt", "jacoco")
+        package_name, class_name = processor.extract_package_and_class_kotlin()
+        assert (
+            package_name == "com.madrapps.playground"
+        ), "Expected package name to be 'com.madrapps.playground'"
+        assert class_name == "MainViewModel", "Expected class name to be 'MainViewModel'"
+
     def test_extract_package_and_class_java(self, mocker):
         java_file_content = """
         package com.example;
-    
+
         public class MyClass {
             // class content
         }
@@ -132,7 +161,7 @@ class TestCoverageProcessor:
         processor = CoverageProcessor("fake_path", "path/to/MyClass.java", "jacoco")
         package_name, class_name = processor.extract_package_and_class_java()
         assert (
-            package_name == "com.example"
+                package_name == "com.example"
         ), "Expected package name to be 'com.example'"
         assert class_name == "MyClass", "Expected class name to be 'MyClass'"
 
@@ -327,6 +356,44 @@ class TestCoverageProcessor:
 
         processor = CoverageProcessor(
             "path/to/coverage_report.xml", "path/to/MyClass.java", "jacoco"
+        )
+
+        # Action
+        missed, covered = processor.parse_missed_covered_lines_jacoco_xml(
+            "MyClass"
+        )
+
+        # Assert
+        assert missed == 9
+        assert covered == 94
+
+    def test_parse_missed_covered_lines_kotlin_jacoco_xml(self, mocker):
+        #, mock_xml_tree
+        mocker.patch(
+            "cover_agent.CoverageProcessor.CoverageProcessor.extract_package_and_class_kotlin",
+            return_value=("com.example", "Example"),
+        )
+
+        xml_str = """<report>
+                        <package name="path/to">
+                            <sourcefile name="MyClass.kt">
+                                <counter type="INSTRUCTION" missed="53" covered="387"/>
+                                <counter type="BRANCH" missed="2" covered="6"/>
+                                <counter type="LINE" missed="9" covered="94"/>
+                                <counter type="COMPLEXITY" missed="5" covered="23"/>
+                                <counter type="METHOD" missed="3" covered="21"/>
+                                <counter type="CLASS" missed="0" covered="1"/>
+                            </sourcefile>
+                        </package>
+                    </report>"""
+
+        mocker.patch(
+            "xml.etree.ElementTree.parse",
+            return_value=ET.ElementTree(ET.fromstring(xml_str))
+        )
+
+        processor = CoverageProcessor(
+            "path/to/coverage_report.xml", "path/to/MyClass.kt", "jacoco"
         )
 
         # Action
