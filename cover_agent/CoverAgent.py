@@ -70,9 +70,12 @@ class CoverAgent:
         if hasattr(args, 'run_each_test_separately') and args.run_each_test_separately:
             test_file_relative_path = os.path.relpath(args.test_file_output_path, args.project_root)
             if 'pytest' in test_command:  # coverage run -m pytest tests  --cov=/Users/talrid/Git/cover-agent --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=30
-                ind1 = test_command.index('pytest')
-                ind2 = test_command[ind1:].index('--')
-                new_command_line = f"{test_command[:ind1]}pytest {test_file_relative_path} {test_command[ind1 + ind2:]}"
+                try:
+                    ind1 = test_command.index('pytest')
+                    ind2 = test_command[ind1:].index('--')
+                    new_command_line = f"{test_command[:ind1]}pytest {test_file_relative_path} {test_command[ind1 + ind2:]}"
+                except ValueError:
+                    print(f"Failed to adapt test command for running a single test: {test_command}")
             else:
                 new_command_line = adapt_test_command_for_a_single_test_via_ai(args, test_file_relative_path, test_command)
         if new_command_line:
