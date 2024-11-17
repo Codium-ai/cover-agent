@@ -86,14 +86,14 @@ class CoverageProcessor(ABC):
     ) ->  None:
         if not self._is_report_exist():
             raise FileNotFoundError(f'Coverage report "{self.file_path}" not found')
-        if not self._is_report_obsolete(time_of_test_command):
+        if self._is_report_obsolete(time_of_test_command):
             raise ValueError("Coverage report is outdated")
 
     def _is_report_exist(self) -> bool:
         return os.path.exists(self.file_path)
 
     def _is_report_obsolete(self, time_of_test_command: int) -> bool:
-        return int(os.path.getmtime(self.file_path) * 1000) > time_of_test_command
+        return int(round(os.path.getmtime(self.file_path) * 1000)) < time_of_test_command
     
 class CoberturaProcessor(CoverageProcessor):
     def parse_coverage_report(self) -> Dict[str, CoverageData]:
@@ -153,14 +153,14 @@ class JacocoProcessor(CoverageProcessor):
         package_name, class_name = self._extract_package_and_class_java()
         file_extension = self._get_file_extension(self.file_path)
         if file_extension == 'xml':
-            missed_lines, covered_lines = self._parse_jacoco_xml(class_name=class_name)
+            missed, covered = self._parse_jacoco_xml(class_name=class_name)
         elif file_extension == 'csv':
             missed, covered = self._parse_jacoco_csv(package_name=package_name, class_name=class_name)
         else:
             raise ValueError(f"Unsupported JaCoCo code coverage report format: {file_extension}")
         total_lines = missed + covered
         coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0.0
-        coverage[class_name] = CoverageData(covered_lines, missed_lines, coverage_percentage)
+        coverage[class_name] = CoverageData(covered, missed, coverage_percentage)
         return coverage
     
     def _get_file_extension(self, filename: str) -> str | None:
