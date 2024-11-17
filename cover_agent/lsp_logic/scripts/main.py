@@ -5,7 +5,6 @@ from time import sleep
 
 from grep_ast import filename_to_lang
 
-from cover_agent.lsp_logic.logic import get_direct_context, get_reverse_context
 from cover_agent.lsp_logic.multilspy import LanguageServer
 from cover_agent.lsp_logic.file_map.file_map import FileMap
 from cover_agent.lsp_logic.multilspy.multilspy_config import MultilspyConfig
@@ -18,6 +17,8 @@ def parse_arguments():
                         default='./')
     parser.add_argument('--rel_file', type=str, help='The relative file path.',
                         default='cover_agent/UnitTestGenerator.py')
+    parser.add_argument('--project-language', type=str, help='The language of the file.',
+                        default='python')
     return parser.parse_args()
 
 
@@ -54,16 +55,14 @@ async def run():
         print("LSP server initialized.")
 
         print("\nGetting context ...")
-        context_files, context_symbols = await get_direct_context(captures,
+        context_files, context_symbols = await lsp.get_direct_context(captures,
                                                                   language,
-                                                                  lsp,
                                                                   project_dir,
                                                                   rel_file)
         print("Getting context done.")
 
         print("\nGetting reverse context ...")
-        reverse_context_files, reverse_context_symbols = await get_reverse_context(captures,
-                                                          lsp,
+        reverse_context_files, reverse_context_symbols = await lsp.get_reverse_context(captures,
                                                           project_dir,
                                                           rel_file)
         print("Getting reverse context done.")

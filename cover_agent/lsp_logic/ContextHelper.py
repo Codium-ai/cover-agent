@@ -8,7 +8,7 @@ from cover_agent.lsp_logic.utils.utils_context import analyze_context, find_test
 from cover_agent.lsp_logic.multilspy import LanguageServer
 
 
-class PythonContextHelper:
+class ContextHelper:
     def __init__(self, args: Namespace):
         self._args = args
         self._lsp: Optional[LanguageServer] = None
@@ -22,7 +22,7 @@ class PythonContextHelper:
 
     async def find_test_file_context(self, test_file: Path):
         if not self._lsp:
-            raise ValueError( "Language server not initialized. Please call start_server() first.")
+            raise ValueError("Language server not initialized. Please call start_server() first.")
         context_files = await find_test_file_context(self._args, self._lsp, test_file)
         return context_files
 

@@ -4,7 +4,6 @@ from time import sleep
 from jinja2 import Environment, StrictUndefined
 
 from cover_agent.lsp_logic.file_map.file_map import FileMap
-from cover_agent.lsp_logic.logic import get_direct_context
 from cover_agent.lsp_logic.multilspy import LanguageServer
 from cover_agent.lsp_logic.multilspy.multilspy_config import MultilspyConfig
 from cover_agent.lsp_logic.multilspy.multilspy_logger import MultilspyLogger
@@ -70,9 +69,8 @@ async def find_test_file_context(args, lsp, test_file):
         # print("Tree-sitter query results for the target file done.")
 
         # print("\nGetting context ...")
-        context_files, context_symbols = await get_direct_context(captures,
+        context_files, context_symbols = await lsp.get_direct_context(captures,
                                                                   args.project_language,
-                                                                  lsp,
                                                                   args.project_root,
                                                                   rel_file)
         # filter empty files
@@ -93,6 +91,9 @@ async def find_test_file_context(args, lsp, test_file):
 async def initialize_language_server(args):
     logger = MultilspyLogger()
     config = MultilspyConfig.from_dict({"code_language": args.project_language})
-    lsp = LanguageServer.create(config, logger, args.project_root)
-    sleep(0.1)
-    return lsp
+    if args.project_language == "python":
+        lsp = LanguageServer.create(config, logger, args.project_root)
+        sleep(0.1)
+        return lsp
+    else:
+        raise NotImplementedError("Unsupported language: {}".format(args.project_language))

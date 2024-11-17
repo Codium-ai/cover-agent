@@ -14,8 +14,10 @@ import os
 import pathlib
 import threading
 from contextlib import asynccontextmanager, contextmanager
+
+
 from .lsp_protocol_handler.lsp_constants import LSPConstants
-from  .lsp_protocol_handler import lsp_types as LSPTypes
+from .lsp_protocol_handler import lsp_types as LSPTypes
 
 from . import multilspy_types
 from .multilspy_logger import MultilspyLogger
@@ -29,6 +31,7 @@ from .multilspy_utils import PathUtils, FileUtils, TextUtils
 from pathlib import PurePath
 from typing import AsyncIterator, Iterator, List, Dict, Union, Tuple
 from .type_helpers import ensure_all_methods_implemented
+from ..utils.utils import uri_to_path, is_forbidden_directory
 
 
 @dataclasses.dataclass
@@ -77,40 +80,18 @@ class LanguageServer:
             from cover_agent.lsp_logic.multilspy.language_servers.jedi_language_server.jedi_server import (
                 JediServer,
             )
-
             return JediServer(config, logger, repository_root_path)
-        # elif config.code_language == Language.JAVA:
-        #     from src.multilspy.language_servers.eclipse_jdtls.eclipse_jdtls import (
-        #         EclipseJDTLS,
-        #     )
-        #
-        #     return EclipseJDTLS(config, logger, repository_root_path)
-        # elif config.code_language == Language.RUST:
-        #     from src.multilspy.language_servers.rust_analyzer.rust_analyzer import (
-        #         RustAnalyzer,
-        #     )
-        #
-        #     return RustAnalyzer(config, logger, repository_root_path)
-        # elif config.code_language == Language.CSHARP:
-        #     from src.multilspy.language_servers.omnisharp.omnisharp import OmniSharp
-        #
-        #     return OmniSharp(config, logger, repository_root_path)
-        # elif config.code_language in [Language.TYPESCRIPT, Language.JAVASCRIPT]:
-        #     from src.multilspy.language_servers.typescript_language_server.typescript_language_server import (
-        #         TypeScriptLanguageServer,
-        #     )
-        #     return TypeScriptLanguageServer(config, logger, repository_root_path)
         else:
             logger.log(f"Language {config.code_language} is not supported", logging.ERROR)
             raise MultilspyException(f"Language {config.code_language} is not supported")
 
     def __init__(
-        self,
-        config: MultilspyConfig,
-        logger: MultilspyLogger,
-        repository_root_path: str,
-        process_launch_info: ProcessLaunchInfo,
-        language_id: str,
+            self,
+            config: MultilspyConfig,
+            logger: MultilspyLogger,
+            repository_root_path: str,
+            process_launch_info: ProcessLaunchInfo,
+            language_id: str,
     ):
         """
         Initializes a LanguageServer instance.
@@ -227,7 +208,7 @@ class LanguageServer:
             del self.open_file_buffers[uri]
 
     def insert_text_at_position(
-        self, relative_file_path: str, line: int, column: int, text_to_be_inserted: str
+            self, relative_file_path: str, line: int, column: int, text_to_be_inserted: str
     ) -> multilspy_types.Position:
         """
         Insert text at the given line and column in the given file and return
@@ -255,7 +236,7 @@ class LanguageServer:
         file_buffer.version += 1
         change_index = TextUtils.get_index_from_line_col(file_buffer.contents, line, column)
         file_buffer.contents = (
-            file_buffer.contents[:change_index] + text_to_be_inserted + file_buffer.contents[change_index:]
+                file_buffer.contents[:change_index] + text_to_be_inserted + file_buffer.contents[change_index:]
         )
         self.server.notify.did_change_text_document(
             {
@@ -278,10 +259,10 @@ class LanguageServer:
         return multilspy_types.Position(line=new_l, character=new_c)
 
     def delete_text_between_positions(
-        self,
-        relative_file_path: str,
-        start: multilspy_types.Position,
-        end: multilspy_types.Position,
+            self,
+            relative_file_path: str,
+            start: multilspy_types.Position,
+            end: multilspy_types.Position,
     ) -> str:
         """
         Delete text between the given start and end positions in the given file and return the deleted text.
@@ -339,7 +320,7 @@ class LanguageServer:
         return file_buffer.contents
 
     async def request_definition(
-        self, relative_file_path: str, line: int, column: int
+            self, relative_file_path: str, line: int, column: int
     ) -> List[multilspy_types.Location]:
         """
         Raise a [textDocument/definition](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_definition) request to the Language Server
@@ -389,10 +370,10 @@ class LanguageServer:
                     )
                     ret.append(multilspy_types.Location(new_item))
                 elif (
-                    LSPConstants.ORIGIN_SELECTION_RANGE in item
-                    and LSPConstants.TARGET_URI in item
-                    and LSPConstants.TARGET_RANGE in item
-                    and LSPConstants.TARGET_SELECTION_RANGE in item
+                        LSPConstants.ORIGIN_SELECTION_RANGE in item
+                        and LSPConstants.TARGET_URI in item
+                        and LSPConstants.TARGET_RANGE in item
+                        and LSPConstants.TARGET_SELECTION_RANGE in item
                 ):
                     new_item: multilspy_types.Location = {}
                     new_item["uri"] = item[LSPConstants.TARGET_URI]
@@ -422,7 +403,7 @@ class LanguageServer:
         return ret
 
     async def request_references(
-        self, relative_file_path: str, line: int, column: int
+            self, relative_file_path: str, line: int, column: int
     ) -> List[multilspy_types.Location]:
         """
         Raise a [textDocument/references](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_references) request to the Language Server
@@ -472,7 +453,7 @@ class LanguageServer:
         return ret
 
     async def request_completions(
-        self, relative_file_path: str, line: int, column: int, allow_incomplete: bool = False
+            self, relative_file_path: str, line: int, column: int, allow_incomplete: bool = False
     ) -> List[multilspy_types.CompletionItem]:
         """
         Raise a [textDocument/completion](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_completion) request to the Language Server
@@ -506,7 +487,7 @@ class LanguageServer:
                 num_retries += 1
 
             # TODO: Understand how to appropriately handle `isIncomplete`
-            if response is None or (response["isIncomplete"] and not(allow_incomplete)):
+            if response is None or (response["isIncomplete"] and not (allow_incomplete)):
                 return []
 
             if "items" in response:
@@ -565,7 +546,8 @@ class LanguageServer:
                 for json_repr in set([json.dumps(item, sort_keys=True) for item in completions_list])
             ]
 
-    async def request_document_symbols(self, relative_file_path: str) -> Tuple[List[multilspy_types.UnifiedSymbolInformation], Union[List[multilspy_types.TreeRepr], None]]:
+    async def request_document_symbols(self, relative_file_path: str) -> Tuple[
+        List[multilspy_types.UnifiedSymbolInformation], Union[List[multilspy_types.TreeRepr], None]]:
         """
         Raise a [textDocument/documentSymbol](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol) request to the Language Server
         to find symbols in the given file. Wait for the response and return the result.
@@ -594,7 +576,8 @@ class LanguageServer:
             if LSPConstants.CHILDREN in item:
                 # TODO: l_tree should be a list of TreeRepr. Define the following function to return TreeRepr as well
 
-                def visit_tree_nodes_and_build_tree_repr(tree: LSPTypes.DocumentSymbol) -> List[multilspy_types.UnifiedSymbolInformation]:
+                def visit_tree_nodes_and_build_tree_repr(tree: LSPTypes.DocumentSymbol) -> List[
+                    multilspy_types.UnifiedSymbolInformation]:
                     l: List[multilspy_types.UnifiedSymbolInformation] = []
                     children = tree['children'] if 'children' in tree else []
                     if 'children' in tree:
@@ -610,7 +593,8 @@ class LanguageServer:
 
         return ret, l_tree
 
-    async def request_hover(self, relative_file_path: str, line: int, column: int) -> Union[multilspy_types.Hover, None]:
+    async def request_hover(self, relative_file_path: str, line: int, column: int) -> Union[
+        multilspy_types.Hover, None]:
         """
         Raise a [textDocument/hover](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_hover) request to the Language Server
         to find the hover information at the given line and column in the given file. Wait for the response and return the result.
@@ -641,6 +625,80 @@ class LanguageServer:
 
         return multilspy_types.Hover(**response)
 
+
+    async def get_direct_context(self, captures, language, project_dir, rel_file):
+        target_file = str(os.path.join(project_dir, rel_file))
+        skip_found_symbols = True
+        context_files = set()
+        context_symbols = set()
+        context_symbols_and_files = set()
+        for ref in captures:
+            name_symbol = str(ref[0].text.decode())
+            if name_symbol in context_symbols and skip_found_symbols:
+                continue
+            # getting direct context - which files are referenced by the target file
+            try:
+                symbol_definition = await self.request_definition(rel_file,
+                                                                 line=ref[0].start_point[0],
+                                                                 column=ref[0].start_point[1])
+                # sleep(0.01)
+            except:
+                symbol_definition = []
+            for d in symbol_definition:
+                line = ref[0].start_point[0]
+                d_path = uri_to_path(d['uri'])
+                rel_d_path = os.path.relpath(d_path, project_dir)
+                if (name_symbol, rel_d_path) in context_symbols_and_files and skip_found_symbols:
+                    continue
+                if d_path != target_file:
+                    if project_dir not in d_path:
+                        continue
+                    if not is_forbidden_directory(d_path, language):
+                        # print(f"Context definition: \'{name_symbol}\' at line {line} from file \'{rel_d_path}\'")
+                        context_files.add(d_path)
+                        context_symbols.add(name_symbol)
+                        context_symbols_and_files.add((name_symbol, rel_d_path))
+        return context_files, context_symbols
+
+    async def get_reverse_context(self, captures, project_dir, rel_file):
+        target_file = str(os.path.join(project_dir, rel_file))
+        skip_found_symbols = True
+        reverse_context_files = set()
+        reverse_context_symbols = set()
+        reverse_context_symbols_and_files = set()
+        for ref in captures:
+            symbol_name = str(ref[0].text.decode())
+            if symbol_name in reverse_context_symbols and skip_found_symbols:
+                continue
+            if 'name.definition' not in ref[1]:  # only consider definition symbols for reverse context
+                continue
+            # getting reverse context - which files reference the target file
+            try:
+                symbol_references = await self.request_references(rel_file,
+                                                                 line=ref[0].start_point[0],
+                                                                 column=ref[0].start_point[1])
+            except:
+                symbol_references = []
+            # sleep(0.01)
+            for r in symbol_references:
+                ref_path = uri_to_path(r['uri'])
+                rel_ref_path = os.path.relpath(ref_path, project_dir)
+                if (symbol_name, rel_ref_path) in reverse_context_symbols_and_files and skip_found_symbols:
+                    continue
+                if project_dir not in ref_path:
+                    continue
+                if ref_path != target_file:
+                    if 'node_modules' not in ref_path:
+                        line = ref[0].start_point[0]
+                        print(
+                            f"Reverse Context definition: \'{symbol_name}\' at line {line}, used by file \'{rel_ref_path}\'")
+                        reverse_context_files.add(ref_path)
+                        reverse_context_symbols.add(symbol_name)
+                        reverse_context_symbols_and_files.add((symbol_name, rel_ref_path))
+        return reverse_context_files, reverse_context_symbols
+
+
+
 @ensure_all_methods_implemented(LanguageServer)
 class SyncLanguageServer:
     """
@@ -655,7 +713,7 @@ class SyncLanguageServer:
 
     @classmethod
     def create(
-        cls, config: MultilspyConfig, logger: MultilspyLogger, repository_root_path: str
+            cls, config: MultilspyConfig, logger: MultilspyLogger, repository_root_path: str
     ) -> "SyncLanguageServer":
         """
         Creates a language specific LanguageServer instance based on the given configuration, and appropriate settings for the programming language.
@@ -681,7 +739,7 @@ class SyncLanguageServer:
             yield
 
     def insert_text_at_position(
-        self, relative_file_path: str, line: int, column: int, text_to_be_inserted: str
+            self, relative_file_path: str, line: int, column: int, text_to_be_inserted: str
     ) -> multilspy_types.Position:
         """
         Insert text at the given line and column in the given file and return
@@ -695,10 +753,10 @@ class SyncLanguageServer:
         return self.language_server.insert_text_at_position(relative_file_path, line, column, text_to_be_inserted)
 
     def delete_text_between_positions(
-        self,
-        relative_file_path: str,
-        start: multilspy_types.Position,
-        end: multilspy_types.Position,
+            self,
+            relative_file_path: str,
+            start: multilspy_types.Position,
+            end: multilspy_types.Position,
     ) -> str:
         """
         Delete text between the given start and end positions in the given file and return the deleted text.
@@ -798,7 +856,7 @@ class SyncLanguageServer:
         return result
 
     def request_completions(
-        self, relative_file_path: str, line: int, column: int, allow_incomplete: bool = False
+            self, relative_file_path: str, line: int, column: int, allow_incomplete: bool = False
     ) -> List[multilspy_types.CompletionItem]:
         """
         Raise a [textDocument/completion](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_completion) request to the Language Server
@@ -816,7 +874,8 @@ class SyncLanguageServer:
         ).result()
         return result
 
-    def request_document_symbols(self, relative_file_path: str) -> Tuple[List[multilspy_types.UnifiedSymbolInformation], Union[List[multilspy_types.TreeRepr], None]]:
+    def request_document_symbols(self, relative_file_path: str) -> Tuple[
+        List[multilspy_types.UnifiedSymbolInformation], Union[List[multilspy_types.TreeRepr], None]]:
         """
         Raise a [textDocument/documentSymbol](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_documentSymbol) request to the Language Server
         to find symbols in the given file. Wait for the response and return the result.
@@ -843,5 +902,17 @@ class SyncLanguageServer:
         """
         result = asyncio.run_coroutine_threadsafe(
             self.language_server.request_hover(relative_file_path, line, column), self.loop
+        ).result()
+        return result
+
+    def get_direct_context(self, captures, language, project_dir, rel_file):
+        result = asyncio.run_coroutine_threadsafe(
+            self.language_server.get_direct_context(captures, language, project_dir, rel_file), self.loop
+        ).result()
+        return result
+
+    def get_reverse_context(self, captures, project_dir, rel_file):
+        result = asyncio.run_coroutine_threadsafe(
+            self.language_server.get_reverse_context(captures, project_dir, rel_file), self.loop
         ).result()
         return result

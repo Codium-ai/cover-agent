@@ -4,14 +4,14 @@ import os
 from cover_agent.AICaller import AICaller
 from cover_agent.utils import parse_args_full_repo, find_test_files
 from cover_agent.CoverAgent import CoverAgent
-from cover_agent.lsp_logic.PythonContextHelper import PythonContextHelper
+from cover_agent.lsp_logic.ContextHelper import ContextHelper
 
 
 async def run():
     args = parse_args_full_repo()
 
     if args.project_language == "python":
-        context_helper = PythonContextHelper(args)
+        context_helper = ContextHelper(args)
     else:
         raise NotImplementedError("Unsupported language: {}".format(args.project_language))
 
