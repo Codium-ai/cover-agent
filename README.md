@@ -34,90 +34,7 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 
 ### 2024-11-05:
 New mode - scan an entire repo, auto identify the test files, auto collect context for each test file, and extend the test suite with new tests.
-How to run:
-
-1) Install cover-agent on your existing project venv: `pip install git+https://github.com/Codium-ai/cover-agent.git`
-2) If your project doesn't have a `pyproject.toml` file, create one with:
-```
-[tool.poetry]
-name = "cover-agent"
-version = "0.0.0" # Placeholder
-description = "Cover Agent Tool"
-authors = ["QodoAI"]
-license = "AGPL-3.0 license"
-readme = "README.md"
-```
-3) Create a branch in your repo (we want to extend the tests on a dedicated branch)
-4) cd to your repo root
-5) Run the following command:
-```shell
-
-export AWS_ACCESS_KEY_ID=...
-export AWS_SECRET_ACCESS_KEY=...
-export AWS_REGION_NAME=...
-
-poetry run cover-agent-full-repo \
-  --project-language="python" \
-  --project-root="<path_to_your_repo>" \
-  --code-coverage-report-path="<path_to_your_repo>/coverage.xml" \
-  --test-command="coverage run -m pytest <relative_path_to_unittest_folder> --cov=<path_to_your_repo> --cov-report=xml --cov-report=term --log-cli-level=INFO" \
-  --model=bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0
-```
-
-Alternatively, if you dont want to use `poetry`, replace:
-
-`poetry run cover-agent-full-repo`
-
-with:
-
-`python ./venv/lib/python3.10/site-packages/cover_agent/main_full_repo.py`
-(Give the path to your actual installation)
-
-Notes:
-  - `<relative_path_to_unittest_folder>` is optional, but will prevent running e2e test files if exists, which may take a long time"
-  - You can use other models, like 'gpt-4o' or 'o1-mini', but recommended to use 'sonnet-3.5' as this is currently the best code model in the world.
-
-Additional configuration options:
-- `--max-test-files-allowed-to-analyze` - The maximum number of test files to analyze. Default is 20 (to avoid long running times).
-- `--look-for-oldest-unchanged-test-files` - If set, the tool will sort the test files by the last modified date and analyze the oldest ones first. This is useful to find the test files that are most likely to be outdated, and for multiple runs. Default is False.
-
-
-### 2024-09-29:
-We are excited to announce the latest series of updates to CoverAgent, delivering significant improvements to functionality, documentation, and testing frameworks. These updates reflect our ongoing commitment to enhancing the developer experience, improving error handling, and refining the testing processes.
-
-#### New Features and Enhancements
-* Enhanced Database Usage: Introduced a new database_usage.md document outlining the expanded capabilities of logging test results to a structured database.
-* Comprehensive System Diagrams: Added a top_level_sequence_diagram.md, providing a clear visual overview of CoverAgent's processes and workflows.
-* Docker and Multi-Language Support: Several new Docker configurations and templated tests were introduced for various programming languages, including C#, TypeScript, C, and React, ensuring streamlined testing environments across multiple platforms.
-* UnitTestDB Integration: The UnitTestDB.py file was added to support robust logging of test generation attempts, improving error tracking and debugging.
-
-#### Refinements and Modifications
-* Coverage Processing: Key improvements to CoverageProcessor.py modularized coverage parsing and expanded support for different coverage report formats (LCOV, Cobertura, Jacoco).
-* PromptBuilder Enhancements: New CLI arguments were introduced, including options for running tests multiple times (--run-tests-multiple-times) and a report coverage feature flag for more granular control over coverage behavior.
-* CI/CD Pipeline Improvements: Several GitHub workflows were modified to improve pipeline efficiency, including nightly regression tests and templated test publishing pipelines.
-
-#### Improved Documentation
-* Detailed Usage Examples: The usage_examples.md file was updated to provide more comprehensive guidance on how to effectively use CoverAgent's features, ensuring that developers can quickly get up to speed with the latest updates.
-* Configuration and Template Updates: Configuration files, such as test_generation_prompt.toml, were refined to better support the test framework and eliminate redundant instructions.
-
-These updates signify a major leap forward in improving the ease of use, flexibility, and overall performance of CoverAgent. We are committed to continuing to enhance the tool and providing regular updates based on feedback from our community.
-
-### 2024-06-05:
-The logic and prompts for adding new imports for the generated tests have been improved.
-
-We also added a [usage examples](docs/usage_examples.md) file, with more elaborate examples of how to use the Cover Agent.
-
-### 2024-06-01:
-Added support for comprehensive logging to [Weights and Biases](https://wandb.ai/). Set the `WANDB_API_KEY` environment variable to enable this feature.
-
-### 2024-05-26:
-Cover-Agent now supports nearly any LLM model in the world, using [LiteLLM](#using-other-llms) package.
-
-Notice that GPT-4 outperforms almost any open-source model in the world when it comes to code tasks and following complicated instructions.
-However, we updated the post-processing scripts to be more comprehensive, and were able to successfully run the [baseline script](#running-the-code) with `llama3-8B` and `llama3-70B models`, for example.
-
-### 2024-05-09: 
-This repository includes the first known implementation of TestGen-LLM, described in the paper [Automated Unit Test Improvement using Large Language Models at Meta](https://arxiv.org/abs/2402.09171).
+See more details [here](docs/repo_coverage.md).
 
 # Cover-Agent
 Welcome to Cover-Agent. This focused project utilizes Generative AI to automate and enhance the generation of tests (currently mostly unit tests), aiming to streamline development workflows. Cover-Agent can run via a terminal, and is planned to be integrated into popular CI platforms.
@@ -287,52 +204,7 @@ cover-agent \
 
 
 ## Development
-This section discusses the development of this project.
-
-### Versioning
-Before merging to main make sure to manually increment the version number in `cover_agent/version.txt` at the root of the repository.
-
-### Running Tests
-Set up your development environment by running the `poetry install` command as you did above. 
-
-Note: for older versions of Poetry you may need to include the `--dev` option to install Dev dependencies.
-
-After setting up your environment run the following command:
-```shell
-poetry run pytest --junitxml=testLog.xml --cov=templated_tests --cov=cover_agent --cov-report=xml --cov-report=term --log-cli-level=INFO
-```
-This will also generate all logs and output reports that are generated in `.github/workflows/ci_pipeline.yml`.
-
-### Running the app locally from source
-
-#### Prerequisites
-- Python3
-- Poetry
-
-#### Steps
-1. If not already done, install the dependencies
-    ```shell
-    poetry install
-    ```
-
-2. Let Poetry manage / create the environment
-    ```shell
-   poetry shell
-   ```
-
-3. Run the app
-    ```shell
-   poetry run cover-agent \
-     --source-file-path <path_to_source_file> \
-     [other_options...]
-    ```
-
-Notice that you're prepending `poetry run` to your `cover-agent` command. Replace `<path_to_your_source_file>` with the
-actual path to your source file. Add any other necessary options as described in
-the [Running the Code](#running-the-code) section.
-
-### Building the binary locally
-You can build the binary locally simply by invoking the `make installer` command. This will run PyInstaller locally on your machine. Ensure that you have set up the poetry project first (i.e. running `poetry install`).
+See [Development](docs/development.md) for more information on how to contribute to this project.
 
 ## Roadmap
 Below is the roadmap of planned features, with the current implementation status:
@@ -350,6 +222,6 @@ Below is the roadmap of planned features, with the current implementation status
   - [ ] Integrate into databases, APIs, OpenTelemetry and other sources of data to extract relevant i/o for the test generation
   - [ ] Add a setting file
 
-## CodiumAI
-CodiumAI's mission is to enable busy dev teams to increase and maintain their code integrity.
+## QodoAI
+QodoAI's mission is to enable busy dev teams to increase and maintain their code integrity.
 We offer various tools, including "Pro" versions of our open-source tools, which are meant to handle enterprise-level code complexity and are multi-repo codebase aware.
