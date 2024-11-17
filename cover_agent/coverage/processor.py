@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from cover_agent.CustomLogger import CustomLogger
-from typing import Dict, Optional, Tuple, Union
+from typing import Dict, Optional, List, Tuple, Union
 import csv
 import os
 import re
 import xml.etree.ElementTree as ET
 
-@dataclass
+@dataclass(frozen=True)
 class CoverageData:
     """
     A class to represent coverage data.
