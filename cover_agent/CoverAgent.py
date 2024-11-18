@@ -5,6 +5,7 @@ import sys
 import wandb
 
 from cover_agent.CustomLogger import CustomLogger
+from cover_agent.PromptBuilder import adapt_test_command_for_a_single_test_via_ai
 from cover_agent.ReportGenerator import ReportGenerator
 from cover_agent.UnitTestGenerator import UnitTestGenerator
 from cover_agent.UnitTestValidator import UnitTestValidator
@@ -65,16 +66,22 @@ class CoverAgent:
 
     def parse_command_to_run_only_a_single_test(self, args):
         test_command = args.test_command
+        new_command_line = None
         if hasattr(args, 'run_each_test_separately') and args.run_each_test_separately:
             test_file_relative_path = os.path.relpath(args.test_file_output_path, args.project_root)
             if 'pytest' in test_command:  # coverage run -m pytest tests  --cov=/Users/talrid/Git/cover-agent --cov-report=xml --cov-report=term --log-cli-level=INFO --timeout=30
-                ind1 = test_command.index('pytest')
-                ind2 = test_command[ind1:].index('--')
-                args.test_command = f"{test_command[:ind1]}pytest {test_file_relative_path} {test_command[ind1 + ind2:]}"
-                print(f"\nRunning only a single test file: '{args.test_command}'")
-            elif 'unittest' in test_command:  #
-                pass  # maybe call an llm to do that ?
-            # toDo - add more test runners
+                try:
+                    ind1 = test_command.index('pytest')
+                    ind2 = test_command[ind1:].index('--')
+                    new_command_line = f"{test_command[:ind1]}pytest {test_file_relative_path} {test_command[ind1 + ind2:]}"
+                except ValueError:
+                    print(f"Failed to adapt test command for running a single test: {test_command}")
+            else:
+                new_command_line = adapt_test_command_for_a_single_test_via_ai(args, test_file_relative_path, test_command)
+        if new_command_line:
+            args.test_command_original = test_command
+            args.test_command = new_command_line
+            print(f"Converting test command: `{test_command}`\n to run only a single test: `{new_command_line}`")
 
     def _validate_paths(self):
         """

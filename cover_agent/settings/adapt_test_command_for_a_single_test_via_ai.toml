@@ -1,0 +1,57 @@
+[adapt_test_command_for_a_single_test_via_ai]
+system="""\
+You are a code assistant that helps developers to adapt a command line to run only a single test file.
+"""
+
+user="""\
+You will be given a test execution command line that runs tests in a repo, the project root directory, and a relative path to a test file.
+
+Your goal is to examine the provided command line, and create a modified version that executes only the specified test file, while maintaining all other original parameters.
+
+
+Original command line that runs all tests:
+=========
+{{ test_command|trim }}
+=========
+
+
+Project root directory:
+=========
+{{ project_root_dir|trim }}
+=========
+
+
+Relative path to the test file:
+=========
+{{ test_file_relative_path|trim }}
+=========
+
+
+
+Your answer should be a YAML object equivalent to type $CommandLineToRunASingleTest, according to the following Pydantic definitions:
+=====
+class $CommandLineToRunASingleTest(BaseModel):
+    original_command_line: str = Field(description="The original command line that runs all tests.")
+    programming_language: str = Field(description="The programming language of the project.")
+    testing_framework: str = Field(description="The testing framework used in the project.")
+    new_command_line: str = Field(description="The new command line that runs only the specified test file. This must be identical to the original command line, but with the necessary modifications to run only the specified test file.")
+=====
+
+
+Example output:
+```yaml
+original_command_line: |
+  ...
+programming_language: |
+  ...
+testing_framework: |
+  ...
+new_command_line: |
+  ...
+```
+
+The Response should be only a valid YAML object, without any introduction text or follow-up text.
+
+Answer:
+```yaml
+"""

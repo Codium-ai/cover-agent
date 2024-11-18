@@ -120,6 +120,12 @@ def parse_args():
         default=False,
         help="If set, Cover-Agent will only generate tests based on the diff between branches. Default: False. Not compatible with --use-report-coverage-feature-flag.",
     )
+    parser.add_argument(
+        "--run-each-test-separately",
+        type=bool,
+        default=False,
+        help="Run each test separately. Default: False"
+    )
 
 
     return parser.parse_args()
