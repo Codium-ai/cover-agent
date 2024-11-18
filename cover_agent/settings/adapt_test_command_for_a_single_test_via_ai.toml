@@ -4,7 +4,7 @@ You are a code assistant that helps developers to adapt a command line to run on
 """
 
 user="""\
-You will be given a  test execution command line the runs tests in a repo, the project root directory, and a relative path to a test file.
+You will be given a test execution command line that runs tests in a repo, the project root directory, and a relative path to a test file.
 
 Your goal is to examine the provided command line, and create a modified version that executes only the specified test file, while maintaining all other original parameters.
 
