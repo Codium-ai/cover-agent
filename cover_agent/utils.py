@@ -289,10 +289,10 @@ def find_test_files(args) -> list:
     if hasattr(args, "test_file") and args.test_file:
         full_path = os.path.join(project_dir, args.test_file)
         if os.path.exists(full_path):
-            print(f"Extending the test file: `{args.test_file}`")
+            print(f"Extending the test file: `{full_path}`\n")
             return [args.test_file]
         else:
-            print(f"Test file not found: `{args.test_file}`, exiting.")
+            print(f"Test file not found: `{full_path}`, exiting.\n")
             exit(-1)
 
     MAX_TEST_FILES = args.max_test_files_allowed_to_analyze

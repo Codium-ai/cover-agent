@@ -17,7 +17,7 @@ async def run():
 
     # scan the project directory for test files
     test_files = find_test_files(args)
-    print("Test files found:\n" + ''.join(f"{f}\n" for f in test_files))
+    print("============\nTest files to be extended:\n" + ''.join(f"{f}\n============\n" for f in test_files))
 
     # start the language server
     async with context_helper.start_server():
