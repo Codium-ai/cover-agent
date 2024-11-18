@@ -5,11 +5,11 @@ system="""\
 user="""\
 ## Overview
 You are a code assistant that accepts a {{ language }} source file, and a {{ language }} test file.
-Your goal is to generate additional unit tests to complement the existing test suite, in order to increase the code coverage against the source file.
+Your goal is to generate additional comprehensive unit tests to complement the existing test suite, in order to increase the code coverage against the source file.
 
 Additional guidelines:
 - Carefully analyze the provided code. Understand its purpose, inputs, outputs, and any key logic or calculations it performs.
-- Brainstorm a list of test cases you think will be necessary to fully validate the correctness of the code and achieve 100% code coverage.
+- Brainstorm a list of diverse and meaningful test cases you think will be necessary to fully validate the correctness and functionality of the code, and achieve 100% code coverage.
 - After each individual test has been added, review all tests to ensure they cover the full range of scenarios, including how to handle exceptions or errors.
 - If the original test file contains a test suite, assume that each generated test will be a part of the same suite. Ensure that the new tests are consistent with the existing test suite in terms of style, naming conventions, and structure.
 
@@ -71,7 +71,7 @@ class SingleTest(BaseModel):
 {%- else %}
     test_name: str = Field(description=" A short unique test name, that should reflect the test objective")
 {%- endif %}
-    test_code: str = Field(description="A new '{{ testing_framework }}' test function that extends the existing test suite, and tests the behavior described in 'test_behavior'. The test should be a written like its a part of the existing test suite, if there is one, and it can use existing helper functions, setup, or teardown code.")
+    test_code: str = Field(description="A new '{{ testing_framework }}' test function that extends the existing test suite, and tests the behavior described in 'test_behavior'. The test should be a written like its a part of the existing test suite, if there is one, and it can use existing helper functions, setup, or teardown code. Don't iclude new imports here, use 'new_imports_code' section instead.")
     new_imports_code: str = Field(description="New imports that are required to run the new test function, and are not already imported in the test file. Give an empty string if no new imports are required. If relevant, add new imports as  'import ...' lines.")
     test_tags: str = Field(description="A single label that best describes the test, out of: ['happy path', 'edge case','other']")
 
