@@ -171,16 +171,19 @@ def parse_args_full_repo():
     )
 
     parser.add_argument(
+        "--test-folder", required=False, help="Relative path to the relevant tests folder."
+    )
+
+    parser.add_argument(
+        "--test-file", required=False, help="Relative path to the specific test file we want to extend."
+    )
+
+    parser.add_argument(
         "--run-each-test-separately",
         type=bool,
         default=True,
         help="Run each test separately. Default: True"
     )
-
-    # ToDo
-    # parser.add_argument(
-    #     "--unittest-folder-rel-path", required=False, help="Relative path to the unittest folder."
-    # )
 
     parser.add_argument(
         "--code-coverage-report-path",
@@ -281,11 +284,34 @@ def find_test_files(args) -> list:
     """
     project_dir = args.project_root
     language = args.project_language
+
+    # If a specific test file is provided, return it
+    if hasattr(args, "test_file") and args.test_file:
+        full_path = os.path.join(project_dir, args.test_file)
+        if os.path.exists(full_path):
+            print(f"\nExtending the test file: `{full_path}`\n")
+            return [args.test_file]
+        else:
+            print(f"Test file not found: `{full_path}`, exiting.\n")
+            exit(-1)
+
+    # validate that the test folder exists
+    if hasattr(args, "test_folder") and args.test_folder:
+        full_path = os.path.join(project_dir, args.test_folder)
+        if os.path.exists(full_path):
+            print(f"\nExtending the test folder: `{full_path}`\n")
+        else:
+            print(f"Test folder not found: `{full_path}`, exiting.\n")
+            exit(-1)
+
     MAX_TEST_FILES = args.max_test_files_allowed_to_analyze
     test_files = []
     for root, dirs, files in os.walk(project_dir):
         # Check if the current directory is a 'test' directory
         if not is_forbidden_directory(root.__add__(os.sep), language):
+            if hasattr(args, "test_folder") and args.test_folder:
+                if args.test_folder not in root:
+                    continue
             if 'test' in root.split(os.sep):
                 for file in files:
                     if filename_to_lang(file) == language:
