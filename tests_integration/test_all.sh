@@ -128,7 +128,7 @@ sh tests_integration/test_with_docker.sh \
   --docker-image "embeddeddevops/python_fastapi:latest" \
   --source-file-path "app.py" \
   --test-file-path "test_app.py" \
-  --test-command "pytest --cov=. --cov-report=xml --cov-report=term" \
+  --test-command "pytest --cov=. --cov-report=xml --cov-report=term --cov-branch" \
   --model "gpt-3.5-turbo" \
   $log_db_arg
 

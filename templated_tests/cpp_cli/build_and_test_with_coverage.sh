@@ -14,9 +14,9 @@ echo "Running tests..."
 
 # Capture coverage data and generate reports
 echo "Generating coverage reports..."
-lcov --capture --directory . --output-file coverage.info
-lcov --remove coverage.info '*/usr/*' '*/test_*' --output-file coverage_filtered.info
-lcov --list coverage_filtered.info
+lcov --capture --directory . --output-file coverage.info --rc lcov_branch_coverage=1
+lcov --remove coverage.info '*/usr/*' '*/test_*' --output-file coverage_filtered.info --rc lcov_branch_coverage=1
+lcov --list coverage_filtered.info --rc lcov_branch_coverage=1
 
 # convert lcov to cobertura
 lcov_cobertura coverage_filtered.info

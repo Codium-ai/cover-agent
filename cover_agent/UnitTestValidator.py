@@ -293,10 +293,11 @@ class UnitTestValidator:
 
         try:
             # Process the extracted coverage metrics
-            coverage, coverage_percentages = self.post_process_coverage_report(
+            coverage, branch_coverage, coverage_percentages = self.post_process_coverage_report(
                 time_of_test_command
             )
             self.current_coverage = coverage
+            self.current_branch_coverage = branch_coverage
             self.last_coverage_percentages = coverage_percentages.copy()
             self.logger.info(
                 f"Initial coverage: {round(self.current_coverage * 100, 2)}%"
@@ -502,7 +503,7 @@ class UnitTestValidator:
 
                 # If test passed, check for coverage increase
                 try:
-                    new_percentage_covered, new_coverage_percentages = self.post_process_coverage_report(
+                    new_percentage_covered, new_branch_coverage, new_coverage_percentages = self.post_process_coverage_report(
                         time_of_test_command
                     )
 
@@ -583,15 +584,17 @@ class UnitTestValidator:
                         self.logger.info(
                             f"Coverage for provided source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(new_coverage_percentages[key] * 100, 2)}"
                         )
+                        
                     elif new_coverage_percentages[key] > self.last_coverage_percentages[key]:
                         self.logger.info(
                             f"Coverage for non-source file: {key} increased from {round(self.last_coverage_percentages[key] * 100, 2)} to {round(new_coverage_percentages[key] * 100, 2)}"
                         )
                 self.current_coverage = new_percentage_covered
+                self.current_branch_coverage = new_branch_coverage
                 self.last_coverage_percentages = new_coverage_percentages.copy()
 
                 self.logger.info(
-                    f"Test passed and coverage increased. Current coverage: {round(new_percentage_covered * 100, 2)}%"
+                    f"Test passed and coverage increased. Current coverage: {round(new_percentage_covered * 100, 2)}% and Branch Coverage: {round(new_branch_coverage * 100, 2)}%"
                 )
                 return {
                     "status": "PASS",
@@ -695,7 +698,7 @@ class UnitTestValidator:
             total_lines_missed = 0
             total_lines = 0
             for key in file_coverage_dict:
-                lines_covered, lines_missed, percentage_covered = (
+                lines_covered, lines_missed, percentage_covered, branch_covered = (
                     file_coverage_dict[key]
                 )
                 total_lines_covered += len(lines_covered)
@@ -720,20 +723,20 @@ class UnitTestValidator:
             )
         elif self.diff_coverage:
             self.generate_diff_coverage_report()
-            lines_covered, lines_missed, percentage_covered = (
+            lines_covered, lines_missed, percentage_covered, branch_covered = (
                 self.coverage_processor.process_coverage_report(
                     time_of_test_command=time_of_test_command
                 )
             )
             self.code_coverage_report = f"Lines covered: {lines_covered}\nLines missed: {lines_missed}\nPercentage covered: {round(percentage_covered * 100, 2)}%"
         else:
-            lines_covered, lines_missed, percentage_covered = (
+            lines_covered, lines_missed, percentage_covered, branch_covered = (
                 self.coverage_processor.process_coverage_report(
                     time_of_test_command=time_of_test_command
                 )
             )
             self.code_coverage_report = f"Lines covered: {lines_covered}\nLines missed: {lines_missed}\nPercentage covered: {round(percentage_covered * 100, 2)}%"
-        return percentage_covered, coverage_percentages
+        return percentage_covered, branch_covered, coverage_percentages
 
 
     def generate_diff_coverage_report(self):

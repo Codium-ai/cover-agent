@@ -66,10 +66,11 @@ class TestUnitValidator:
                 use_report_coverage_feature_flag=True
             )
             with patch.object(Runner, 'run_command', return_value=("", "", 0, datetime.datetime.now())):
-                with patch.object(CoverageProcessor, 'process_coverage_report', return_value={'test.py': ([], [], 1.0)}):
+                with patch.object(CoverageProcessor, 'process_coverage_report', return_value={'test.py': ([], [], 1.0, 1.0)}):
                     generator.run_coverage()
                     # Dividing by zero so we're expecting a logged error and a return of 0
                     assert generator.current_coverage == 0
+                    assert generator.current_branch_coverage == 1.0
 
 
     def test_extract_error_message_with_prompt_builder(self):
@@ -113,6 +114,7 @@ class TestUnitValidator:
             
             # Setup initial state
             generator.current_coverage = 0.5
+            generator.current_branch_coverage = 0.5
             generator.test_headers_indentation = 4
             generator.relevant_line_number_to_insert_tests_after = 100
             generator.relevant_line_number_to_insert_imports_after = 10
@@ -129,7 +131,7 @@ class TestUnitValidator:
             
             with patch("builtins.open", mock_file), \
                     patch.object(Runner, 'run_command', return_value=("", "", 0, datetime.datetime.now())), \
-                    patch.object(CoverageProcessor, 'process_coverage_report', return_value=([], [], 0.4)):
+                    patch.object(CoverageProcessor, 'process_coverage_report', return_value=([], [], 0.4, 0.4)):
                 
                 result = generator.validate_test(test_to_validate)
                 
@@ -180,9 +182,10 @@ class TestUnitValidator:
                 llm_model="gpt-3",
                 use_report_coverage_feature_flag=True
             )
-            with patch.object(CoverageProcessor, 'process_coverage_report', return_value={'test.py': ([1], [1], 1.0)}):
-                percentage_covered, coverage_percentages = generator.post_process_coverage_report(datetime.datetime.now())
+            with patch.object(CoverageProcessor, 'process_coverage_report', return_value={'test.py': ([1], [1], 1.0, 1.0)}):
+                percentage_covered, branch_covered, coverage_percentages = generator.post_process_coverage_report(datetime.datetime.now())
                 assert percentage_covered == 0.5
+                assert branch_covered == 1.0
                 assert coverage_percentages == {'test.py': 1.0}
 
     def test_post_process_coverage_report_with_diff_coverage(self):
@@ -196,9 +199,11 @@ class TestUnitValidator:
                 diff_coverage=True
             )
             with patch.object(generator, 'generate_diff_coverage_report'), \
-                    patch.object(CoverageProcessor, 'process_coverage_report', return_value=([], [], 0.8)):
-                percentage_covered, coverage_percentages = generator.post_process_coverage_report(datetime.datetime.now())
+                    patch.object(CoverageProcessor, 'process_coverage_report', return_value=([], [], 0.8, 0.5)):
+                percentage_covered, branch_covered, coverage_percentages = generator.post_process_coverage_report(datetime.datetime.now())
                 assert percentage_covered == 0.8
+                assert branch_covered == 0.5
+
 
     def test_post_process_coverage_report_without_flags(self):
         with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
@@ -209,9 +214,10 @@ class TestUnitValidator:
                 test_command="pytest",
                 llm_model="gpt-3"
             )
-            with patch.object(CoverageProcessor, 'process_coverage_report', return_value=([], [], 0.7)):
-                percentage_covered, coverage_percentages = generator.post_process_coverage_report(datetime.datetime.now())
+            with patch.object(CoverageProcessor, 'process_coverage_report', return_value=([], [], 0.7, 0.5)):
+                percentage_covered, branche_covered, coverage_percentages = generator.post_process_coverage_report(datetime.datetime.now())
                 assert percentage_covered == 0.7
+                assert branche_covered == 0.5
 
     def test_generate_diff_coverage_report(self):
         with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
