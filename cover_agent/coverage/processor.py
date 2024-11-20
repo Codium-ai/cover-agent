@@ -164,7 +164,7 @@ class JacocoProcessor(CoverageProcessor):
             raise ValueError(f"Unsupported JaCoCo code coverage report format: {file_extension}")
         total_lines = missed + covered
         coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0.0
-        coverage[class_name] = CoverageData(covered=covered, missed=missed, coverage_percentag=coverage_percentage)
+        coverage[class_name] = CoverageData(covered_lines=[], covered=covered, missed_lines=[], missed=missed, coverage=coverage_percentage)
         return coverage
     
     def _get_file_extension(self, filename: str) -> str | None:
@@ -241,9 +241,8 @@ class CoverageReportFilter:
             if file_pattern in file
         }
         return CoverageReport(
-            total_coverage=(sum(cov.covered_lines for cov in filtered_coverage.values()) / 
-                         sum(cov.covered_lines + cov.missed_lines for cov in filtered_coverage.values()))
-                         if filtered_coverage else 0.0,
+        total_lines = sum(len(cov.covered_lines) + len(cov.missed_lines) for cov in filtered_coverage.values())
+        total_coverage = (sum(len(cov.covered_lines) for cov in filtered_coverage.values()) / total_lines) if total_lines > 0 else 0.0,
             file_coverage=filtered_coverage
         )
 
