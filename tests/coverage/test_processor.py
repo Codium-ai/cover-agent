@@ -90,6 +90,8 @@ class TestCoberturaProcessor:
         """
         coverage = processor.parse_coverage_report()
         assert len(coverage) == 1, "Expected coverage data for one file"
-        assert coverage["app.py"].covered_lines == 1, "Should list line 1 as covered"
-        assert coverage["app.py"].missed_lines == 1, "Should list line 2 as missed"
+        assert coverage["app.py"].covered_lines == [1], "Should list line 1 as covered"
+        assert coverage["app.py"].covered == 1, "Should have 1 line as covered"
+        assert coverage["app.py"].missed_lines == [2], "Should list line 2 as missed"
+        assert coverage["app.py"].missed == 1, "Should have 1 line as missed"
         assert coverage["app.py"].coverage == 0.5, "Coverage should be 50 percent"

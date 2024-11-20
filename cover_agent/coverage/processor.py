@@ -13,12 +13,16 @@ class CoverageData:
     A class to represent coverage data.
 
     Attributes:
-        covered_lines (int): The number of lines that are covered by tests.
-        missed_lines (int): The number of lines that are not covered by tests.
-        coverage (float): The coverage percentage of the file or class.
+        covered_lines (int): The line numbers that are covered by tests.
+        covered (int)      : The number of lines that are covered by tests.
+        missed_lines (int) : The line nubmers that are not covered by tests.
+        missed (int)       : The number of lines that are not covered by tests.
+        coverage (float)   : The coverage percentage of the file or class.
     """
-    covered_lines: int
-    missed_lines: int
+    covered_lines: List[int]
+    covered: int
+    missed_lines: List[int]
+    missed: int
     coverage: float
 
 @dataclass
@@ -75,10 +79,10 @@ class CoverageProcessor(ABC):
         coverage = self.parse_coverage_report()
         report = CoverageReport(0.0, coverage)
         if coverage:
-            total_covered_lines = sum(cov.covered_lines for cov in coverage.values())
-            total_missed_lines = sum(cov.missed_lines for cov in coverage.values())
-            total_lines = total_covered_lines + total_missed_lines
-            report.total_coverage = (float(total_covered_lines) / float(total_lines)) if total_lines > 0 else 0.0
+            total_covered = sum(cov.covered for cov in coverage.values())
+            total_missed = sum(cov.missed for cov in coverage.values())
+            total_lines = total_covered + total_missed
+            report.total_coverage = (float(total_covered) / float(total_lines)) if total_lines > 0 else 0.0
         return report
 
     def _is_coverage_valid(
@@ -117,7 +121,7 @@ class CoberturaProcessor(CoverageProcessor):
                 lines_missed.append(line_number)
         total_lines = len(lines_covered) + len(lines_missed)
         coverage_percentage = (float(len(lines_covered)) / total_lines) if total_lines > 0 else 0.0
-        return CoverageData(len(lines_covered), len(lines_missed), coverage_percentage)
+        return CoverageData(lines_covered, len(lines_covered), lines_missed, len(lines_missed), coverage_percentage)
 
 class LcovProcessor(CoverageProcessor):
     def parse_coverage_report(self) -> Dict[str, CoverageData]:
@@ -141,7 +145,7 @@ class LcovProcessor(CoverageProcessor):
                                 break
                         total_lines = len(lines_covered) + len(lines_missed)
                         coverage_percentage = (float(len(lines_covered)) / total_lines) if total_lines > 0 else 0.0
-                        coverage[filename] = CoverageData(len(lines_covered), len(lines_missed), coverage_percentage)
+                        coverage[filename] = CoverageData(lines_covered, len(lines_covered), lines_missed, len(lines_missed), coverage_percentage)
         except (FileNotFoundError, IOError) as e:
             self.logger.error(f"Error reading file {self.file_path}: {e}")
             raise
@@ -160,7 +164,7 @@ class JacocoProcessor(CoverageProcessor):
             raise ValueError(f"Unsupported JaCoCo code coverage report format: {file_extension}")
         total_lines = missed + covered
         coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0.0
-        coverage[class_name] = CoverageData(covered, missed, coverage_percentage)
+        coverage[class_name] = CoverageData(covered=covered, missed=missed, coverage_percentag=coverage_percentage)
         return coverage
     
     def _get_file_extension(self, filename: str) -> str | None:
