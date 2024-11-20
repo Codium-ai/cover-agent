@@ -240,11 +240,9 @@ class CoverageReportFilter:
             for file, coverage in report.file_coverage.items()
             if file_pattern in file
         }
-        return CoverageReport(
         total_lines = sum(len(cov.covered_lines) + len(cov.missed_lines) for cov in filtered_coverage.values())
-        total_coverage = (sum(len(cov.covered_lines) for cov in filtered_coverage.values()) / total_lines) if total_lines > 0 else 0.0,
-            file_coverage=filtered_coverage
-        )
+        total_coverage = (sum(len(cov.covered_lines) for cov in filtered_coverage.values()) / total_lines) if total_lines > 0 else 0.0
+        return CoverageReport(total_coverage = total_coverage, file_coverage=filtered_coverage)
 
 class CoverageProcessorFactory:
     """Factory for creating coverage processors based on tool type."""
