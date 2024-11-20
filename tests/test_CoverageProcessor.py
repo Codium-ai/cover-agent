@@ -165,7 +165,7 @@ class TestCoverageProcessor:
         ), "Expected package name to be 'com.example'"
         assert class_name == "MyClass", "Expected class name to be 'MyClass'"
 
-    def test_is_report_obsolete(self, mocker):
+    def test_verify_report_update_file_not_updated(self, mocker):
         mocker.patch("os.path.exists", return_value=True)
         mocker.patch("os.path.getmtime", return_value=1234567.0)
 
@@ -174,9 +174,9 @@ class TestCoverageProcessor:
             AssertionError,
             match="Fatal: The coverage report file was not updated after the test command.",
         ):
-            processor._is_report_obsolete(1234567890)
+            processor.verify_report_update(1234567890)
 
-    def test_is_report_exist(self, mocker):
+    def test_verify_report_update_file_not_exist(self, mocker):
         mocker.patch("os.path.exists", return_value=False)
 
         processor = CoverageProcessor("fake_path", "app.py", "cobertura")
@@ -184,14 +184,11 @@ class TestCoverageProcessor:
             AssertionError,
             match='Fatal: Coverage report "fake_path" was not generated.',
         ):
-            processor._is_report_exist()
+            processor.verify_report_update(1234567890)
 
     def test_process_coverage_report(self, mocker):
-        mock_verify_report_obsolete = mocker.patch(
-            "cover_agent.CoverageProcessor.CoverageProcessor._is_report_obsolete"
-        )
-        mock_verify_report_exists = mocker.patch(
-            "cover_agent.CoverageProcessor.CoverageProcessor._is_report_exist"
+        mock_verify = mocker.patch(
+            "cover_agent.CoverageProcessor.CoverageProcessor.verify_report_update"
         )
         mock_parse = mocker.patch(
             "cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report",
@@ -201,8 +198,7 @@ class TestCoverageProcessor:
         processor = CoverageProcessor("fake_path", "app.py", "cobertura")
         result = processor.process_coverage_report(1234567890)
 
-        mock_verify_report_obsolete.assert_called_once_with(1234567890)
-        mock_verify_report_exists.assert_called_once()
+        mock_verify.assert_called_once_with(1234567890)
         mock_parse.assert_called_once()
         assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
 
@@ -506,4 +502,3 @@ class TestCoverageProcessor:
         result = processor.parse_coverage_report()
         mock_parse_lcov.assert_called_once()
         assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
-
