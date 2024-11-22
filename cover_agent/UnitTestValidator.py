@@ -124,7 +124,7 @@ class UnitTestValidator:
         self.run_coverage()
         return self.failed_test_runs, self.language, self.testing_framework, self.code_coverage_report
     
-    def get_code_language(self, source_file_path):
+    def get_code_language(self, source_file_path: str) -> str:
         """
         Get the programming language based on the file extension of the provided source file path.
 
@@ -251,7 +251,7 @@ class UnitTestValidator:
                 relevant_line_number_to_insert_imports_after = tests_dict.get(
                     "relevant_line_number_to_insert_imports_after", None
                 )
-                self.testing_framework = tests_dict.get("testing_framework", "Unknown")
+                self.testing_framework: str = tests_dict.get("testing_framework", "Unknown")
                 counter_attempts += 1
 
             if not relevant_line_number_to_insert_tests_after:
