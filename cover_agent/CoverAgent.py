@@ -205,7 +205,8 @@ class CoverAgent:
             # Check if the desired coverage has been reached
             if self.test_validator.current_coverage < (self.test_validator.desired_coverage / 100):
                 # Run the coverage tool again if the desired coverage hasn't been reached
-                self.test_validator.run_coverage()
+                failed_test_runs, language, test_framework, coverage_report = self.test_validator.get_coverage()
+                self.test_gen.build_prompt(failed_test_runs, language, test_framework, coverage_report)
 
         # Log the final coverage
         if self.test_validator.current_coverage >= (self.test_validator.desired_coverage / 100):
