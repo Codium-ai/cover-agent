@@ -67,7 +67,7 @@ class TestUnitValidator:
                 fail_details = {"stderr": "AssertionError: assert False", "stdout": "test_example failed", "processed_test_file": ""}
                 error_message = generator.extract_error_message(fail_details)
                 
-                assert error_message == "Test failed due to assertion error in test_example"
+                assert error_message == 'error_summary: Test failed due to assertion error in test_example'
                 mock_prompt_builder.build_prompt_custom.assert_called_once_with(file="analyze_test_run_failure")
 
 
