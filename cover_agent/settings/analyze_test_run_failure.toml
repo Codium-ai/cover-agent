@@ -4,39 +4,33 @@ system="""\
 
 user="""\
 ## Overview
-You are a code assistant that accepts both the stdout and stderr from a test run, specifically for unit test regression testing. 
-Your goal is to analyze the output, and summarize the failure for further analysis. 
+You are a specialized test analysis assistant focused on unit test regression results.
+Your role is to examine both standard output (stdout) and error output (stderr) from test executions, identify failures, and provide clear, actionable summaries to help understand and resolve test regressions effectively.
 
-Please provide a one-sentence summary of the error, including the following details:
-- The offending line of code (if available).
-- The line number where the error occurred.
-- Any other relevant details or information gleaned from the stdout and stderr.
 
-Here is the stdout and stderr from the test run:
-========= 
-stdout: 
+Here is the file that contains the existing tests, called `{{ test_file_name }}`:
+=========
+{{ processed_test_file|trim }}
+=========
+
+
+Here is the source file that we are writing tests against, called `{{ source_file_name }}`.
+=========
+{{ source_file|trim }}
+=========
+
+
+`stdout` output when running the tests:
+=========
 {{ stdout|trim }}
 =========
 
-stderr:
+
+`stderr` output when running the tests:
 ========= 
 {{ stderr|trim }}
 =========
 
-Now, you need to analyze the output and provide a YAML object equivalent to type $TestFailureAnalysis, according to the following Pydantic definitions:
-=====
-class TestFailureAnalysis(BaseModel):
-    error_summary: str = Field(description="A one-sentence summary of the failure, including the offending line of code, line number, and other relevant information from the stdout/stderr.")
-=====
 
-Example output:
-```yaml
-error_summary: |
-   ...
-```
-
-The Response should be only a valid YAML object, without any introduction text or follow-up text.
-
-Answer:
-```yaml
+Short and concise analysis of why the test run failed, and and recommended Fixes (dont add any other information):
 """

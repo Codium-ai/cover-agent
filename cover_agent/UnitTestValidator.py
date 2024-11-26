@@ -33,6 +33,7 @@ class UnitTestValidator:
         project_root: str = "",
         diff_coverage: bool = False,
         comparison_branch: str = "main",
+        num_attempts: int = 1,
     ):
         """
         Initialize the UnitTestValidator class with the provided parameters.
@@ -76,6 +77,7 @@ class UnitTestValidator:
         self.llm_model = llm_model
         self.diff_coverage = diff_coverage
         self.comparison_branch = comparison_branch
+        self.num_attempts = num_attempts
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
@@ -347,7 +349,7 @@ class UnitTestValidator:
             return out_str.strip()
         return ""
 
-    def validate_test(self, generated_test: dict, num_attempts=1):
+    def validate_test(self, generated_test: dict):
         """
         Validate a generated test by inserting it into the test file, running the test, and checking for pass/fail.
 
@@ -448,8 +450,7 @@ class UnitTestValidator:
                     test_file.flush()
 
                 # Step 2: Run the test using the Runner class
-                # Run the test command multiple times if num_attempts > 1
-                for i in range(num_attempts):
+                for i in range(self.num_attempts):
                     self.logger.info(
                         f'Running test with the following command: "{self.test_command}"'
                     )
@@ -479,7 +480,7 @@ class UnitTestValidator:
                         "processed_test_file": processed_test,
                     }
 
-                    error_message = self.extract_error_message(stderr=fail_details["stderr"], stdout=fail_details["stdout"])
+                    error_message = self.extract_error_message(fail_details)
                     if error_message:
                         logging.error(f"Error message summary:\n{error_message}")
 
@@ -638,7 +639,7 @@ class UnitTestValidator:
         return json.dumps(self.to_dict())
 
 
-    def extract_error_message(self, stderr, stdout):
+    def extract_error_message(self, fail_details):
         """
         Extracts the error message from the provided stderr and stdout outputs.
 
@@ -657,28 +658,34 @@ class UnitTestValidator:
         """
         try:
             # Update the PromptBuilder object with stderr and stdout
-            self.prompt_builder.stderr_from_run = stderr
-            self.prompt_builder.stdout_from_run = stdout
+            self.prompt_builder.stderr_from_run = fail_details["stderr"]
+            self.prompt_builder.stdout_from_run = fail_details["stdout"]
+            self.prompt_builder.processed_test_file = fail_details["processed_test_file"]
 
             # Build the prompt
-            prompt_headers_indentation = self.prompt_builder.build_prompt_custom(
+            custom_prompt = self.prompt_builder.build_prompt_custom(
                 file="analyze_test_run_failure"
             )
 
+            # Reset the stderr, stdout, and processed test file in the prompt builder
+            self.prompt_builder.stderr_from_run = ""
+            self.prompt_builder.stdout_from_run = ""
+            self.prompt_builder.processed_test_file = ""
+
             # Run the analysis via LLM
             response, prompt_token_count, response_token_count = (
-                self.ai_caller.call_model(prompt=prompt_headers_indentation, stream=False)
+                self.ai_caller.call_model(prompt=custom_prompt, stream=False)
             )
             self.total_input_token_count += prompt_token_count
             self.total_output_token_count += response_token_count
-            tests_dict = load_yaml(response)
-            if tests_dict.get("error_summary"):
-                output_str = tests_dict.get("error_summary")
-            else:
-                output_str = f"ERROR: Unable to summarize error message from inputs. STDERR: {stderr}\nSTDOUT: {stdout}."
+            output_str = response.strip()
+            # tests_dict = load_yaml(response)
+            # if tests_dict.get("error_summary"):
+            #     output_str = tests_dict.get("error_summary")
+            # else:
+            #     output_str = f"ERROR: Unable to summarize error message from inputs. STDERR: {fail_details["stderr"]}\nSTDOUT: {fail_details["stderr"]}."
             return output_str
         except Exception as e:
-            logging.error(f"ERROR: Unable to extract error message from inputs using LLM.\nSTDERR: {stderr}\nSTDOUT: {stdout}")
             logging.error(f"Error extracting error message: {e}")
             return ""
 

@@ -23,37 +23,9 @@ class TestUnitValidator:
                 )
                 with patch.object(generator, 'ai_caller') as mock_ai_caller:
                     mock_ai_caller.call_model.side_effect = Exception("Mock exception")
-                    error_message = generator.extract_error_message(stderr="stderr content", stdout="stdout content")
+                    fail_details = {"stderr": "stderr content", "stdout": "stdout content", "processed_test_file": ""}
+                    error_message = generator.extract_error_message(fail_details)
                     assert '' in error_message
-
-    # def test_get_included_files_none(self):
-    #     result = UnitTestGenerator.get_included_files(None)
-    #     assert result == ""
-
-    # def test_run_coverage_command_failure(self):
-    #     with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
-    #         generator = UnitTestGenerator(
-    #             source_file_path=temp_source_file.name,
-    #             test_file_path="test_test.py",
-    #             code_coverage_report_path="coverage.xml",
-    #             test_command="invalid_command",
-    #             llm_model="gpt-3"
-    #         )
-    #         with pytest.raises(AssertionError):
-    #             generator.run_coverage()
-
-    # def test_extract_error_message_success(self):
-    #     with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
-    #         generator = UnitTestGenerator(
-    #             source_file_path=temp_source_file.name,
-    #             test_file_path="test_test.py",
-    #             code_coverage_report_path="coverage.xml",
-    #             test_command="pytest",
-    #             llm_model="gpt-3"
-    #         )
-    #         with patch.object(generator.ai_caller, 'call_model', return_value=("error_summary: 'Mocked error summary'", 10, 10)):
-    #             error_message = generator.extract_error_message(stderr="stderr content", stdout="stdout content")
-    #             assert error_message == ""
 
     def test_run_coverage_with_report_coverage_flag(self):
         with tempfile.NamedTemporaryFile(suffix=".py", delete=False) as temp_source_file:
@@ -92,12 +64,10 @@ class TestUnitValidator:
             """
             
             with patch.object(generator.ai_caller, 'call_model', return_value=(mock_response, 10, 10)):
-                error_message = generator.extract_error_message(
-                    stderr="AssertionError: assert False",
-                    stdout="test_example failed"
-                )
+                fail_details = {"stderr": "AssertionError: assert False", "stdout": "test_example failed", "processed_test_file": ""}
+                error_message = generator.extract_error_message(fail_details)
                 
-                assert error_message == "Test failed due to assertion error in test_example"
+                assert error_message == 'error_summary: Test failed due to assertion error in test_example'
                 mock_prompt_builder.build_prompt_custom.assert_called_once_with(file="analyze_test_run_failure")
 
 

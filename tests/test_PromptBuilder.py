@@ -196,6 +196,7 @@ class TestPromptBuilderEndToEnd:
 
         builder.stderr_from_run = "stderr content"
         builder.stdout_from_run = "stdout content"
+        builder.processed_test_file = "processed test file content"
 
         result = builder.build_prompt_custom("analyze_test_run_failure")
         assert "stderr content" in result["user"]

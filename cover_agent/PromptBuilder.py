@@ -27,7 +27,7 @@ ADDITIONAL_INSTRUCTIONS_TEXT = """
 
 FAILED_TESTS_TEXT = """
 ## Previous Iterations Failed Tests
-Below is a list of failed tests that you generated in previous iterations. Do not generate the same tests again, and take the failed tests into account when generating new tests.
+Below is a list of failed tests that were generated in previous iterations. Do not generate the same tests again, and take the failed tests into account when generating new tests.
 ======
 {failed_test_runs}
 ======
@@ -110,6 +110,7 @@ class PromptBuilder:
 
         self.stdout_from_run = ""
         self.stderr_from_run = ""
+        self.processed_test_file = ""
 
     def _read_file(self, file_path):
         """
@@ -186,6 +187,7 @@ class PromptBuilder:
             "testing_framework": self.testing_framework,
             "stdout": self.stdout_from_run,
             "stderr": self.stderr_from_run,
+            "processed_test_file": self.processed_test_file,
         }
         environment = Environment(undefined=StrictUndefined)
         try:

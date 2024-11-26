@@ -125,7 +125,8 @@ class TestCoverAgent:
                     use_report_coverage_feature_flag=False,
                     log_db_path="",
                     diff_coverage=False,
-                    branch="main"
+                    branch="main",
+                    run_tests_multiple_times=1,
                 )
 
                 with pytest.raises(AssertionError) as exc_info:
@@ -164,7 +165,8 @@ class TestCoverAgent:
                     use_report_coverage_feature_flag=False,
                     log_db_path="",
                     diff_coverage=False,
-                    branch="main"
+                    branch="main",
+                    run_tests_multiple_times=1,
                 )
 
                 with pytest.raises(AssertionError) as exc_info:

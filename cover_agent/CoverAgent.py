@@ -64,6 +64,7 @@ class CoverAgent:
             use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
             diff_coverage=args.diff_coverage,
             comparison_branch=args.branch,
+            num_attempts=args.run_tests_multiple_times
         )
 
     def parse_command_to_run_only_a_single_test(self, args):
@@ -176,23 +177,11 @@ class CoverAgent:
         """
         # Initialize variables to track progress
         iteration_count = 0
-        test_results_list = []
 
         # Loop until desired coverage is reached or maximum iterations are met
-        while (
-            self.test_validator.current_coverage < (self.test_validator.desired_coverage / 100)
-            and iteration_count < self.args.max_iterations
-        ):
+        while iteration_count < self.args.max_iterations:
             # Log the current coverage
-            if self.args.diff_coverage:
-                self.logger.info(
-                    f"Current Diff Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
-                )
-            else:
-                self.logger.info(
-                    f"Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
-                )
-            self.logger.info(f"Desired Coverage: {self.test_validator.desired_coverage}%")
+            self.log_coverage()
 
             # Generate new tests
             generated_tests_dict = self.test_gen.generate_tests(failed_test_runs, language, test_framework, coverage_report)
@@ -200,23 +189,19 @@ class CoverAgent:
             # Loop through each new test and validate it
             for generated_test in generated_tests_dict.get("new_tests", []):
                 # Validate the test and record the result
-                test_result = self.test_validator.validate_test(
-                    generated_test, self.args.run_tests_multiple_times
-                )
-                test_result["prompt"] = self.test_gen.prompt["user"] # get the prompt used to generate the test so that it is stored in the database
-                test_results_list.append(test_result)
+                test_result = self.test_validator.validate_test(generated_test)
 
                 # Insert the test result into the database
+                test_result["prompt"] = self.test_gen.prompt["user"]
                 self.test_db.insert_attempt(test_result)
 
             # Increment the iteration count
             iteration_count += 1
 
             # Check if the desired coverage has been reached
-            if self.test_validator.current_coverage < (self.test_validator.desired_coverage / 100):
-                # Run the coverage tool again if the desired coverage hasn't been reached
-                failed_test_runs, language, test_framework, coverage_report = self.test_validator.get_coverage()
-                self.test_gen.build_prompt(failed_test_runs, language, test_framework, coverage_report)
+            failed_test_runs, language, test_framework, coverage_report = self.test_validator.get_coverage()
+            if self.test_validator.current_coverage >= (self.test_validator.desired_coverage / 100):
+                break
 
         # Log the final coverage
         if self.test_validator.current_coverage >= (self.test_validator.desired_coverage / 100):
@@ -244,12 +229,22 @@ class CoverAgent:
         )
 
         # Generate a report
-        # ReportGenerator.generate_report(test_results_list, self.args.report_filepath)
         self.test_db.dump_to_report(self.args.report_filepath)
 
         # Finish the Weights & Biases run if it was initialized
         if "WANDB_API_KEY" in os.environ:
             wandb.finish()
+
+    def log_coverage(self):
+        if self.args.diff_coverage:
+            self.logger.info(
+                f"Current Diff Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
+            )
+        else:
+            self.logger.info(
+                f"Current Coverage: {round(self.test_validator.current_coverage * 100, 2)}%"
+            )
+        self.logger.info(f"Desired Coverage: {self.test_validator.desired_coverage}%")
 
     def run(self):
         failed_test_runs, language, test_framework, coverage_report = self.init()
