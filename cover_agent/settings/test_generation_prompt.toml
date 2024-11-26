@@ -28,6 +28,7 @@ Here is the file that contains the existing tests, called `{{ test_file_name }}`
 {{ test_file| trim }}
 =========
 
+
 ### Test Framework
 The test framework used for running tests is `{{ testing_framework }}`.
 {%- if language == "python" and testing_framework == "pytest" %}
@@ -43,11 +44,13 @@ If the current tests are part of a class and contain a 'self' input, than the ge
 
 {%- if failed_tests_section|trim  %}
 
+
 {{ failed_tests_section|trim }}
 
 {% endif %}
 
 {%- if additional_instructions_text|trim  %}
+
 
 {{ additional_instructions_text|trim }}
 {% endif %}

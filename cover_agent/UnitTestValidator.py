@@ -33,6 +33,7 @@ class UnitTestValidator:
         project_root: str = "",
         diff_coverage: bool = False,
         comparison_branch: str = "main",
+        num_attempts: int = 1,
     ):
         """
         Initialize the UnitTestValidator class with the provided parameters.
@@ -76,6 +77,7 @@ class UnitTestValidator:
         self.llm_model = llm_model
         self.diff_coverage = diff_coverage
         self.comparison_branch = comparison_branch
+        self.num_attempts = num_attempts
 
         # Objects to instantiate
         self.ai_caller = AICaller(model=llm_model, api_base=api_base)
@@ -347,7 +349,7 @@ class UnitTestValidator:
             return out_str.strip()
         return ""
 
-    def validate_test(self, generated_test: dict, num_attempts=1):
+    def validate_test(self, generated_test: dict):
         """
         Validate a generated test by inserting it into the test file, running the test, and checking for pass/fail.
 
@@ -448,8 +450,7 @@ class UnitTestValidator:
                     test_file.flush()
 
                 # Step 2: Run the test using the Runner class
-                # Run the test command multiple times if num_attempts > 1
-                for i in range(num_attempts):
+                for i in range(self.num_attempts):
                     self.logger.info(
                         f'Running test with the following command: "{self.test_command}"'
                     )
