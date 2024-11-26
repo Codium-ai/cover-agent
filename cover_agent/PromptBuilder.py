@@ -110,6 +110,7 @@ class PromptBuilder:
 
         self.stdout_from_run = ""
         self.stderr_from_run = ""
+        self.processed_test_file = ""
 
     def _read_file(self, file_path):
         """
@@ -186,6 +187,7 @@ class PromptBuilder:
             "testing_framework": self.testing_framework,
             "stdout": self.stdout_from_run,
             "stderr": self.stderr_from_run,
+            "processed_test_file": self.processed_test_file,
         }
         environment = Environment(undefined=StrictUndefined)
         try:
