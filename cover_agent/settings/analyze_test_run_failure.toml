@@ -20,13 +20,13 @@ Here is the source file that we are writing tests against, called `{{ source_fil
 =========
 
 
-stdout output when running the tests:
+`stdout` output when running the tests:
 =========
 {{ stdout|trim }}
 =========
 
 
-stderr output when running the tests:
+`stderr` output when running the tests:
 ========= 
 {{ stderr|trim }}
 =========

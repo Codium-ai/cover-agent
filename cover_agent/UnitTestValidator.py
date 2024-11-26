@@ -663,7 +663,7 @@ class UnitTestValidator:
             self.prompt_builder.processed_test_file = fail_details["processed_test_file"]
 
             # Build the prompt
-            prompt_headers_indentation = self.prompt_builder.build_prompt_custom(
+            custom_prompt = self.prompt_builder.build_prompt_custom(
                 file="analyze_test_run_failure"
             )
 
@@ -674,7 +674,7 @@ class UnitTestValidator:
 
             # Run the analysis via LLM
             response, prompt_token_count, response_token_count = (
-                self.ai_caller.call_model(prompt=prompt_headers_indentation, stream=False)
+                self.ai_caller.call_model(prompt=custom_prompt, stream=False)
             )
             self.total_input_token_count += prompt_token_count
             self.total_output_token_count += response_token_count
