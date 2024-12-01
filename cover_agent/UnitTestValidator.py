@@ -530,7 +530,7 @@ class UnitTestValidator:
                         self.failed_test_runs.append(
                             {
                                 "code": fail_details["test"],
-                                "error_message": "Code coverage did not increase",
+                                "error_message": "Test did not increase code coverage",
                             }
                         )  # Append failure details to the list
 
