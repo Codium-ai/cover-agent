@@ -517,7 +517,7 @@ class UnitTestValidator:
                         )
                         fail_details = {
                             "status": "FAIL",
-                            "reason": "Coverage did not increase",
+                            "reason": "Coverage did not increase. Maybe the test did run but did not increase coverage, or maybe the test execution was skipped due to some problem",
                             "exit_code": exit_code,
                             "stderr": stderr,
                             "stdout": stdout,
