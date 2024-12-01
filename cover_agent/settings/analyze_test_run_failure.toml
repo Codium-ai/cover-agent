@@ -32,5 +32,5 @@ Here is the source file that we are writing tests against, called `{{ source_fil
 =========
 
 
-Short and concise analysis of why the test run failed, and and recommended Fixes (dont add any other information):
+Short and concise analysis of why the test run failed, and recommended Fixes (dont add any other information):
 """
