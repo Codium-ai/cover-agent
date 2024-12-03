@@ -226,4 +226,4 @@ Below is the roadmap of planned features, with the current implementation status
 QodoAI's mission is to enable busy dev teams to increase and maintain their code integrity.
 We offer various tools, including "Pro" versions of our open-source tools, which are meant to handle enterprise-level code complexity and are multi-repo codebase aware.
 
-**Try the pro version of Cover Agent, [Qodo Cover](https://github.com/qodo-ai/qodo-cover)!**
+**Try the pro version of [Qodo Cover in a GitHub Action](https://github.com/qodo-ai/qodo-ci)!**
