@@ -1,23 +1,23 @@
+# Qodo Cover
 <div align="center">
 
 <div align="center">
 
-
-<picture>
+<!-- <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://www.codium.ai/images/cover-agent/cover-agent-dark.png" width="330">
   <source media="(prefers-color-scheme: light)" srcset="https://www.codium.ai/images/cover-agent/cover-agent-light.png" width="330">
-  <img src="https://www.codium.ai/images/cover-agent/cover-agent-light.png" alt="logo" width="330">
+  <img src="https://www.codium.ai/images/cover-agent/cover-agent-light.png" alt="logo" width="330"> -->
 
 </picture>
 <br/>
-CodiumAI Cover Agent aims to help efficiently increasing code coverage, by automatically generating qualified tests to enhance existing test suites
+Qodo Cover aims to help efficiently increase code coverage, by automatically generating qualified tests to extend code coverage. Qodo Cover can run in your GitHub CI workflow or locally as a CLI tool.
 </div>
 
 [![GitHub license](https://img.shields.io/badge/License-AGPL_3.0-blue.svg)](https://github.com/Codium-ai/cover-agent/blob/main/LICENSE)
 [![Discord](https://badgen.net/badge/icon/discord?icon=discord&label&color=purple)](https://discord.gg/cYsvFJJbdM)
-[![Twitter](https://img.shields.io/twitter/follow/codiumai)](https://twitter.com/codiumai)
+[![Twitter](https://img.shields.io/twitter/follow/qodoai)](https://twitter.com/qodoai)
     <a href="https://github.com/Codium-ai/cover-agent/commits/main">
-    <img alt="GitHub" src="https://img.shields.io/github/last-commit/Codium-ai/cover-agent/main?style=for-the-badge" height="20">
+    <img alt="GitHub" src="https://img.shields.io/github/last-commit/qodo-ai/qodo-cover/main?style=for-the-badge" height="20">
     </a><br>
     <a href="https://trendshift.io/repositories/10328" target="_blank"><img src="https://trendshift.io/api/badge/repositories/10328" alt="Codium-ai/cover-agent | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </div>
@@ -32,15 +32,14 @@ CodiumAI Cover Agent aims to help efficiently increasing code coverage, by autom
 
 ## News and Updates
 
-### 2024-11-05:
-New mode - scan an entire repo, auto identify the test files, auto collect context for each test file, and extend the test suite with new tests.
-See more details [here](docs/repo_coverage.md).
+### 2024-12-04:
+New mode - [Run Qodo Cover Pro in your GitHub CI workflow](https://github.com/qodo-ai/qodo-ci). Currently in preview and available for free for a limited time for Python projects, leveraging your own LLM API key from your favorite LLM provider. It's a practical way to improve code quality and reliability. For more details, reach out to the [Qodo team](https://www.qodo.ai/book-a-demo).
 
-# Cover-Agent
-Welcome to Cover-Agent. This focused project utilizes Generative AI to automate and enhance the generation of tests (currently mostly unit tests), aiming to streamline development workflows. Cover-Agent can run via a terminal, and is planned to be integrated into popular CI platforms.
+# Qodo-Cover
+Welcome to Qodo-Cover. This focused project utilizes Generative AI to automate and enhance the generation of tests (currently mostly unit tests), aiming to streamline development workflows. Qodo-Cover can run via a terminal, and is planned to be integrated into popular CI platforms.
 [![Test generation xxx](https://www.codium.ai/wp-content/uploads/2024/05/CodiumAI-CoverAgent-v240519-small-loop.gif)](https://youtu.be/fIYkSEJ4eqE?feature=shared)
 
-We invite the community to collaborate and help extend the capabilities of Cover Agent, continuing its development as a cutting-edge solution in the automated unit test generation domain. We also wish to inspire researchers to leverage this open-source tool to explore new test-generation techniques.
+We invite the community to collaborate and help extend the capabilities of Qodo Cover, continuing its development as a cutting-edge solution in the automated unit test generation domain. We also wish to inspire researchers to leverage this open-source tool to explore new test-generation techniques.
 
 
 ## Overview
@@ -63,16 +62,16 @@ If running directly from the repository you will also need:
 - Poetry installed for managing Python package dependencies. Installation instructions for Poetry can be found at [https://python-poetry.org/docs/](https://python-poetry.org/docs/).
 
 ### Standalone Runtime
-The Cover Agent can be installed as a Python Pip package or run as a standalone executable.
+Qodo Cover can be installed as a Python Pip package or run as a standalone executable.
 
 #### Python Pip
 To install the Python Pip package directly via GitHub run the following command:
 ```shell
-pip install git+https://github.com/Codium-ai/cover-agent.git
+pip install git+https://github.com/qodo-ai/qodo-cover.git
 ```
 
 #### Binary
-The binary can be run without any Python environment installed on your system (e.g. within a Docker container that does not contain Python). You can download the release for your system by navigating to the project's [release page](https://github.com/Codium-ai/cover-agent/releases).
+The binary can be run without any Python environment installed on your system (e.g. within a Docker container that does not contain Python). You can download the release for your system by navigating to the project's [release page](https://github.com/qodo-ai/qodo-cover/releases).
 
 ### Repository Setup
 Run the following command to install all the dependencies and run the project from source:
