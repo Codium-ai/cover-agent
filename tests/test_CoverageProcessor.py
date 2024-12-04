@@ -502,4 +502,3 @@ class TestCoverageProcessor:
         result = processor.parse_coverage_report()
         mock_parse_lcov.assert_called_once()
         assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
-
