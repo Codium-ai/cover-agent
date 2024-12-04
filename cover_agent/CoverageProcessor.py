@@ -107,20 +107,20 @@ class CoverageProcessor:
                 else:
                     raise ValueError(f"Unsupported coverage report type: {self.coverage_type}")
 
-    def parse_coverage_report_cobertura(self, filename: str = None) -> Union[Tuple[list, list, float], dict]:
+    def parse_coverage_report_cobertura(self, filename: str = None) -> Union[Tuple[list, list, float, float], dict]:
         """
         Parses a Cobertura XML code coverage report to extract covered and missed line numbers for a specific file
-        or all files, and calculates the coverage percentage.
+        or all files, and calculates the line and branch coverage percentages.
 
         Args:
             filename (str, optional): The name of the file to process. If None, processes all files.
 
         Returns:
-            Union[Tuple[list, list, float], dict]: If filename is provided, returns a tuple 
-                containing lists of covered and missed line numbers, and the coverage percentage. 
-                If filename is None, returns a dictionary with filenames as keys and a tuple 
-                containing lists of covered and missed line numbers, and the coverage percentage 
-                as values.
+            Union[Tuple[list, list, float, float], dict]: If filename is provided, returns a tuple 
+            containing lists of covered and missed line numbers, the line coverage percentage, 
+            and the branch coverage percentage. If filename is None, returns a dictionary with 
+            filenames as keys and a tuple containing lists of covered and missed line numbers, 
+            the line coverage percentage, and the branch coverage percentage as values.
         """
         tree = ET.parse(self.file_path)
         root = tree.getroot()
@@ -130,14 +130,14 @@ class CoverageProcessor:
                 name_attr = cls.get("filename")
                 if name_attr and name_attr.endswith(filename):
                     return self.parse_coverage_data_for_class(cls)
-            return [], [], 0.0  # Return empty lists if the file is not found
+            return [], [], 0.0, 0.0  # Return empty lists if the file is not found
         else:
             coverage_data = {}
             for cls in root.findall(".//class"):
                 cls_filename = cls.get("filename")
                 if cls_filename:
-                    lines_covered, lines_missed, coverage_percentage = self.parse_coverage_data_for_class(cls)
-                    coverage_data[cls_filename] = (lines_covered, lines_missed, coverage_percentage)
+                    lines_covered, lines_missed, coverage_percentage, branch_coverage_percentage = self.parse_coverage_data_for_class(cls)
+                    coverage_data[cls_filename] = (lines_covered, lines_missed, coverage_percentage, branch_coverage_percentage)
             return coverage_data
 
     def parse_coverage_data_for_class(self, cls) -> Tuple[list, list, float]:
@@ -148,10 +148,13 @@ class CoverageProcessor:
             cls (Element): XML element representing the class.
 
         Returns:
-            Tuple[list, list, float]: A tuple containing lists of covered and missed line numbers, 
-                                    and the coverage percentage.
+            Tuple[list, list, float, float]: A tuple containing lists of covered and missed line numbers, 
+                             the line coverage percentage, and the branch coverage percentage.
         """
-        lines_covered, lines_missed = [], []
+        lines_covered = []
+        lines_missed = []
+        branches_covered = 0
+        total_branches = 0
 
         for line in cls.findall(".//line"):
             line_number = int(line.get("number"))
@@ -161,14 +164,37 @@ class CoverageProcessor:
             else:
                 lines_missed.append(line_number)
 
-        total_lines = len(lines_covered) + len(lines_missed)
-        coverage_percentage = (len(lines_covered) / total_lines) if total_lines > 0 else 0
+            branch_rate = line.get("branch")
+            if branch_rate:
+                condition_coverage = line.get('condition-coverage')
+                covered, total = map(int, condition_coverage.split('(')[1].split(')')[0].split('/'))
+                total_branches += total
+                branches_covered += covered
 
-        return lines_covered, lines_missed, coverage_percentage
+        line_coverage_percentage = len(lines_covered) / (len(lines_covered) + len(lines_missed)) if (len(lines_covered) + len(lines_missed)) > 0 else 0.0
+        branch_coverage_percentage = branches_covered / total_branches if total_branches > 0 else 0.0
+
+        return lines_covered, lines_missed, line_coverage_percentage, branch_coverage_percentage
 
     def parse_coverage_report_lcov(self):
-
+        """
+        Parses an LCOV coverage report file and calculates line and branch coverage.
+        This method reads an LCOV coverage report file specified by `self.file_path` and 
+        extracts information about covered and missed lines, as well as branch coverage.
+        It calculates the percentage of line and branch coverage based on the data extracted.
+        Returns:
+            tuple: A tuple containing:
+                - lines_covered (list): A list of line numbers that are covered.
+                - lines_missed (list): A list of line numbers that are missed.
+                - line_coverage_percentage (float): The percentage of lines covered.
+                - branch_coverage_percentage (float): The percentage of branches covered.
+        Raises:
+            FileNotFoundError: If the specified file does not exist.
+            IOError: If there is an error reading the file.
+        """
         lines_covered, lines_missed = [], []
+        branches_covered, branches_missed = 0, 0
+        total_branches = 0
         filename = os.path.basename(self.src_file_path)
         try: 
             with open(self.file_path, "r") as file:
@@ -185,6 +211,12 @@ class CoverageProcessor:
                                         lines_covered.append(int(line_number))
                                     else:
                                         lines_missed.append(int(line_number))
+                                elif line.startswith("BRDA:"):
+                                    parts = line.replace("BRDA:", "").split(",")
+                                    branch_hits = parts[3]
+                                    total_branches += 1
+                                    if branch_hits != '-' and int(branch_hits) > 0:
+                                        branches_covered += 1
                                 elif line.startswith("end_of_record"):
                                     break
 
@@ -193,29 +225,31 @@ class CoverageProcessor:
             raise
 
         total_lines = len(lines_covered) + len(lines_missed)
-        coverage_percentage = (
+        line_coverage_percentage = (
             (len(lines_covered) / total_lines) if total_lines > 0 else 0
         )
+        branch_coverage_percentage = (
+            (branches_covered / total_branches) if total_branches > 0 else 0
+        )
 
-        return lines_covered, lines_missed, coverage_percentage
+        return lines_covered, lines_missed, line_coverage_percentage, branch_coverage_percentage
 
     def parse_coverage_report_jacoco(self) -> Tuple[list, list, float]:
         """
         Parses a JaCoCo XML code coverage report to extract covered and missed line numbers for a specific file,
-        and calculates the coverage percentage.
+        and calculates the line and branch coverage percentages.
 
-        Returns: Tuple[list, list, float]: A tuple containing empty lists of covered and missed line numbers,
-        and the coverage percentage. The reason being the format of the report for jacoco gives the totals we do not
-        sum them up. to stick with the current contract of the code and to do little change returning empty arrays.
-        I expect this should bring up a discussion on introduce a factory for different CoverageProcessors. Where the
-        total coverage percentage is returned to be evaluated only.
+        Returns:
+            Tuple[list, list, float, float]: A tuple containing lists of covered and missed line numbers,
+            the line coverage percentage, and the branch coverage percentage.
         """
         lines_covered, lines_missed = [], []
+        branches_covered, branches_missed = 0, 0
         source_file_extension = self.get_file_extension(self.src_file_path)
 
         package_name, class_name = "",""
         if source_file_extension == 'java':
-            package_name, class_name = self.extract_package_and_class_java()
+            package_name, class_name= self.extract_package_and_class_java()
         elif source_file_extension == 'kt':
             package_name, class_name = self.extract_package_and_class_kotlin()
         else:
@@ -227,25 +261,40 @@ class CoverageProcessor:
 
         missed, covered = 0, 0
         if file_extension == 'xml':
-            missed, covered = self.parse_missed_covered_lines_jacoco_xml(
+            missed, covered, branches_missed, branches_covered  = self.parse_missed_covered_lines_jacoco_xml(
                 class_name
             )
         elif file_extension == 'csv':
-            missed, covered = self.parse_missed_covered_lines_jacoco_csv(
+            missed, covered, branches_missed, branches_covered  = self.parse_missed_covered_lines_jacoco_csv(
                 package_name, class_name
             )
         else:
             raise ValueError(f"Unsupported JaCoCo code coverage report format: {file_extension}")
 
         total_lines = missed + covered
-        coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0
+        total_branches = branches_covered + branches_missed
+        line_coverage_percentage = (float(covered) / total_lines) if total_lines > 0 else 0
+        branch_coverage_percentage = (float(branches_covered) / total_branches) if total_branches > 0 else 0
 
-        return lines_covered, lines_missed, coverage_percentage
+        return lines_covered, lines_missed, line_coverage_percentage, branch_coverage_percentage
 
     def parse_missed_covered_lines_jacoco_xml(
         self, class_name: str
-    ) -> tuple[int, int]:
-        """Parses a JaCoCo XML code coverage report to extract covered and missed line numbers for a specific file."""
+    ) -> tuple[int, int, int, int]:
+        """
+        Parses a JaCoCo XML code coverage report to extract covered and missed line numbers for a specific file,
+        and calculates the line and branch coverage percentages.
+
+        Args:
+            class_name (str): The name of the class to process.
+
+        Returns:
+            tuple: A tuple containing:
+            - missed (int): The number of missed lines.
+            - covered (int): The number of covered lines.
+            - missed_branches (int): The number of missed branches.
+            - covered_branches (int): The number of covered branches.
+        """
         tree = ET.parse(self.file_path)
         root = tree.getroot()
         sourcefile = (
@@ -254,34 +303,50 @@ class CoverageProcessor:
         )
 
         if sourcefile is None:
-            return 0, 0
+            return 0, 0, 0, 0
 
         missed, covered = 0, 0
+        missed_branches, covered_branches = 0, 0
         for counter in sourcefile.findall('counter'):
             if counter.attrib.get('type') == 'LINE':
                 missed += int(counter.attrib.get('missed', 0))
                 covered += int(counter.attrib.get('covered', 0))
-                break
+            elif counter.attrib.get('type') == 'BRANCH':
+                missed_branches += int(counter.attrib.get('missed', 0))
+                covered_branches += int(counter.attrib.get('covered', 0))
 
-        return missed, covered
+        return missed, covered, missed_branches, covered_branches
 
     def parse_missed_covered_lines_jacoco_csv(
         self, package_name: str, class_name: str
-    ) -> tuple[int, int]:
+    ) -> tuple[int, int, int, int]:
+        """
+        Parses the JaCoCo CSV report to extract the number of missed and covered lines and branches for a specific class.
+        Args:
+            package_name (str): The name of the package to filter the CSV data.
+            class_name (str): The name of the class to filter the CSV data.
+        Returns:
+            tuple[int, int, int, int]: A tuple containing the number of missed lines, covered lines, missed branches, and covered branches.
+        Raises:
+            KeyError: If the expected columns are not found in the CSV file.
+        """
         with open(self.file_path, "r") as file:
             reader = csv.DictReader(file)
             missed, covered = 0, 0
+            missed_branches, covered_branches = 0, 0
             for row in reader:
                 if row["PACKAGE"] == package_name and row["CLASS"] == class_name:
                     try:
                         missed = int(row["LINE_MISSED"])
                         covered = int(row["LINE_COVERED"])
+                        missed_branches = int(row["BRANCH_MISSED"])
+                        covered_branches = int(row["BRANCH_COVERED"])
                         break
                     except KeyError as e:
                         self.logger.error(f"Missing expected column in CSV: {str(e)}")
                         raise
 
-        return missed, covered
+        return missed, covered, missed_branches, covered_branches
 
     def extract_package_and_class_java(self):
         package_pattern = re.compile(r"^\s*package\s+([\w\.]+)\s*;.*$")
