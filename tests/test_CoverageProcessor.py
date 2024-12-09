@@ -41,11 +41,12 @@ class TestCoverageProcessor:
         """
         Tests the parse_coverage_report method for correct line number and coverage calculation with Cobertura reports.
         """
-        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report()
+        covered_lines, missed_lines, coverage_pct, branch_coverage = processor.parse_coverage_report()
 
         assert covered_lines == [1], "Should list line 1 as covered"
         assert missed_lines == [2], "Should list line 2 as missed"
         assert coverage_pct == 0.5, "Coverage should be 50 percent"
+        assert branch_coverage == 0.0, "Branch coverage should be 0 percent"
 
     def test_correct_parsing_for_matching_package_and_class(self, mocker):
         # Setup
@@ -63,6 +64,8 @@ class TestCoverageProcessor:
                     "CLASS": "MyClass",
                     "LINE_MISSED": "5",
                     "LINE_COVERED": "10",
+                    "BRANCH_MISSED": "2",
+                    "BRANCH_COVERED": "6",
                 }
             ],
         )
@@ -71,13 +74,15 @@ class TestCoverageProcessor:
         )
 
         # Action
-        missed, covered = processor.parse_missed_covered_lines_jacoco_csv(
+        missed, covered, branch_missed, branch_covered = processor.parse_missed_covered_lines_jacoco_csv(
             "com.example", "MyClass"
         )
 
         # Assert
         assert missed == 5
         assert covered == 10
+        assert branch_missed == 2
+        assert branch_covered == 6
 
     def test_returns_empty_lists_and_float(self, mocker):
         # Mocking the necessary methods
@@ -87,7 +92,7 @@ class TestCoverageProcessor:
         )
         mocker.patch(
             "cover_agent.CoverageProcessor.CoverageProcessor.parse_missed_covered_lines_jacoco_xml",
-            return_value=(0, 0),
+            return_value=(0, 0, 0, 0),
         )
 
         # Initialize the CoverageProcessor object
@@ -98,7 +103,7 @@ class TestCoverageProcessor:
         )
 
         # Invoke the parse_coverage_report_jacoco method
-        lines_covered, lines_missed, coverage_percentage = (
+        lines_covered, lines_missed, coverage_percentage, branch_coverage = (
             coverage_processor.parse_coverage_report_jacoco()
         )
 
@@ -106,6 +111,7 @@ class TestCoverageProcessor:
         assert lines_covered == [], "Expected lines_covered to be an empty list"
         assert lines_missed == [], "Expected lines_missed to be an empty list"
         assert coverage_percentage == 0, "Expected coverage percentage to be 0"
+        assert branch_coverage == 0, "Expected branch coverage to be 0"
 
     def test_parse_coverage_report_unsupported_type(self):
         processor = CoverageProcessor("fake_path", "app.py", "unsupported_type")
@@ -192,7 +198,7 @@ class TestCoverageProcessor:
         )
         mock_parse = mocker.patch(
             "cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report",
-            return_value=([], [], 0.0),
+            return_value=([], [], 0.0, 0.0),
         )
 
         processor = CoverageProcessor("fake_path", "app.py", "cobertura")
@@ -200,7 +206,7 @@ class TestCoverageProcessor:
 
         mock_verify.assert_called_once_with(1234567890)
         mock_parse.assert_called_once()
-        assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
+        assert result == ([], [], 0.0, 0.0), "Expected result to be ([], [], 0.0, 0.0)"
 
     def test_parse_missed_covered_lines_jacoco_csv_key_error(self, mocker):
         mock_open = mocker.patch(
@@ -229,10 +235,11 @@ class TestCoverageProcessor:
         """
         mocker.patch("builtins.open", mocker.mock_open(read_data=""))
         processor = CoverageProcessor("empty_report.lcov", "app.py", "lcov")
-        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report_lcov()
+        covered_lines, missed_lines, coverage_pct, branch_pct = processor.parse_coverage_report_lcov()
         assert covered_lines == [], "Expected no covered lines"
         assert missed_lines == [], "Expected no missed lines"
         assert coverage_pct == 0, "Expected 0% coverage"
+        assert branch_pct == 0, "Expected 0% branch coverage"
 
     def test_parse_coverage_report_lcov_with_coverage_data(self, mocker):
         """
@@ -247,10 +254,11 @@ class TestCoverageProcessor:
         """
         mocker.patch("builtins.open", mocker.mock_open(read_data=lcov_data))
         processor = CoverageProcessor("report.lcov", "app.py", "lcov")
-        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report_lcov()
+        covered_lines, missed_lines, coverage_pct, branch_pct = processor.parse_coverage_report_lcov()
         assert covered_lines == [1, 3], "Expected lines 1 and 3 to be covered"
         assert missed_lines == [2], "Expected line 2 to be missed"
         assert coverage_pct == 2/3, "Expected 66.67% coverage"
+        assert branch_pct == 0, "Expected 0% branch coverage"
 
     def test_parse_coverage_report_lcov_with_multiple_files(self, mocker):
         """
@@ -272,12 +280,13 @@ class TestCoverageProcessor:
         """
         mocker.patch("builtins.open", mocker.mock_open(read_data=lcov_data))
         processor = CoverageProcessor("report.lcov", "app.py", "lcov")
-        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report_lcov()
+        covered_lines, missed_lines, coverage_pct, branch_pct = processor.parse_coverage_report_lcov()
         assert covered_lines == [1, 3], "Expected lines 1 and 3 to be covered for app.py"
         assert missed_lines == [2], "Expected line 2 to be missed for app.py"
         assert coverage_pct == 2/3, "Expected 66.67% coverage for app.py"
+        assert branch_pct == 0, "Expected 0% branch coverage for app.py"
 
-    def test_parse_coverage_report_unsupported_type(self, mocker):
+    def test_parse_coverage_report_unsupported_jacoco_type(self, mocker):
         mocker.patch(
             "cover_agent.CoverageProcessor.CoverageProcessor.extract_package_and_class_java",
             return_value=("com.example", "Example"),
@@ -321,13 +330,15 @@ class TestCoverageProcessor:
         )
 
         # Action
-        missed, covered = processor.parse_missed_covered_lines_jacoco_xml(
+        missed, covered, branch_missed, branch_covered = processor.parse_missed_covered_lines_jacoco_xml(
             "MySecondClass"
         )
 
         # Assert
         assert missed == 0
         assert covered == 0
+        assert branch_missed == 0
+        assert branch_covered == 0
 
     def test_parse_missed_covered_lines_jacoco_xml(self, mocker):
         #, mock_xml_tree
@@ -359,13 +370,15 @@ class TestCoverageProcessor:
         )
 
         # Action
-        missed, covered = processor.parse_missed_covered_lines_jacoco_xml(
+        missed, covered, branch_missed, branch_covered = processor.parse_missed_covered_lines_jacoco_xml(
             "MyClass"
         )
 
         # Assert
         assert missed == 9
         assert covered == 94
+        assert branch_missed == 2
+        assert branch_covered == 6
 
     def test_parse_missed_covered_lines_kotlin_jacoco_xml(self, mocker):
         #, mock_xml_tree
@@ -397,13 +410,15 @@ class TestCoverageProcessor:
         )
 
         # Action
-        missed, covered = processor.parse_missed_covered_lines_jacoco_xml(
+        missed, covered, branch_missed, branch_covered = processor.parse_missed_covered_lines_jacoco_xml(
             "MyClass"
         )
 
         # Assert
         assert missed == 9
         assert covered == 94
+        assert branch_missed == 2
+        assert branch_covered == 6
 
     def test_get_file_extension_with_valid_file_extension(self):
         processor = CoverageProcessor(
@@ -426,34 +441,35 @@ class TestCoverageProcessor:
         assert file_extension is ''
 
     def test_parse_coverage_report_lcov_with_feature_flag(self, mocker):
-        mock_parse_lcov = mocker.patch("cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_lcov", return_value=([], [], 0.0))
+        mock_parse_lcov = mocker.patch("cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_lcov", return_value=([], [], 0.0, 0.0))
         processor = CoverageProcessor("fake_path", "app.py", "lcov", use_report_coverage_feature_flag=True)
         result = processor.parse_coverage_report()
         mock_parse_lcov.assert_called_once()
-        assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
+        assert result == ([], [], 0.0, 0.0), "Expected result to be ([], [], 0.0, 0.0)"
 
 
     def test_parse_coverage_report_cobertura_with_feature_flag(self, mocker):
-        mock_parse_cobertura = mocker.patch("cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_cobertura", return_value=([], [], 0.0))
+        mock_parse_cobertura = mocker.patch("cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_cobertura", return_value=([], [], 0.0, 0.0))
         processor = CoverageProcessor("fake_path", "app.py", "cobertura", use_report_coverage_feature_flag=True)
         result = processor.parse_coverage_report()
         mock_parse_cobertura.assert_called_once()
-        assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
+        assert result == ([], [], 0.0, 0.0), "Expected result to be ([], [], 0.0, 0.0)"
 
 
     def test_parse_coverage_report_jacoco(self, mocker):
-        mock_parse_jacoco = mocker.patch("cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_jacoco", return_value=([], [], 0.0))
+        mock_parse_jacoco = mocker.patch("cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_jacoco", return_value=([], [], 0.0, 0.0))
         processor = CoverageProcessor("fake_path", "app.py", "jacoco", use_report_coverage_feature_flag=True)
         result = processor.parse_coverage_report()
         mock_parse_jacoco.assert_called_once()
-        assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
+        assert result == ([], [], 0.0, 0.0), "Expected result to be ([], [], 0.0, 0.0)"
 
 
     def test_parse_coverage_report_cobertura_filename_not_found(self, mock_xml_tree, processor):
-        covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report_cobertura("non_existent_file.py")
+        covered_lines, missed_lines, coverage_pct, branch_coverage = processor.parse_coverage_report_cobertura("non_existent_file.py")
         assert covered_lines == [], "Expected no covered lines"
         assert missed_lines == [], "Expected no missed lines"
         assert coverage_pct == 0.0, "Expected 0% coverage"
+        assert branch_coverage == 0.0, "Expected 0% branch coverage"
 
 
     def test_parse_coverage_report_lcov_file_read_error(self, mocker):
@@ -466,7 +482,7 @@ class TestCoverageProcessor:
     def test_parse_coverage_report_cobertura_all_files(self, mock_xml_tree, processor):
         coverage_data = processor.parse_coverage_report_cobertura()
         expected_data = {
-            "app.py": ([1], [2], 0.5)
+            "app.py": ([1], [2], 0.5, 0.0)
         }
         assert coverage_data == expected_data, "Expected coverage data for all files"
 
@@ -479,12 +495,12 @@ class TestCoverageProcessor:
     def test_parse_coverage_report_jacoco_without_feature_flag(self, mocker):
         mock_parse_jacoco = mocker.patch(
             "cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_jacoco",
-            return_value=([], [], 0.0)
+            return_value=([], [], 0.0, 0.0)
         )
         processor = CoverageProcessor("fake_path", "app.py", "jacoco", use_report_coverage_feature_flag=False)
         result = processor.parse_coverage_report()
         mock_parse_jacoco.assert_called_once()
-        assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
+        assert result == ([], [], 0.0, 0.0), "Expected result to be ([], [], 0.0, 0.0)"
 
     def test_parse_coverage_report_unsupported_type_without_feature_flag(self):
         processor = CoverageProcessor("fake_path", "app.py", "unsupported_type", use_report_coverage_feature_flag=False)
@@ -496,10 +512,124 @@ class TestCoverageProcessor:
     def test_parse_coverage_report_lcov_without_feature_flag(self, mocker):
         mock_parse_lcov = mocker.patch(
             "cover_agent.CoverageProcessor.CoverageProcessor.parse_coverage_report_lcov",
-            return_value=([], [], 0.0)
+            return_value=([], [], 0.0, 0.0)
         )
         processor = CoverageProcessor("fake_path", "app.py", "lcov", use_report_coverage_feature_flag=False)
         result = processor.parse_coverage_report()
         mock_parse_lcov.assert_called_once()
-        assert result == ([], [], 0.0), "Expected result to be ([], [], 0.0)"
+        assert result == ([], [], 0.0, 0.0), "Expected result to be ([], [], 0.0, 0.0)"
 
+    
+    def test_parse_coverage_data_for_class_all_covered(self):
+        """
+        Test parse_coverage_data_for_class when all lines are covered.
+        """
+        xml_str = """<class>
+                        <lines>
+                            <line number="1" hits="1"/>
+                            <line number="2" hits="1" branch="true" condition-coverage="100% (2/2)"/>
+                        </lines>
+                        </class>"""
+        cls = ET.fromstring(xml_str)
+        processor = CoverageProcessor("fake_path", "app.py", "lcov", use_report_coverage_feature_flag=False)
+        lines_covered, lines_missed, line_coverage_percentage, branch_coverage_percentage = processor.parse_coverage_data_for_class(cls)
+        assert lines_covered == [1, 2], "Expected lines 1 and 2 to be covered"
+        assert lines_missed == [], "Expected no missed lines"
+        assert line_coverage_percentage == 1.0, "Expected 100% line coverage"
+        assert branch_coverage_percentage == 1.0, "Expected 100% branch coverage"
+
+
+    def test_parse_coverage_data_for_class_all_missed(self):
+        """
+        Test parse_coverage_data_for_class when all lines are missed.
+        """
+        xml_str = """<class>
+                        <lines>
+                            <line number="1" hits="0" branch="true" condition-coverage="0% (0/2)" missing-branches="2"/>
+                            <line number="2" hits="0"/>
+                        </lines>
+                        </class>"""
+        cls = ET.fromstring(xml_str)
+        processor = CoverageProcessor("fake_path", "app.py", "lcov", use_report_coverage_feature_flag=False)
+        lines_covered, lines_missed, line_coverage_percentage, branch_coverage_percentage = processor.parse_coverage_data_for_class(cls)
+        assert lines_covered == [], "Expected no covered lines"
+        assert lines_missed == [1, 2], "Expected lines 1 and 2 to be missed"
+        assert line_coverage_percentage == 0.0, "Expected 0% line coverage"
+        assert branch_coverage_percentage == 0.0, "Expected 0% branch coverage"
+
+
+    def test_parse_coverage_data_for_class_mixed_coverage(self):
+        """
+        Test parse_coverage_data_for_class when some lines are covered and some are missed.
+        """
+        xml_str = """<class>
+                        <lines>
+                            <line number="1" hits="1"/>
+                            <line number="2" hits="0"/>
+                        </lines>
+                        </class>"""
+        cls = ET.fromstring(xml_str)
+        processor = CoverageProcessor("fake_path", "app.py", "lcov", use_report_coverage_feature_flag=False)
+        lines_covered, lines_missed, line_coverage_percentage, branch_coverage_percentage = processor.parse_coverage_data_for_class(cls)
+        assert lines_covered == [1], "Expected line 1 to be covered"
+        assert lines_missed == [2], "Expected line 2 to be missed"
+        assert line_coverage_percentage == 0.5, "Expected 50% line coverage"
+        assert branch_coverage_percentage == 0.0, "Expected 0% branch coverage"
+
+
+    def test_parse_coverage_data_for_class_with_branch_coverage(self):
+        """
+        Test parse_coverage_data_for_class with branch coverage data.
+        """
+        xml_str = """<class>
+                        <lines>
+                            <line number="1" hits="1" branch="true" condition-coverage="50%(1/2)"/>
+                            <line number="2" hits="0"/>
+                        </lines>
+                        </class>"""
+        cls = ET.fromstring(xml_str)
+        processor = CoverageProcessor("fake_path", "app.py", "lcov", use_report_coverage_feature_flag=False)
+        lines_covered, lines_missed, line_coverage_percentage, branch_coverage_percentage = processor.parse_coverage_data_for_class(cls)
+        assert lines_covered == [1], "Expected line 1 to be covered"
+        assert lines_missed == [2], "Expected line 2 to be missed"
+        assert line_coverage_percentage == 0.5, "Expected 50% line coverage"
+        assert branch_coverage_percentage == 0.5, "Expected 50% branch coverage"
+
+
+    def test_parse_coverage_data_for_class_no_lines(self):
+        """
+        Test parse_coverage_data_for_class when there are no lines.
+        """
+        xml_str = """<class>
+                        <lines>
+                        </lines>
+                        </class>"""
+        cls = ET.fromstring(xml_str)
+        processor = CoverageProcessor("fake_path", "app.py", "lcov", use_report_coverage_feature_flag=False)
+        lines_covered, lines_missed, line_coverage_percentage, branch_coverage_percentage = processor.parse_coverage_data_for_class(cls)
+        assert lines_covered == [], "Expected no covered lines"
+        assert lines_missed == [], "Expected no missed lines"
+        assert line_coverage_percentage == 0.0, "Expected 0% line coverage"
+        assert branch_coverage_percentage == 0.0, "Expected 0% branch coverage"
+
+    
+    def test_parse_coverage_report_lcov_with_branch_coverage(self, mocker):
+        """
+        Test parse_coverage_report_lcov correctly parses branch coverage data from an lcov report.
+        """
+        lcov_data = """
+        SF:app.py
+        DA:1,1
+        DA:2,0
+        DA:3,1
+        BRDA:1,0,0,1
+        BRDA:1,0,1,0
+        end_of_record
+        """
+        mocker.patch("builtins.open", mocker.mock_open(read_data=lcov_data))
+        processor = CoverageProcessor("report.lcov", "app.py", "lcov")
+        covered_lines, missed_lines, coverage_pct, branch_pct = processor.parse_coverage_report_lcov()
+        assert covered_lines == [1, 3], "Expected lines 1 and 3 to be covered"
+        assert missed_lines == [2], "Expected line 2 to be missed"
+        assert coverage_pct == 2/3, "Expected 66.67% coverage"
+        assert branch_pct == 0.5, "Expected 50% branch coverage"
