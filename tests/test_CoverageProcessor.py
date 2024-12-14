@@ -87,7 +87,7 @@ class TestCoverageProcessor:
         )
         mocker.patch(
             "cover_agent.CoverageProcessor.CoverageProcessor.parse_missed_covered_lines_jacoco_xml",
-            return_value=(0, 0),
+            return_value=([], []),
         )
 
         # Initialize the CoverageProcessor object
@@ -333,8 +333,8 @@ class TestCoverageProcessor:
         )
 
         # Assert
-        assert missed == [39, 40, 41]
-        assert covered == [35, 36, 37, 38]
+        assert missed == []
+        assert covered == []
 
     def test_parse_missed_covered_lines_jacoco_xml(self, mocker):
         #, mock_xml_tree
@@ -346,6 +346,13 @@ class TestCoverageProcessor:
         xml_str = """<report>
                         <package name="path/to">
                             <sourcefile name="MyClass.java">
+                                <line nr="35" mi="0" ci="9" mb="0" cb="0"/>
+                                <line nr="36" mi="0" ci="1" mb="0" cb="0"/>
+                                <line nr="37" mi="0" ci="3" mb="0" cb="0"/>
+                                <line nr="38" mi="0" ci="9" mb="0" cb="0"/>
+                                <line nr="39" mi="1" ci="0" mb="0" cb="0"/>
+                                <line nr="40" mi="5" ci="0" mb="0" cb="0"/>
+                                <line nr="41" mi="9" ci="0" mb="0" cb="0"/>
                                 <counter type="INSTRUCTION" missed="53" covered="387"/>
                                 <counter type="BRANCH" missed="2" covered="6"/>
                                 <counter type="LINE" missed="9" covered="94"/>
@@ -371,8 +378,8 @@ class TestCoverageProcessor:
         )
 
         # Assert
-        assert missed == 9
-        assert covered == 94
+        assert missed == [39, 40, 41]
+        assert covered == [35, 36, 37, 38]
 
     def test_parse_missed_covered_lines_kotlin_jacoco_xml(self, mocker):
         #, mock_xml_tree
@@ -384,6 +391,13 @@ class TestCoverageProcessor:
         xml_str = """<report>
                         <package name="path/to">
                             <sourcefile name="MyClass.kt">
+                                <line nr="35" mi="0" ci="9" mb="0" cb="0"/>
+                                <line nr="36" mi="0" ci="1" mb="0" cb="0"/>
+                                <line nr="37" mi="0" ci="3" mb="0" cb="0"/>
+                                <line nr="38" mi="0" ci="9" mb="0" cb="0"/>
+                                <line nr="39" mi="1" ci="0" mb="0" cb="0"/>
+                                <line nr="40" mi="5" ci="0" mb="0" cb="0"/>
+                                <line nr="41" mi="9" ci="0" mb="0" cb="0"/>
                                 <counter type="INSTRUCTION" missed="53" covered="387"/>
                                 <counter type="BRANCH" missed="2" covered="6"/>
                                 <counter type="LINE" missed="9" covered="94"/>
@@ -409,8 +423,8 @@ class TestCoverageProcessor:
         )
 
         # Assert
-        assert missed == 9
-        assert covered == 94
+        assert missed == [39, 40, 41]
+        assert covered == [35, 36, 37, 38]
 
     def test_get_file_extension_with_valid_file_extension(self):
         processor = CoverageProcessor(
