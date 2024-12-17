@@ -153,7 +153,6 @@ class CoverAgent:
         # Run initial test suite analysis
         self.test_validator.initial_test_suite_analysis()
         failed_test_runs, language, test_framework, coverage_report = self.test_validator.get_coverage()
-        self.test_gen.build_prompt(failed_test_runs, language, test_framework, coverage_report)
 
         return failed_test_runs, language, test_framework, coverage_report
 
