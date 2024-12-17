@@ -104,7 +104,7 @@ class TestUnitValidator:
                 result = generator.validate_test(test_to_validate)
                 
                 assert result["status"] == "FAIL"
-                assert result["reason"] == "Coverage did not increase"
+                assert result["reason"] == "Coverage did not increase. Maybe the test did run but did not increase coverage, or maybe the test execution was skipped due to some problem"
                 assert result["exit_code"] == 0
 
     def test_initial_test_suite_analysis_with_prompt_builder(self):

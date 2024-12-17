@@ -227,9 +227,10 @@ class CoverageProcessor:
 
         missed, covered = 0, 0
         if file_extension == 'xml':
-            missed, covered = self.parse_missed_covered_lines_jacoco_xml(
+            lines_missed, lines_covered = self.parse_missed_covered_lines_jacoco_xml(
                 class_name
             )
+            missed, covered = len(lines_missed), len(lines_covered)
         elif file_extension == 'csv':
             missed, covered = self.parse_missed_covered_lines_jacoco_csv(
                 package_name, class_name
@@ -244,7 +245,7 @@ class CoverageProcessor:
 
     def parse_missed_covered_lines_jacoco_xml(
         self, class_name: str
-    ) -> tuple[int, int]:
+    ) -> tuple[list, list]:
         """Parses a JaCoCo XML code coverage report to extract covered and missed line numbers for a specific file."""
         tree = ET.parse(self.file_path)
         root = tree.getroot()
@@ -254,14 +255,14 @@ class CoverageProcessor:
         )
 
         if sourcefile is None:
-            return 0, 0
+            return [], []
 
-        missed, covered = 0, 0
-        for counter in sourcefile.findall('counter'):
-            if counter.attrib.get('type') == 'LINE':
-                missed += int(counter.attrib.get('missed', 0))
-                covered += int(counter.attrib.get('covered', 0))
-                break
+        missed, covered = [], []
+        for line in sourcefile.findall('line'):
+            if line.attrib.get('mi') == '0':
+                covered += [int(line.attrib.get('nr', 0))]
+            else :
+                missed += [int(line.attrib.get('nr', 0))]
 
         return missed, covered
 
