@@ -21,6 +21,12 @@ def mock_xml_tree(monkeypatch):
                                             <line number="2" hits="0"/>
                                         </lines>
                                     </class>
+                                    <class filename="app.py">
+                                        <lines>
+                                            <line number="3" hits="1"/>
+                                            <line number="4" hits="0"/>
+                                        </lines>
+                                    </class>
                                 </classes>
                             </package>
                         </packages>
@@ -43,8 +49,8 @@ class TestCoverageProcessor:
         """
         covered_lines, missed_lines, coverage_pct = processor.parse_coverage_report()
 
-        assert covered_lines == [1], "Should list line 1 as covered"
-        assert missed_lines == [2], "Should list line 2 as missed"
+        assert covered_lines == [1, 3], "Should list lines 1 and 3 as covered"
+        assert missed_lines == [2, 4], "Should list lines 2 and 4 as missed"
         assert coverage_pct == 0.5, "Coverage should be 50 percent"
 
     def test_correct_parsing_for_matching_package_and_class(self, mocker):
@@ -487,7 +493,7 @@ class TestCoverageProcessor:
     def test_parse_coverage_report_cobertura_all_files(self, mock_xml_tree, processor):
         coverage_data = processor.parse_coverage_report_cobertura()
         expected_data = {
-            "app.py": ([1], [2], 0.5)
+            "app.py": ([1, 3], [2, 4], 0.5)
         }
         assert coverage_data == expected_data, "Expected coverage data for all files"
 
